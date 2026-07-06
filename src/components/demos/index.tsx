@@ -40,6 +40,10 @@ import { StMakeMePulseOrb } from "./StMakeMePulseOrb";
 import { StMerciMichelBlobs } from "./StMerciMichelBlobs";
 import { StOffbrandSkewMarquee } from "./StOffbrandSkewMarquee";
 import { StIgWordCycle } from "./StIgWordCycle";
+import { StFollowGiantType } from "./StFollowGiantType";
+import { StFollowCardStack } from "./StFollowCardStack";
+import { StFollowBrushX } from "./StFollowBrushX";
+import { StFollowJoinCta } from "./StFollowJoinCta";
 
 export const DEMO_REGISTRY: Record<string, ComponentType> = {
   MagneticButton,
@@ -83,6 +87,10 @@ export const DEMO_REGISTRY: Record<string, ComponentType> = {
   StMerciMichelBlobs,
   StOffbrandSkewMarquee,
   StIgWordCycle,
+  StFollowGiantType,
+  StFollowCardStack,
+  StFollowBrushX,
+  StFollowJoinCta,
 };
 
 export function DemoRenderer({ name }: { name: string | null | undefined }) {
