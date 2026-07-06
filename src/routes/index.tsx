@@ -9,6 +9,7 @@ import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
 import { getDemoSource } from "@/lib/demo-source";
 import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import { DemoRenderer } from "@/components/demos";
 
 export const Route = createFileRoute("/")({
   component: LibraryIndex,
@@ -162,19 +163,16 @@ function AssetCard({ asset, index }: { asset: Asset; index: number }) {
         {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
         {copied ? "copiado" : "copiar .tsx"}
       </button>
-      {/* Preview strip com barras animadas — sem instanciar o demo real (performance) */}
-      <div className="relative -mx-1 -mt-1 mb-1 flex h-32 items-end justify-around gap-1 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-background/80 to-card p-3">
-        {Array.from({ length: 18 }).map((_, i) => (
-          <span
-            key={i}
-            className="w-1.5 rounded-full bg-gradient-to-t from-neon/10 to-neon/70 group-hover:from-neon/40 group-hover:to-neon transition-colors"
-            style={{
-              height: `${20 + ((i * 37 + asset.id.charCodeAt(0)) % 70)}%`,
-              transitionDelay: `${i * 20}ms`,
-            }}
-          />
-        ))}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,oklch(0.82_0.17_225/20%),transparent_60%)]" />
+      {/* Preview real do demo — escalado para caber no card, sem capturar cliques */}
+      <div className="relative -mx-1 -mt-1 mb-1 h-56 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-background/80 to-card">
+        <div
+          className="pointer-events-none absolute left-0 top-0 origin-top-left"
+          style={{ width: "200%", height: "200%", transform: "scale(0.5)" }}
+          aria-hidden="true"
+        >
+          <DemoRenderer name={asset.demo_component} />
+        </div>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
       </div>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
