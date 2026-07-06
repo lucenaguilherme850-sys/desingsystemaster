@@ -6,6 +6,9 @@ import type { Asset } from "@/lib/asset-types";
 import { ASSET_CATEGORIES } from "@/lib/asset-types";
 import { ArrowUpRight, Layers } from "lucide-react";
 import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
+import { getDemoSource } from "@/lib/demo-source";
+import { Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   component: LibraryIndex,
@@ -123,6 +126,26 @@ function LibraryIndex() {
 }
 
 function AssetCard({ asset, index }: { asset: Asset; index: number }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const src = getDemoSource(asset.demo_component);
+    if (!src) {
+      toast.error("Fonte do componente indisponível");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(src);
+      setCopied(true);
+      toast.success(`${asset.demo_component}.tsx copiado`);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
+
   return (
     <Link
       to="/assets/$slug"
@@ -130,6 +153,15 @@ function AssetCard({ asset, index }: { asset: Asset; index: number }) {
       className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card/60 p-5 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
       <div className="pointer-events-none absolute -inset-px opacity-0 transition-opacity group-hover:opacity-100" style={{ background: "radial-gradient(400px circle at 50% 0%, oklch(0.82 0.17 225 / 12%), transparent 60%)" }} />
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={`Copiar ${asset.demo_component}.tsx`}
+        className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-neon/40 bg-background/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neon backdrop-blur transition-all hover:border-neon hover:bg-neon hover:text-background hover:shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]"
+      >
+        {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+        {copied ? "copiado" : "copiar .tsx"}
+      </button>
       {/* Preview strip com barras animadas — sem instanciar o demo real (performance) */}
       <div className="relative -mx-1 -mt-1 mb-1 flex h-32 items-end justify-around gap-1 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-background/80 to-card p-3">
         {Array.from({ length: 18 }).map((_, i) => (
