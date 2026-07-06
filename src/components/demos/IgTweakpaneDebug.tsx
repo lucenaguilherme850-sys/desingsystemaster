@@ -4,7 +4,7 @@ import { IG } from "./_ig-tokens";
 export function IgTweakpaneDebug() {
   const [speed, setSpeed] = useState(1);
   const [amp, setAmp] = useState(40);
-  const [color, setColor] = useState(IG.accent);
+  const [color, setColor] = useState<string>(IG.accent);
   const [glow, setGlow] = useState(false);
   return (
     <div
