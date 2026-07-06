@@ -39,39 +39,53 @@ function LibraryIndex() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 grid-bg opacity-60" />
+      <section className="relative overflow-hidden border-b border-border/50">
+        <div className="absolute inset-0 grid-bg opacity-40" />
+        <div className="absolute inset-0 hero-glow" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
-        <div className="relative mx-auto max-w-7xl px-6 py-24">
-          <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-neon">
-            <span className="size-1.5 rounded-full bg-neon" /> motion.library / v1
-          </div>
-          <h1 className="mt-4 max-w-3xl text-5xl md:text-6xl font-semibold tracking-tight text-balance">
-            A catalog of interactive UI assets, with{" "}
-            <span className="text-neon">live demos</span> and full technical specs.
+        <div className="relative mx-auto max-w-[1400px] px-8 py-32 md:py-40 text-center">
+          <h1 className="mx-auto max-w-5xl text-balance text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95]">
+            300 Pro Components
+            <span className="mt-3 block bg-gradient-to-b from-neon to-primary bg-clip-text text-transparent drop-shadow-[0_0_40px_oklch(0.82_0.17_225/45%)]">
+              from Awwwards websites
+            </span>
           </h1>
-          <p className="mt-4 max-w-xl text-muted-foreground">
-            Magnetic buttons, hero reveals, cursor trails, pinned galleries — each entry ships with its
-            fluxo interno, algorithm, performance notes and reusable checklist.
+          <p className="mx-auto mt-8 max-w-xl text-base text-muted-foreground">
+            The world's most stunning frontend components rebuilt with clean code from top-tier studios,
+            ready to power your next masterpiece project.
           </p>
+          <div className="mt-10 flex items-center justify-center gap-3">
+            <a
+              href="#components"
+              className="glow-cyan rounded-full bg-neon px-7 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.03]"
+            >
+              View Components
+            </a>
+            <a
+              href="#pricing"
+              className="rounded-full border border-border bg-card/60 px-7 py-3 text-sm font-medium text-foreground backdrop-blur transition-colors hover:border-neon/60"
+            >
+              Unlock PRO
+            </a>
+          </div>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="mx-auto max-w-7xl px-6 pt-10">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border pb-4">
-          <span className="mr-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-            filter
-          </span>
+      <section id="components" className="mx-auto max-w-[1400px] px-8 pt-16">
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">PRO-Level Components</h2>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2 pb-6">
           {categoriesPresent.map((c) => (
             <button
               key={c}
               onClick={() => setCategory(c)}
               className={
-                "rounded-full border px-3 py-1 font-mono text-xs transition-colors " +
+                "rounded-full border px-4 py-1.5 text-xs font-medium transition-all " +
                 (category === c
-                  ? "border-neon bg-neon/10 text-neon"
-                  : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground")
+                  ? "border-neon bg-neon text-background shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]"
+                  : "border-border bg-card/40 text-muted-foreground hover:border-neon/50 hover:text-foreground")
               }
             >
               {c}
@@ -81,7 +95,7 @@ function LibraryIndex() {
       </section>
 
       {/* Grid */}
-      <section className="mx-auto max-w-7xl px-6 py-8">
+      <section className="mx-auto max-w-[1400px] px-8 py-8">
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
@@ -110,8 +124,9 @@ function AssetCard({ asset, index }: { asset: Asset; index: number }) {
     <Link
       to="/assets/$slug"
       params={{ slug: asset.slug }}
-      className="group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-neon/60 hover:bg-card/80"
+      className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card/60 p-5 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
+      <div className="pointer-events-none absolute -inset-px opacity-0 transition-opacity group-hover:opacity-100" style={{ background: "radial-gradient(400px circle at 50% 0%, oklch(0.82 0.17 225 / 12%), transparent 60%)" }} />
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           <span>{String(index).padStart(2, "0")}</span>
