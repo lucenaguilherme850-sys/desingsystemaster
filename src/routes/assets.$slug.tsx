@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Asset } from "@/lib/asset-types";
@@ -6,10 +6,16 @@ import { DemoRenderer } from "@/components/demos";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Eye, X } from "lucide-react";
+import { z } from "zod";
+
+const searchSchema = z.object({
+  preview: z.union([z.literal(1), z.literal(0), z.boolean()]).optional(),
+});
 
 export const Route = createFileRoute("/assets/$slug")({
   component: AssetDetail,
+  validateSearch: searchSchema,
   errorComponent: ({ error, reset }) => {
     const router = useRouter();
     return (
@@ -42,6 +48,8 @@ function AssetDetail() {
   const { slug } = Route.useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const search = useSearch({ from: "/assets/$slug" });
+  const isPreview = search.preview === 1 || search.preview === true;
 
   const { data: asset, isLoading } = useQuery({
     queryKey: ["asset", slug],
@@ -88,6 +96,44 @@ function AssetDetail() {
     router.navigate({ to: "/" });
   };
 
+  // Preview-only mode: full-viewport demo, no code, no meta.
+  if (isPreview) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+        <header className="flex items-center justify-between border-b border-border px-6 py-3">
+          <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest">
+            <span className="text-neon">preview</span>
+            <span className="text-border">/</span>
+            <span className="text-muted-foreground">{asset.slug}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden font-mono text-[11px] text-muted-foreground md:inline">
+              {asset.name}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                router.navigate({
+                  to: "/assets/$slug",
+                  params: { slug: asset.slug },
+                  search: {},
+                })
+              }
+            >
+              <X className="size-3.5" /> Exit preview
+            </Button>
+          </div>
+        </header>
+        <div className="flex-1 overflow-auto bg-card">
+          <div className="mx-auto max-w-6xl px-6 py-8">
+            <DemoRenderer name={asset.demo_component} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <article className="mx-auto max-w-6xl px-6 pb-24">
       {/* Header */}
@@ -111,18 +157,29 @@ function AssetDetail() {
           <p className="mt-2 max-w-2xl text-muted-foreground">{asset.short_description}</p>
         </div>
 
-        {isOwner && (
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link to="/assets/$slug/edit" params={{ slug: asset.slug }}>
-                <Pencil className="size-3.5" /> Edit
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDelete}>
-              <Trash2 className="size-3.5" /> Delete
-            </Button>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to="/assets/$slug"
+              params={{ slug: asset.slug }}
+              search={{ preview: 1 }}
+            >
+              <Eye className="size-3.5" /> Preview mode
+            </Link>
+          </Button>
+          {isOwner && (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/assets/$slug/edit" params={{ slug: asset.slug }}>
+                  <Pencil className="size-3.5" /> Edit
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDelete}>
+                <Trash2 className="size-3.5" /> Delete
+              </Button>
+            </>
+          )}
+        </div>
       </header>
 
       {/* Demo */}
