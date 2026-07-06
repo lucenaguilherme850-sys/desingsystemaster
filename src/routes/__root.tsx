@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
+import { CursorGlow } from "@/components/fx/CursorGlow";
 
 function NotFoundComponent() {
   return (
@@ -144,9 +145,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col">
+      <div className="relative min-h-screen flex flex-col">
+        <CursorGlow />
         <SiteHeader />
-        <main className="flex-1">
+        <main className="relative z-10 flex-1">
           <Outlet />
         </main>
       </div>
