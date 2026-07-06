@@ -14,6 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
+import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
+import { Route as ApiPublicRegistryNameRouteImport } from './routes/api/public/registry.$name'
 import { Route as AuthenticatedAssetsSlugEditRouteImport } from './routes/_authenticated/assets.$slug.edit'
 
 const AuthRoute = AuthRouteImport.update({
@@ -40,6 +42,16 @@ const AuthenticatedNewRoute = AuthenticatedNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicRegistryRoute = ApiPublicRegistryRouteImport.update({
+  id: '/api/public/registry',
+  path: '/api/public/registry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => ApiPublicRegistryRoute,
+} as any)
 const AuthenticatedAssetsSlugEditRoute =
   AuthenticatedAssetsSlugEditRouteImport.update({
     id: '/assets/$slug/edit',
@@ -52,14 +64,18 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/new': typeof AuthenticatedNewRoute
   '/assets/$slug': typeof AssetsSlugRoute
+  '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/assets/$slug/edit': typeof AuthenticatedAssetsSlugEditRoute
+  '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/new': typeof AuthenticatedNewRoute
   '/assets/$slug': typeof AssetsSlugRoute
+  '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/assets/$slug/edit': typeof AuthenticatedAssetsSlugEditRoute
+  '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,13 +84,29 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
   '/assets/$slug': typeof AssetsSlugRoute
+  '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/_authenticated/assets/$slug/edit': typeof AuthenticatedAssetsSlugEditRoute
+  '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/new' | '/assets/$slug' | '/assets/$slug/edit'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/new'
+    | '/assets/$slug'
+    | '/api/public/registry'
+    | '/assets/$slug/edit'
+    | '/api/public/registry/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/new' | '/assets/$slug' | '/assets/$slug/edit'
+  to:
+    | '/'
+    | '/auth'
+    | '/new'
+    | '/assets/$slug'
+    | '/api/public/registry'
+    | '/assets/$slug/edit'
+    | '/api/public/registry/$name'
   id:
     | '__root__'
     | '/'
@@ -82,7 +114,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/new'
     | '/assets/$slug'
+    | '/api/public/registry'
     | '/_authenticated/assets/$slug/edit'
+    | '/api/public/registry/$name'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -90,6 +124,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   AssetsSlugRoute: typeof AssetsSlugRoute
+  ApiPublicRegistryRoute: typeof ApiPublicRegistryRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -129,6 +164,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/registry': {
+      id: '/api/public/registry'
+      path: '/api/public/registry'
+      fullPath: '/api/public/registry'
+      preLoaderRoute: typeof ApiPublicRegistryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/registry/$name': {
+      id: '/api/public/registry/$name'
+      path: '/$name'
+      fullPath: '/api/public/registry/$name'
+      preLoaderRoute: typeof ApiPublicRegistryNameRouteImport
+      parentRoute: typeof ApiPublicRegistryRoute
+    }
     '/_authenticated/assets/$slug/edit': {
       id: '/_authenticated/assets/$slug/edit'
       path: '/assets/$slug/edit'
@@ -152,11 +201,23 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApiPublicRegistryRouteChildren {
+  ApiPublicRegistryNameRoute: typeof ApiPublicRegistryNameRoute
+}
+
+const ApiPublicRegistryRouteChildren: ApiPublicRegistryRouteChildren = {
+  ApiPublicRegistryNameRoute: ApiPublicRegistryNameRoute,
+}
+
+const ApiPublicRegistryRouteWithChildren =
+  ApiPublicRegistryRoute._addFileChildren(ApiPublicRegistryRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   AssetsSlugRoute: AssetsSlugRoute,
+  ApiPublicRegistryRoute: ApiPublicRegistryRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

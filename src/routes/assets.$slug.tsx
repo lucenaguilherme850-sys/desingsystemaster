@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Asset } from "@/lib/asset-types";
 import { DemoRenderer } from "@/components/demos";
 import { CodeExport } from "@/components/CodeExport";
+import { getDemoSource } from "@/lib/demo-source";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -320,6 +321,31 @@ function AssetDetail() {
           />
         </Section>
       )}
+
+      {/* Componente React pronto (source real do demo, com tokens inlined) */}
+      {(() => {
+        const src = getDemoSource(asset.demo_component);
+        if (!src) return null;
+        return (
+          <Section index="11.5" title="componente react — pronto para colar">
+            <p className="mb-3 max-w-3xl text-sm text-muted-foreground">
+              Arquivo <code className="font-mono text-neon">.tsx</code> auto-contido
+              com os tokens de cor inlined. Cole em <code className="font-mono">src/components/</code>{" "}
+              de qualquer projeto React 18 + Tailwind e importe normalmente. Também
+              disponível via API pública:{" "}
+              <code className="font-mono text-neon">
+                /api/public/registry/{asset.demo_component}.json
+              </code>
+              .
+            </p>
+            <CodeExport
+              code={src}
+              filename={`${asset.demo_component}.tsx`}
+              language="js"
+            />
+          </Section>
+        );
+      })()}
 
       {/* Checklist */}
       {asset.checklist.length > 0 && (
