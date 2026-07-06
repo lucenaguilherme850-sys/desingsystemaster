@@ -44,6 +44,14 @@ import { StFollowGiantType } from "./StFollowGiantType";
 import { StFollowCardStack } from "./StFollowCardStack";
 import { StFollowBrushX } from "./StFollowBrushX";
 import { StFollowJoinCta } from "./StFollowJoinCta";
+import { AmHeroSlam } from "./AmHeroSlam";
+import { AmScrollHorizontal } from "./AmScrollHorizontal";
+import { AmMouseSpotlight } from "./AmMouseSpotlight";
+import { AmGridReveal } from "./AmGridReveal";
+import { AmSliderStack } from "./AmSliderStack";
+import { AmNavOverlay } from "./AmNavOverlay";
+import { AmHoverWarp } from "./AmHoverWarp";
+import { AmShaderWaves } from "./AmShaderWaves";
 
 export const DEMO_REGISTRY: Record<string, ComponentType> = {
   MagneticButton,
@@ -91,6 +99,14 @@ export const DEMO_REGISTRY: Record<string, ComponentType> = {
   StFollowCardStack,
   StFollowBrushX,
   StFollowJoinCta,
+  AmHeroSlam,
+  AmScrollHorizontal,
+  AmMouseSpotlight,
+  AmGridReveal,
+  AmSliderStack,
+  AmNavOverlay,
+  AmHoverWarp,
+  AmShaderWaves,
 };
 
 export function DemoRenderer({ name }: { name: string | null | undefined }) {

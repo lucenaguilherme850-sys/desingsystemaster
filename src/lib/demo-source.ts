@@ -16,6 +16,20 @@ const RAW_TOKENS = import.meta.glob("../components/demos/_ig-tokens.ts", {
 
 const TOKENS_SRC = Object.values(RAW_TOKENS)[0] ?? "";
 
+const RAW_AM_TOKENS = import.meta.glob("../components/demos/_am-tokens.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const AM_TOKENS_SRC = Object.values(RAW_AM_TOKENS)[0] ?? "";
+
+const RAW_FA_TOKENS = import.meta.glob("../components/demos/_followart-tokens.ts", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const FA_TOKENS_SRC = Object.values(RAW_FA_TOKENS)[0] ?? "";
+
 // Map "StLusionGoo" -> raw file contents
 const BY_COMPONENT: Record<string, string> = {};
 for (const [path, src] of Object.entries(RAW_DEMOS)) {
@@ -35,14 +49,24 @@ const HEADER = (name: string) => `/**
 `;
 
 function inlineTokens(src: string): string {
-  // Remove `import { IG } from "./_ig-tokens";` (aspas simples ou duplas)
-  const importRe = /import\s*\{\s*IG\s*\}\s*from\s*["']\.\/_ig-tokens["'];?\n?/g;
-  if (!importRe.test(src)) return src;
-  const cleaned = src.replace(importRe, "");
-  // Extrai apenas o objeto `export const IG = { ... } as const;` do arquivo de tokens
-  const match = TOKENS_SRC.match(/export const IG[^;]+;/s);
-  const tokensBlock = match ? match[0].replace(/^export\s+/, "") : "";
-  return `${tokensBlock}\n\n${cleaned}`;
+  const targets: Array<{ name: string; file: string; src: string }> = [
+    { name: "IG", file: "_ig-tokens", src: TOKENS_SRC },
+    { name: "AM", file: "_am-tokens", src: AM_TOKENS_SRC },
+    { name: "FA", file: "_followart-tokens", src: FA_TOKENS_SRC },
+  ];
+  let out = src;
+  const blocks: string[] = [];
+  for (const t of targets) {
+    const importRe = new RegExp(
+      `import\\s*\\{\\s*${t.name}\\s*\\}\\s*from\\s*["']\\.\\/${t.file}["'];?\\n?`,
+      "g",
+    );
+    if (!importRe.test(out)) continue;
+    out = out.replace(importRe, "");
+    const match = t.src.match(new RegExp(`export const ${t.name}[^;]+;`, "s"));
+    if (match) blocks.push(match[0].replace(/^export\s+/, ""));
+  }
+  return blocks.length ? `${blocks.join("\n\n")}\n\n${out}` : out;
 }
 
 export function getDemoSource(componentName: string | null | undefined): string | null {
