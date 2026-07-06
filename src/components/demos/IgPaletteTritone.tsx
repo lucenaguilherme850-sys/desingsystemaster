@@ -1,30 +1,32 @@
 const TONES = [
-  { name: "void", hex: "#0A0A0F", role: "background" },
-  { name: "bone", hex: "#F5F1E8", role: "foreground" },
-  { name: "flux", hex: "#3B6EF5", role: "accent" },
+  { name: "void", hex: "#0A0A0F", role: "canvas", oklch: "12% 0.01 260", ink: "#F5F1E8" },
+  { name: "bone", hex: "#F5F1E8", role: "surface", oklch: "95% 0.02 80", ink: "#0A0A0F" },
+  { name: "flux", hex: "#5B3BF5", role: "accent · signal", oklch: "56% 0.24 275", ink: "#F5F1E8" },
 ];
 export function IgPaletteTritone() {
   return (
     <div className="grid h-[320px] w-full grid-cols-3 overflow-hidden rounded-md border border-border">
-      {TONES.map((t) => (
-        <div key={t.name} className="relative flex flex-col justify-end p-4" style={{ background: t.hex }}>
-          <div
-            className="font-mono text-[10px] uppercase tracking-widest"
-            style={{ color: t.name === "bone" ? "#0A0A0F" : "#F5F1E8" }}
-          >
-            {t.role}
+      {TONES.map((t, i) => (
+        <div
+          key={t.name}
+          className="group relative flex flex-col justify-between overflow-hidden p-5 transition-all"
+          style={{ background: t.hex, color: t.ink }}
+        >
+          <div className="flex items-start justify-between">
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] opacity-60">
+              {String(i + 1).padStart(2, "0")} · {t.role}
+            </div>
+            <div
+              className="h-6 w-6 rounded-full ring-1 ring-black/10"
+              style={{ background: t.ink, opacity: 0.9 }}
+            />
           </div>
-          <div
-            className="font-mono text-2xl"
-            style={{ color: t.name === "bone" ? "#0A0A0F" : "#F5F1E8" }}
-          >
-            {t.name}
-          </div>
-          <div
-            className="font-mono text-[10px] uppercase"
-            style={{ color: t.name === "bone" ? "#0A0A0F80" : "#F5F1E880" }}
-          >
-            {t.hex}
+          <div>
+            <div className="font-serif text-5xl italic leading-none">{t.name}</div>
+            <div className="mt-3 space-y-0.5 font-mono text-[10px] uppercase opacity-70">
+              <div>hex {t.hex}</div>
+              <div>oklch {t.oklch}</div>
+            </div>
           </div>
         </div>
       ))}
