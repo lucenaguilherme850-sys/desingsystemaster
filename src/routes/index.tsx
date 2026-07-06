@@ -6,7 +6,6 @@ import type { Asset } from "@/lib/asset-types";
 import { ASSET_CATEGORIES } from "@/lib/asset-types";
 import { ArrowUpRight, Layers } from "lucide-react";
 import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
-import { DemoRenderer } from "@/components/demos";
 
 export const Route = createFileRoute("/")({
   component: LibraryIndex,
@@ -131,12 +130,19 @@ function AssetCard({ asset, index }: { asset: Asset; index: number }) {
       className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card/60 p-5 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
       <div className="pointer-events-none absolute -inset-px opacity-0 transition-opacity group-hover:opacity-100" style={{ background: "radial-gradient(400px circle at 50% 0%, oklch(0.82 0.17 225 / 12%), transparent 60%)" }} />
-      {/* Live thumbnail — miniatura do próprio demo, congela na primeira renderização */}
-      <div className="relative -mx-1 -mt-1 mb-1 overflow-hidden rounded-xl border border-border/60 bg-background/50">
-        <div className="pointer-events-none aspect-[16/10] origin-top-left scale-[0.42] w-[238%]">
-          <DemoRenderer name={asset.demo_component} />
-        </div>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
+      {/* Preview strip com barras animadas — sem instanciar o demo real (performance) */}
+      <div className="relative -mx-1 -mt-1 mb-1 flex h-32 items-end justify-around gap-1 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-background/80 to-card p-3">
+        {Array.from({ length: 18 }).map((_, i) => (
+          <span
+            key={i}
+            className="w-1.5 rounded-full bg-gradient-to-t from-neon/10 to-neon/70 group-hover:from-neon/40 group-hover:to-neon transition-colors"
+            style={{
+              height: `${20 + ((i * 37 + asset.id.charCodeAt(0)) % 70)}%`,
+              transitionDelay: `${i * 20}ms`,
+            }}
+          />
+        ))}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,oklch(0.82_0.17_225/20%),transparent_60%)]" />
       </div>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
