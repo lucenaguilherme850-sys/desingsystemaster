@@ -1,7 +1,7 @@
 const TONES = [
-  { name: "void", hex: "#0A0A0F", role: "canvas", oklch: "12% 0.01 260", ink: "#F5F1E8" },
-  { name: "bone", hex: "#F5F1E8", role: "surface", oklch: "95% 0.02 80", ink: "#0A0A0F" },
-  { name: "flux", hex: "#5B3BF5", role: "accent · signal", oklch: "56% 0.24 275", ink: "#F5F1E8" },
+  { name: "void", hex: "#0A0A0A", role: "canvas", oklch: "10% 0.00 0", ink: "#F5F0E8" },
+  { name: "bone", hex: "#F5F0E8", role: "surface", oklch: "95% 0.02 80", ink: "#0A0A0A" },
+  { name: "ember", hex: "#FF5B1F", role: "accent · signal", oklch: "68% 0.20 40", ink: "#0A0A0A" },
 ];
 export function IgPaletteTritone() {
   return (

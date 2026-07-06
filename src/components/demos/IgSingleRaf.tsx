@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-type Sub = { name: string; work: number; color: string; icon: string };
+import { IG } from "./_ig-tokens";
+type Sub = { name: string; work: number };
 const SUBS_INIT: Sub[] = [
-  { name: "lenis · smooth scroll", work: 0, color: "#22d3ee", icon: "≋" },
-  { name: "cursor · 3-lerp", work: 0, color: "#a855f7", icon: "◉" },
-  { name: "webgl · shader pass", work: 0, color: "#f472b6", icon: "◈" },
-  { name: "scroll · triggers", work: 0, color: "#facc15", icon: "▽" },
+  { name: "Lenis — smooth scroll", work: 0 },
+  { name: "Cursor — 3-lerp", work: 0 },
+  { name: "WebGL — shader pass", work: 0 },
+  { name: "Scroll — triggers", work: 0 },
 ];
 export function IgSingleRaf() {
   const [fps, setFps] = useState(60);
@@ -31,36 +32,53 @@ export function IgSingleRaf() {
     return () => cancelAnimationFrame(id);
   }, []);
   return (
-    <div className="h-[320px] w-full space-y-3 rounded-md border border-border bg-[#050510] p-6 font-mono">
+    <div
+      className="h-[320px] w-full space-y-4 rounded-md border p-6"
+      style={{ background: IG.bg, borderColor: IG.rule, color: IG.ink }}
+    >
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">◆ raf · shared clock</div>
-          <div className="mt-1 font-serif text-lg italic text-white">one loop to rule them all</div>
+          <div
+            className="font-mono text-[10px] uppercase tracking-[0.3em]"
+            style={{ color: IG.inkFaint }}
+          >
+            RAF — shared clock
+          </div>
+          <div className="mt-1 font-serif text-xl italic" style={{ color: IG.ink }}>
+            one loop to rule them all
+          </div>
         </div>
         <div className="text-right">
           <div
-            className="font-mono text-4xl tabular-nums"
-            style={{ color: fps >= 55 ? "#4ade80" : fps >= 40 ? "#facc15" : "#f87171" }}
+            className="font-mono text-5xl tabular-nums"
+            style={{ color: fps >= 55 ? IG.ink : IG.accent }}
           >
             {fps}
           </div>
-          <div className="text-[9px] uppercase tracking-widest text-white/40">fps · avg 500ms</div>
+          <div
+            className="font-mono text-[9px] uppercase tracking-[0.3em]"
+            style={{ color: IG.inkFaint }}
+          >
+            fps · 500 ms avg
+          </div>
         </div>
       </div>
-      <div className="space-y-2 pt-2">
+      <div className="space-y-2.5 pt-2">
         {subs.map((s) => (
           <div key={s.name} className="space-y-1">
-            <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-white/60">
-              <span className="flex items-center gap-2">
-                <span style={{ color: s.color }}>{s.icon}</span>
-                {s.name}
+            <div
+              className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.25em]"
+              style={{ color: IG.inkMuted }}
+            >
+              <span>{s.name}</span>
+              <span className="tabular-nums" style={{ color: IG.inkFaint }}>
+                {s.work.toFixed(0)}%
               </span>
-              <span className="tabular-nums text-white/40">{s.work.toFixed(0)}%</span>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+            <div className="h-px w-full" style={{ background: IG.rule }}>
               <div
-                className="h-full transition-[width] duration-100"
-                style={{ width: `${s.work}%`, background: s.color, boxShadow: `0 0 8px ${s.color}80` }}
+                className="h-full"
+                style={{ width: `${s.work}%`, background: IG.accent, transition: "width 100ms linear" }}
               />
             </div>
           </div>
