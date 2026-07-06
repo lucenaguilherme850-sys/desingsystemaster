@@ -5,6 +5,9 @@ import { InfiniteMarquee } from "./InfiniteMarquee";
 import { CursorTrail } from "./CursorTrail";
 import { TextSplitReveal } from "./TextSplitReveal";
 import { PinnedGallery } from "./PinnedGallery";
+import { IgCursor3Lerp } from "./IgCursor3Lerp";
+import { IgGridSlots } from "./IgGridSlots";
+import { IgHeroLineReveal } from "./IgHeroLineReveal";
 
 export const DEMO_REGISTRY: Record<string, ComponentType> = {
   MagneticButton,
@@ -13,6 +16,9 @@ export const DEMO_REGISTRY: Record<string, ComponentType> = {
   CursorTrail,
   TextSplitReveal,
   PinnedGallery,
+  IgCursor3Lerp,
+  IgGridSlots,
+  IgHeroLineReveal,
 };
 
 export function DemoRenderer({ name }: { name: string | null | undefined }) {
