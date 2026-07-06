@@ -8,6 +8,8 @@ import { PinnedGallery } from "./PinnedGallery";
 import { IgCursor3Lerp } from "./IgCursor3Lerp";
 import { IgGridSlots } from "./IgGridSlots";
 import { IgHeroLineReveal } from "./IgHeroLineReveal";
+import { IgLenisScroll } from "./IgLenisScroll";
+import { IgShaderWaveVelocity } from "./IgShaderWaveVelocity";
 
 export const DEMO_REGISTRY: Record<string, ComponentType> = {
   MagneticButton,
@@ -19,6 +21,8 @@ export const DEMO_REGISTRY: Record<string, ComponentType> = {
   IgCursor3Lerp,
   IgGridSlots,
   IgHeroLineReveal,
+  IgLenisScroll,
+  IgShaderWaveVelocity,
 };
 
 export function DemoRenderer({ name }: { name: string | null | undefined }) {
