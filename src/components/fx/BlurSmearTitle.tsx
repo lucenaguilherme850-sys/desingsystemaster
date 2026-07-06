@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { createElement, useEffect, useRef } from "react";
 
 /**
  * BlurSmearTitle
@@ -12,13 +12,13 @@ import { useEffect, useRef } from "react";
 export function BlurSmearTitle({
   children,
   className = "",
-  as: Tag = "h1",
+  as = "h1",
   accent = false,
   stagger = 55,
 }: {
   children: string;
   className?: string;
-  as?: keyof React.JSX.IntrinsicElements;
+  as?: "h1" | "h2" | "h3" | "span" | "div";
   accent?: boolean;
   stagger?: number;
 }) {
@@ -65,28 +65,25 @@ export function BlurSmearTitle({
   }, [children, stagger]);
 
   const chars = Array.from(children);
-  return (
-    <Tag
-      ref={ref as React.Ref<HTMLHeadingElement>}
-      className={className}
-      aria-label={children}
-    >
-      {chars.map((c, i) => (
-        <span
-          key={i}
-          data-char
-          aria-hidden
-          className={
+  return createElement(
+    as,
+    { ref, className, "aria-label": children },
+    chars.map((c, i) =>
+      createElement(
+        "span",
+        {
+          key: i,
+          "data-char": true,
+          "aria-hidden": true,
+          className:
             "inline-block will-change-[filter,transform,opacity] " +
             (accent
               ? "bg-gradient-to-b from-neon to-primary bg-clip-text text-transparent"
-              : "")
-          }
-          style={{ whiteSpace: c === " " ? "pre" : "normal" }}
-        >
-          {c}
-        </span>
-      ))}
-    </Tag>
+              : ""),
+          style: { whiteSpace: c === " " ? "pre" : "normal" },
+        },
+        c,
+      ),
+    ),
   );
 }
