@@ -1,6 +1,5 @@
-import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Asset } from "@/lib/asset-types";
 import { DemoRenderer } from "@/components/demos";
@@ -57,12 +56,23 @@ function AssetDetail() {
     },
   });
 
-  useEffect(() => {
-    if (!isLoading && !asset) throw notFound();
-  }, [asset, isLoading]);
-
-  if (isLoading || !asset) {
+  if (isLoading) {
     return <div className="mx-auto max-w-6xl px-6 py-12 text-muted-foreground font-mono">Loading…</div>;
+  }
+
+  if (!asset) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-24 text-center">
+        <div className="font-mono text-[11px] uppercase tracking-widest text-neon">404</div>
+        <h1 className="mt-2 text-2xl font-semibold">Asset not found</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          No asset with slug <code className="font-mono">{slug}</code>.
+        </p>
+        <Button asChild className="mt-6" variant="outline">
+          <Link to="/">← Back to library</Link>
+        </Button>
+      </div>
+    );
   }
 
   const isOwner = user && asset.created_by === user.id;
