@@ -14,7 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assets: {
+        Row: {
+          accessibility: string
+          algorithm: string
+          category: string
+          checklist: string[]
+          code_base: string
+          compatibility: string[]
+          complexity: number
+          created_at: string
+          created_by: string | null
+          css_notes: string
+          demo_component: string | null
+          dependencies: string[]
+          description: string
+          estimated_time: string
+          events: string[]
+          flow: string[]
+          how_it_works: string
+          html_structure: string
+          id: string
+          improvements: string[]
+          issues: string[]
+          js_notes: string
+          math: string[]
+          name: string
+          objective: string
+          performance: Json
+          responsiveness: string
+          reuse: string
+          short_description: string
+          slug: string
+          technologies: string[]
+          updated_at: string
+          ux_impact: number
+          variations: string[]
+          visual_impact: number
+        }
+        Insert: {
+          accessibility?: string
+          algorithm?: string
+          category: string
+          checklist?: string[]
+          code_base?: string
+          compatibility?: string[]
+          complexity?: number
+          created_at?: string
+          created_by?: string | null
+          css_notes?: string
+          demo_component?: string | null
+          dependencies?: string[]
+          description?: string
+          estimated_time?: string
+          events?: string[]
+          flow?: string[]
+          how_it_works?: string
+          html_structure?: string
+          id?: string
+          improvements?: string[]
+          issues?: string[]
+          js_notes?: string
+          math?: string[]
+          name: string
+          objective?: string
+          performance?: Json
+          responsiveness?: string
+          reuse?: string
+          short_description?: string
+          slug: string
+          technologies?: string[]
+          updated_at?: string
+          ux_impact?: number
+          variations?: string[]
+          visual_impact?: number
+        }
+        Update: {
+          accessibility?: string
+          algorithm?: string
+          category?: string
+          checklist?: string[]
+          code_base?: string
+          compatibility?: string[]
+          complexity?: number
+          created_at?: string
+          created_by?: string | null
+          css_notes?: string
+          demo_component?: string | null
+          dependencies?: string[]
+          description?: string
+          estimated_time?: string
+          events?: string[]
+          flow?: string[]
+          how_it_works?: string
+          html_structure?: string
+          id?: string
+          improvements?: string[]
+          issues?: string[]
+          js_notes?: string
+          math?: string[]
+          name?: string
+          objective?: string
+          performance?: Json
+          responsiveness?: string
+          reuse?: string
+          short_description?: string
+          slug?: string
+          technologies?: string[]
+          updated_at?: string
+          ux_impact?: number
+          variations?: string[]
+          visual_impact?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
