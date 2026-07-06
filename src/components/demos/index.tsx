@@ -12,6 +12,24 @@ import { IgLenisScroll } from "./IgLenisScroll";
 import { IgShaderWaveVelocity } from "./IgShaderWaveVelocity";
 import { IgIntroLoader } from "./IgIntroLoader";
 import { IgImageplaneSync } from "./IgImageplaneSync";
+import { IgProgressBar } from "./IgProgressBar";
+import { IgBaselineWordswap } from "./IgBaselineWordswap";
+import { IgMediaBlock } from "./IgMediaBlock";
+import { IgProjectBlock } from "./IgProjectBlock";
+import { IgTextBlock } from "./IgTextBlock";
+import { IgWebglGlobal } from "./IgWebglGlobal";
+import { IgRouteFade } from "./IgRouteFade";
+import { IgNewsletterExpand } from "./IgNewsletterExpand";
+import { IgFooterWebgl } from "./IgFooterWebgl";
+import { IgLogoAnim } from "./IgLogoAnim";
+import { IgFontSystem } from "./IgFontSystem";
+import { IgPaletteTritone } from "./IgPaletteTritone";
+import { IgBemUtils } from "./IgBemUtils";
+import { IgIntersectionReveal } from "./IgIntersectionReveal";
+import { IgSingleRaf } from "./IgSingleRaf";
+import { IgTweakpaneDebug } from "./IgTweakpaneDebug";
+import { IgSsrPayloadPreload } from "./IgSsrPayloadPreload";
+import { IgI18nGoogleFriendly } from "./IgI18nGoogleFriendly";
 
 export const DEMO_REGISTRY: Record<string, ComponentType> = {
   MagneticButton,
@@ -27,6 +45,24 @@ export const DEMO_REGISTRY: Record<string, ComponentType> = {
   IgShaderWaveVelocity,
   IgIntroLoader,
   IgImageplaneSync,
+  IgProgressBar,
+  IgBaselineWordswap,
+  IgMediaBlock,
+  IgProjectBlock,
+  IgTextBlock,
+  IgWebglGlobal,
+  IgRouteFade,
+  IgNewsletterExpand,
+  IgFooterWebgl,
+  IgLogoAnim,
+  IgFontSystem,
+  IgPaletteTritone,
+  IgBemUtils,
+  IgIntersectionReveal,
+  IgSingleRaf,
+  IgTweakpaneDebug,
+  IgSsrPayloadPreload,
+  IgI18nGoogleFriendly,
 };
 
 export function DemoRenderer({ name }: { name: string | null | undefined }) {
