@@ -10,6 +10,8 @@ import { IgGridSlots } from "./IgGridSlots";
 import { IgHeroLineReveal } from "./IgHeroLineReveal";
 import { IgLenisScroll } from "./IgLenisScroll";
 import { IgShaderWaveVelocity } from "./IgShaderWaveVelocity";
+import { IgIntroLoader } from "./IgIntroLoader";
+import { IgImageplaneSync } from "./IgImageplaneSync";
 
 export const DEMO_REGISTRY: Record<string, ComponentType> = {
   MagneticButton,
@@ -23,6 +25,8 @@ export const DEMO_REGISTRY: Record<string, ComponentType> = {
   IgHeroLineReveal,
   IgLenisScroll,
   IgShaderWaveVelocity,
+  IgIntroLoader,
+  IgImageplaneSync,
 };
 
 export function DemoRenderer({ name }: { name: string | null | undefined }) {
