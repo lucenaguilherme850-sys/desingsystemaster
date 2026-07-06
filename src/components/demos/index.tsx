@@ -30,6 +30,16 @@ import { IgSingleRaf } from "./IgSingleRaf";
 import { IgTweakpaneDebug } from "./IgTweakpaneDebug";
 import { IgSsrPayloadPreload } from "./IgSsrPayloadPreload";
 import { IgI18nGoogleFriendly } from "./IgI18nGoogleFriendly";
+import { StActiveTheoryTiltCards } from "./StActiveTheoryTiltCards";
+import { StLusionGoo } from "./StLusionGoo";
+import { StDogstudioSlice } from "./StDogstudioSlice";
+import { StUnseenGlitch } from "./StUnseenGlitch";
+import { StLocomotiveParallax } from "./StLocomotiveParallax";
+import { StResnSkewGrid } from "./StResnSkewGrid";
+import { StMakeMePulseOrb } from "./StMakeMePulseOrb";
+import { StMerciMichelBlobs } from "./StMerciMichelBlobs";
+import { StOffbrandSkewMarquee } from "./StOffbrandSkewMarquee";
+import { StIgWordCycle } from "./StIgWordCycle";
 
 export const DEMO_REGISTRY: Record<string, ComponentType> = {
   MagneticButton,
@@ -63,6 +73,16 @@ export const DEMO_REGISTRY: Record<string, ComponentType> = {
   IgTweakpaneDebug,
   IgSsrPayloadPreload,
   IgI18nGoogleFriendly,
+  StActiveTheoryTiltCards,
+  StLusionGoo,
+  StDogstudioSlice,
+  StUnseenGlitch,
+  StLocomotiveParallax,
+  StResnSkewGrid,
+  StMakeMePulseOrb,
+  StMerciMichelBlobs,
+  StOffbrandSkewMarquee,
+  StIgWordCycle,
 };
 
 export function DemoRenderer({ name }: { name: string | null | undefined }) {
