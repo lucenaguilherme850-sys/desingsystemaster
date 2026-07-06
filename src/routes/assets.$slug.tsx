@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Asset } from "@/lib/asset-types";
 import { DemoRenderer } from "@/components/demos";
+import { CodeExport } from "@/components/CodeExport";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -231,9 +232,11 @@ function AssetDetail() {
       {/* Estrutura HTML */}
       {asset.html_structure && (
         <Section index="04" title="estrutura html">
-          <pre className="overflow-x-auto rounded-lg border border-border bg-card p-4 text-xs">
-            <code>{asset.html_structure}</code>
-          </pre>
+          <CodeExport
+            code={asset.html_structure}
+            filename={`${asset.slug}.html`}
+            language="html"
+          />
         </Section>
       )}
 
@@ -310,7 +313,11 @@ function AssetDetail() {
       {/* Código base */}
       {asset.code_base && (
         <Section index="11" title="código base — arquitetura">
-          <p className="max-w-3xl text-pretty">{asset.code_base}</p>
+          <CodeExport
+            code={asset.code_base}
+            filename={`${asset.slug}.code.txt`}
+            language="text"
+          />
         </Section>
       )}
 
