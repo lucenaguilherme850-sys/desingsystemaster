@@ -90,18 +90,34 @@ export type FxSourceInfo = {
 export function getFxSourceForSlug(slug: string): FxSourceInfo | null {
   const handcrafted = HANDCRAFTED_FILE_BY_SLUG[slug];
   if (handcrafted && FX_BY_NAME[handcrafted]) {
-    return {
-      slug,
-      kind: "handcrafted",
-      componentName: handcrafted,
-      files: [
-        {
-          path: `animfx/${handcrafted}.tsx`,
-          content: FX_BY_NAME[handcrafted],
-          type: "registry:component",
-        },
-      ],
-    };
+    const main = FX_BY_NAME[handcrafted];
+    const files: Array<{ path: string; content: string; type: string }> = [
+      {
+        path: `animfx/${handcrafted}.tsx`,
+        content: main,
+        type: "registry:component",
+      },
+    ];
+    // Also include sibling relative imports (e.g. shared _ShaderCanvas, _useScrollProgress)
+    const dir = handcrafted.includes("/") ? handcrafted.slice(0, handcrafted.lastIndexOf("/")) : "";
+    const importRe = /from\s+["']\.\/([A-Za-z0-9_]+)["']/g;
+    const seen = new Set<string>();
+    let m: RegExpExecArray | null;
+    while ((m = importRe.exec(main)) !== null) {
+      const name = m[1];
+      if (seen.has(name)) continue;
+      seen.add(name);
+      const key = dir ? `${dir}/${name}` : name;
+      const content = FX_BY_NAME[key];
+      if (content) {
+        files.push({
+          path: `animfx/${key}.tsx`,
+          content,
+          type: "registry:lib",
+        });
+      }
+    }
+    return { slug, kind: "handcrafted", componentName: handcrafted, files };
   }
   const { category, n } = seedFromSlug(slug);
   const tpl = CATEGORY_TO_TEMPLATE[category];
