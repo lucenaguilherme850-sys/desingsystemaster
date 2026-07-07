@@ -6,7 +6,19 @@ import { DemoRenderer } from "@/components/demos";
 import { CodeExport } from "@/components/CodeExport";
 import { getDemoSource } from "@/lib/demo-source";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Copy, Check } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+function buildPrompt(asset: Asset): string {
+  const parts = [
+    `Build a React + Tailwind component called "${asset.name}" — ${asset.category}.`,
+    asset.short_description && `Effect: ${asset.short_description}`,
+    asset.objective && `Goal: ${asset.objective}`,
+    asset.how_it_works && `How it works: ${asset.how_it_works}`,
+  ].filter(Boolean);
+  return parts.join("\n\n");
+}
 
 export const Route = createFileRoute("/assets/$slug")({
   component: AssetDetail,
@@ -74,6 +86,18 @@ function AssetDetail() {
   }
 
   const src = getDemoSource(asset.demo_component);
+  const prompt = buildPrompt(asset);
+  const [promptCopied, setPromptCopied] = useState(false);
+  const copyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setPromptCopied(true);
+      toast.success("prompt copiado");
+      setTimeout(() => setPromptCopied(false), 1800);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
 
   return (
     <article className="mx-auto max-w-6xl px-6 pb-24">
@@ -104,10 +128,31 @@ function AssetDetail() {
         </div>
       </section>
 
+      {/* Prompt do efeito */}
+      <section className="mt-12">
+        <SectionLabel index="01" label="prompt — reproduce this effect" />
+        <div className="mt-3 rounded-xl border border-border bg-card/60 p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-neon">prompt</span>
+            <button
+              type="button"
+              onClick={copyPrompt}
+              className="inline-flex items-center gap-1.5 rounded-full border border-neon/40 bg-background/60 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neon transition-all hover:bg-neon hover:text-background"
+            >
+              {promptCopied ? <Check className="size-3" /> : <Copy className="size-3" />}
+              {promptCopied ? "copiado" : "copiar prompt"}
+            </button>
+          </div>
+          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-foreground/90">
+            {prompt}
+          </pre>
+        </div>
+      </section>
+
       {/* Componente React exportável — único conteúdo além do demo */}
       {src && (
         <section className="mt-12">
-          <SectionLabel index="01" label="component — copy & paste" />
+          <SectionLabel index="02" label="component — copy & paste" />
           <p className="mt-3 mb-3 max-w-3xl text-sm text-muted-foreground">
             Arquivo <code className="font-mono text-neon">.tsx</code> auto-contido
             com tokens de cor inlined. Cole em qualquer projeto React 18 + Tailwind. Também
