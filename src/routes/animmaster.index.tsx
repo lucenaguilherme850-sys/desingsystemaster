@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Suspense, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PricingSection } from "@/components/animmaster/PricingSection";
 import { FaqSection } from "@/components/animmaster/FaqSection";
-import { isSlugLive, isSlugHandcrafted, loadLiveFx } from "@/animfx/registry";
+import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 
 type Item = {
   id: string;
@@ -191,7 +191,6 @@ function AnimmasterMirror() {
 
 function MirrorCard({ item }: { item: Item }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const LiveFx = useMemo(() => loadLiveFx(item.slug), [item.slug]);
 
   const handleEnter = () => {
     const v = videoRef.current;
@@ -218,43 +217,24 @@ function MirrorCard({ item }: { item: Item }) {
       className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-black">
-        {LiveFx ? (
-          <div className="pointer-events-none absolute inset-0 overflow-hidden bg-black">
-            <div
-              className="absolute left-0 top-0 origin-top-left"
-              style={{
-                width: "1400px",
-                height: "1050px",
-                transform: "scale(0.32)",
-              }}
-            >
-              <Suspense fallback={<div className="h-full w-full bg-black" />}>
-                <LiveFx />
-              </Suspense>
-            </div>
-          </div>
-        ) : (
-          <>
-            <img
-              src={poster}
-              alt={item.name}
-              loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-0"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
-              }}
-            />
-            <video
-              ref={videoRef}
-              className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-              muted
-              loop
-              playsInline
-              preload="none"
-              src={video}
-            />
-          </>
-        )}
+        <img
+          src={poster}
+          alt={item.name}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+          }}
+        />
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          muted
+          loop
+          playsInline
+          preload="none"
+          src={video}
+        />
         {item.mirrored && (
           <span className="absolute left-2 top-2 rounded-full border border-neon/40 bg-background/70 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-neon backdrop-blur">
             local
