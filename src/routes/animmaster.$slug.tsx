@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ExternalLink, Loader2, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mirrorAnimmasterAsset } from "@/lib/animmaster-mirror.functions";
+import { hasLiveFx, loadLiveFx } from "@/animfx/registry";
 
 type Item = {
   id: string;
@@ -93,6 +94,8 @@ function AnimmasterDetail() {
     [item, slug],
   );
 
+  const LiveFx = useMemo(() => (item ? loadLiveFx(item.slug) : null), [item]);
+
   const goFullscreen = () => {
     const v = videoRef.current;
     if (!v) return;
@@ -133,6 +136,19 @@ function AnimmasterDetail() {
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
           <div>
+            {LiveFx ? (
+              <div className="relative overflow-hidden rounded-2xl border border-neon/60 bg-black shadow-[0_0_60px_oklch(0.82_0.17_225/25%)]">
+                <div className="flex items-center justify-between border-b border-border/60 bg-background/70 px-4 py-2 font-mono text-[10px] uppercase tracking-widest">
+                  <span className="text-neon">● live component</span>
+                  <span className="text-muted-foreground">{item.slug}</span>
+                </div>
+                <div className="max-h-[80vh] overflow-auto">
+                  <Suspense fallback={<div className="grid h-96 place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin text-neon" /></div>}>
+                    <LiveFx />
+                  </Suspense>
+                </div>
+              </div>
+            ) : (
             <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-black">
               <video
                 ref={videoRef}
@@ -158,6 +174,7 @@ function AnimmasterDetail() {
                 <Maximize2 className="size-3" /> fullscreen
               </button>
             </div>
+            )}
           </div>
 
           <aside className="space-y-5">
@@ -169,6 +186,11 @@ function AnimmasterDetail() {
               <p className="mt-2 font-mono text-xs text-muted-foreground">
                 slug · {item.slug}
               </p>
+              {hasLiveFx(item.slug) && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-neon/40 bg-neon/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neon">
+                  ● efeito ao vivo implementado
+                </div>
+              )}
             </div>
 
             <div className="rounded-xl border border-border bg-card/60 p-4 text-xs">
