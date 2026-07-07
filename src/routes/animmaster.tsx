@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PricingSection } from "@/components/animmaster/PricingSection";
 import { FaqSection } from "@/components/animmaster/FaqSection";
-import { liveFxSlugs } from "@/animfx/registry";
+import { isSlugLive } from "@/animfx/registry";
 
 type Item = {
   id: string;
@@ -71,7 +71,7 @@ function AnimmasterMirror() {
   const filtered = useMemo(
     () => (items ?? []).filter((i) =>
       (cat === "all" || i.category === cat) &&
-      (!onlyLive || liveFxSlugs.has(i.slug))
+      (!onlyLive || isSlugLive(i.slug))
     ),
     [items, cat, onlyLive],
   );
@@ -112,7 +112,7 @@ function AnimmasterMirror() {
               }
             >
               <span>● só efeitos ao vivo</span>
-              <span className="font-mono text-[10px]">{liveFxSlugs.size}</span>
+              <span className="font-mono text-[10px]">{(items ?? []).filter((i) => isSlugLive(i.slug)).length}</span>
             </button>
             <div className="flex flex-col gap-1.5">
               {CATEGORIES.map((c) => {
@@ -227,7 +227,7 @@ function MirrorCard({ item }: { item: Item }) {
             local
           </span>
         )}
-        {liveFxSlugs.has(item.slug) && (
+        {isSlugLive(item.slug) && (
           <span className="absolute right-2 top-2 rounded-full border border-neon bg-neon px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-background shadow-[0_0_16px_oklch(0.82_0.17_225/60%)]">
             ● live
           </span>
