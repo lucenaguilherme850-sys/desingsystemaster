@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AnimmasterRouteImport } from './routes/animmaster'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
 import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
 import { Route as ApiPublicRegistryNameRouteImport } from './routes/api/public/registry.$name'
 
+const AnimmasterRoute = AnimmasterRouteImport.update({
+  id: '/animmaster',
+  path: '/animmaster',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +43,14 @@ const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/animmaster': typeof AnimmasterRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/animmaster': typeof AnimmasterRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
@@ -50,6 +58,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/animmaster': typeof AnimmasterRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
@@ -58,18 +67,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/animmaster'
     | '/assets/$slug'
     | '/api/public/registry'
     | '/api/public/registry/$name'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/animmaster'
     | '/assets/$slug'
     | '/api/public/registry'
     | '/api/public/registry/$name'
   id:
     | '__root__'
     | '/'
+    | '/animmaster'
     | '/assets/$slug'
     | '/api/public/registry'
     | '/api/public/registry/$name'
@@ -77,12 +89,20 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnimmasterRoute: typeof AnimmasterRoute
   AssetsSlugRoute: typeof AssetsSlugRoute
   ApiPublicRegistryRoute: typeof ApiPublicRegistryRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/animmaster': {
+      id: '/animmaster'
+      path: '/animmaster'
+      fullPath: '/animmaster'
+      preLoaderRoute: typeof AnimmasterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -127,6 +147,7 @@ const ApiPublicRegistryRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnimmasterRoute: AnimmasterRoute,
   AssetsSlugRoute: AssetsSlugRoute,
   ApiPublicRegistryRoute: ApiPublicRegistryRouteWithChildren,
 }
