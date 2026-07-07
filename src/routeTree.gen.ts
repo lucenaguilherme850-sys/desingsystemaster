@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AnimmasterRouteImport } from './routes/animmaster'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
+import { Route as AnimmasterSlugRouteImport } from './routes/animmaster.$slug'
 import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
 import { Route as ApiPublicRegistryNameRouteImport } from './routes/api/public/registry.$name'
 
@@ -30,6 +31,11 @@ const AssetsSlugRoute = AssetsSlugRouteImport.update({
   path: '/assets/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnimmasterSlugRoute = AnimmasterSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AnimmasterRoute,
+} as any)
 const ApiPublicRegistryRoute = ApiPublicRegistryRouteImport.update({
   id: '/api/public/registry',
   path: '/api/public/registry',
@@ -43,14 +49,16 @@ const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/animmaster': typeof AnimmasterRoute
+  '/animmaster': typeof AnimmasterRouteWithChildren
+  '/animmaster/$slug': typeof AnimmasterSlugRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/animmaster': typeof AnimmasterRoute
+  '/animmaster': typeof AnimmasterRouteWithChildren
+  '/animmaster/$slug': typeof AnimmasterSlugRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
@@ -58,7 +66,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/animmaster': typeof AnimmasterRoute
+  '/animmaster': typeof AnimmasterRouteWithChildren
+  '/animmaster/$slug': typeof AnimmasterSlugRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/animmaster'
+    | '/animmaster/$slug'
     | '/assets/$slug'
     | '/api/public/registry'
     | '/api/public/registry/$name'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/animmaster'
+    | '/animmaster/$slug'
     | '/assets/$slug'
     | '/api/public/registry'
     | '/api/public/registry/$name'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/animmaster'
+    | '/animmaster/$slug'
     | '/assets/$slug'
     | '/api/public/registry'
     | '/api/public/registry/$name'
@@ -89,7 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnimmasterRoute: typeof AnimmasterRoute
+  AnimmasterRoute: typeof AnimmasterRouteWithChildren
   AssetsSlugRoute: typeof AssetsSlugRoute
   ApiPublicRegistryRoute: typeof ApiPublicRegistryRouteWithChildren
 }
@@ -117,6 +129,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/animmaster/$slug': {
+      id: '/animmaster/$slug'
+      path: '/$slug'
+      fullPath: '/animmaster/$slug'
+      preLoaderRoute: typeof AnimmasterSlugRouteImport
+      parentRoute: typeof AnimmasterRoute
+    }
     '/api/public/registry': {
       id: '/api/public/registry'
       path: '/api/public/registry'
@@ -134,6 +153,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AnimmasterRouteChildren {
+  AnimmasterSlugRoute: typeof AnimmasterSlugRoute
+}
+
+const AnimmasterRouteChildren: AnimmasterRouteChildren = {
+  AnimmasterSlugRoute: AnimmasterSlugRoute,
+}
+
+const AnimmasterRouteWithChildren = AnimmasterRoute._addFileChildren(
+  AnimmasterRouteChildren,
+)
+
 interface ApiPublicRegistryRouteChildren {
   ApiPublicRegistryNameRoute: typeof ApiPublicRegistryNameRoute
 }
@@ -147,7 +178,7 @@ const ApiPublicRegistryRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnimmasterRoute: AnimmasterRoute,
+  AnimmasterRoute: AnimmasterRouteWithChildren,
   AssetsSlugRoute: AssetsSlugRoute,
   ApiPublicRegistryRoute: ApiPublicRegistryRouteWithChildren,
 }
