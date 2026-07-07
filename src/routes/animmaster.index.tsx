@@ -38,7 +38,7 @@ const CATEGORIES: { slug: string; label: string }[] = [
   { slug: "svgs", label: "Animações SVG" },
 ];
 
-export const Route = createFileRoute("/animmaster")({
+export const Route = createFileRoute("/animmaster/")({
   component: AnimmasterMirror,
   head: () => ({
     meta: [

@@ -6,6 +6,7 @@ import { ArrowLeft, ExternalLink, Loader2, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mirrorAnimmasterAsset } from "@/lib/animmaster-mirror.functions";
 import { hasLiveFx, loadLiveFx } from "@/animfx/registry";
+import FxSourceViewer from "@/components/animmaster/FxSourceViewer";
 
 type Item = {
   id: string;
@@ -245,6 +246,19 @@ function AnimmasterDetail() {
             </div>
           </section>
         )}
+
+        <section className="mt-16">
+          <div className="font-mono text-[11px] uppercase tracking-widest text-neon">
+            código + prompt
+          </div>
+          <h2 className="mt-1 text-2xl font-bold">Como replicar no seu app</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Copie o arquivo do componente ou o <strong>prompt pronto</strong> para colar
+            no Lovable — ele vai perguntar em qual página do seu app você quer
+            montar antes de instalar.
+          </p>
+          <FxSourceViewer slug={item.slug} name={heading} />
+        </section>
       </div>
     </div>
   );
