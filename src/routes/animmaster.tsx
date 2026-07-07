@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PricingSection } from "@/components/animmaster/PricingSection";
 import { FaqSection } from "@/components/animmaster/FaqSection";
+import { liveFxSlugs } from "@/animfx/registry";
 
 type Item = {
   id: string;
@@ -53,6 +54,7 @@ export const Route = createFileRoute("/animmaster")({
 
 function AnimmasterMirror() {
   const [cat, setCat] = useState<string>("all");
+  const [onlyLive, setOnlyLive] = useState(false);
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["animmaster-items"],
@@ -67,8 +69,11 @@ function AnimmasterMirror() {
   });
 
   const filtered = useMemo(
-    () => (items ?? []).filter((i) => cat === "all" || i.category === cat),
-    [items, cat],
+    () => (items ?? []).filter((i) =>
+      (cat === "all" || i.category === cat) &&
+      (!onlyLive || liveFxSlugs.has(i.slug))
+    ),
+    [items, cat, onlyLive],
   );
 
   const counts = useMemo(() => {
@@ -97,6 +102,18 @@ function AnimmasterMirror() {
       <section className="mx-auto max-w-[1400px] px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
+            <button
+              onClick={() => setOnlyLive((v) => !v)}
+              className={
+                "mb-3 flex w-full items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-semibold transition-all " +
+                (onlyLive
+                  ? "border-neon bg-neon text-background"
+                  : "border-neon/50 bg-neon/10 text-neon hover:bg-neon/20")
+              }
+            >
+              <span>● só efeitos ao vivo</span>
+              <span className="font-mono text-[10px]">{liveFxSlugs.size}</span>
+            </button>
             <div className="flex flex-col gap-1.5">
               {CATEGORIES.map((c) => {
                 const active = cat === c.slug;
@@ -208,6 +225,11 @@ function MirrorCard({ item }: { item: Item }) {
         {item.mirrored && (
           <span className="absolute left-2 top-2 rounded-full border border-neon/40 bg-background/70 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-neon backdrop-blur">
             local
+          </span>
+        )}
+        {liveFxSlugs.has(item.slug) && (
+          <span className="absolute right-2 top-2 rounded-full border border-neon bg-neon px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-background shadow-[0_0_16px_oklch(0.82_0.17_225/60%)]">
+            ● live
           </span>
         )}
       </div>
