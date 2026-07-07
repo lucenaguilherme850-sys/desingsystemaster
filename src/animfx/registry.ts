@@ -103,3 +103,8 @@ export const liveFxSlugs: Set<string> = new Set(Object.keys(handcraftedFx));
 export function isSlugLive(slug: string): boolean {
   return hasLiveFx(slug);
 }
+
+// True apenas para efeitos handcrafted (não gerados por template).
+export function isSlugHandcrafted(slug: string): boolean {
+  return slug in handcraftedFx;
+}
