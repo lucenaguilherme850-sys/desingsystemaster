@@ -1,0 +1,5 @@
+
+ALTER TABLE public.animmaster_items
+  ADD COLUMN IF NOT EXISTS poster_local TEXT,
+  ADD COLUMN IF NOT EXISTS video_local TEXT,
+  ADD COLUMN IF NOT EXISTS mirrored BOOLEAN NOT NULL DEFAULT false;
