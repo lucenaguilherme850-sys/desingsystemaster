@@ -11,6 +11,16 @@ import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { DemoRenderer } from "@/components/demos";
 
+function buildPrompt(asset: Asset): string {
+  const parts = [
+    `Build a React + Tailwind component called "${asset.name}" — ${asset.category}.`,
+    asset.short_description && `Effect: ${asset.short_description}`,
+    asset.objective && `Goal: ${asset.objective}`,
+    asset.how_it_works && `How it works: ${asset.how_it_works}`,
+  ].filter(Boolean);
+  return parts.join("\n\n");
+}
+
 export const Route = createFileRoute("/")({
   component: LibraryIndex,
 });
@@ -128,6 +138,8 @@ function LibraryIndex() {
 
 function AssetCard({ asset, index }: { asset: Asset; index: number }) {
   const [copied, setCopied] = useState(false);
+  const [promptCopied, setPromptCopied] = useState(false);
+  const prompt = buildPrompt(asset);
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -142,6 +154,19 @@ function AssetCard({ asset, index }: { asset: Asset; index: number }) {
       setCopied(true);
       toast.success(`${asset.demo_component}.tsx copiado`);
       setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
+
+  const handleCopyPrompt = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setPromptCopied(true);
+      toast.success("prompt copiado");
+      setTimeout(() => setPromptCopied(false), 1800);
     } catch {
       toast.error("Não foi possível copiar");
     }
@@ -185,6 +210,25 @@ function AssetCard({ asset, index }: { asset: Asset; index: number }) {
 
       <div>
         <h3 className="text-xl font-semibold tracking-tight">{asset.name}</h3>
+
+        {/* Prompt do efeito — visível em cada card */}
+        <div className="mt-3 rounded-lg border border-border/60 bg-background/40 p-3">
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-neon">prompt</span>
+            <button
+              type="button"
+              onClick={handleCopyPrompt}
+              aria-label="Copiar prompt"
+              className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-neon hover:text-neon"
+            >
+              {promptCopied ? <Check className="size-2.5" /> : <Copy className="size-2.5" />}
+              {promptCopied ? "ok" : "copy"}
+            </button>
+          </div>
+          <p className="line-clamp-3 whitespace-pre-line font-mono text-[11px] leading-relaxed text-muted-foreground">
+            {prompt}
+          </p>
+        </div>
       </div>
     </Link>
   );
