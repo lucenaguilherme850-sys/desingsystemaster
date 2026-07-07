@@ -6,7 +6,7 @@
 import { handcraftedFx } from "@/animfx/registry";
 import { seedFromSlug } from "@/animfx/templates/palette";
 
-const RAW_FX = import.meta.glob("../animfx/fx/*.tsx", {
+const RAW_FX = import.meta.glob("../animfx/fx/**/*.{tsx,ts}", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -27,9 +27,18 @@ const RAW_PALETTE = import.meta.glob("../animfx/templates/palette.ts", {
 function fileToName(path: string): string {
   return path.split("/").pop()!.replace(/\.(tsx|ts)$/, "");
 }
+function fxSubpath(path: string): string {
+  // path like "../animfx/fx/hero/Hero1BigType.tsx" → "hero/Hero1BigType"
+  const m = path.match(/animfx\/fx\/(.+)\.(tsx|ts)$/);
+  return m ? m[1] : fileToName(path);
+}
 
 const FX_BY_NAME: Record<string, string> = {};
-for (const [p, src] of Object.entries(RAW_FX)) FX_BY_NAME[fileToName(p)] = src;
+// key can be either the filename ("Hero1BigType") or the subpath ("hero/Hero1BigType")
+for (const [p, src] of Object.entries(RAW_FX)) {
+  FX_BY_NAME[fileToName(p)] = src;
+  FX_BY_NAME[fxSubpath(p)] = src;
+}
 
 const TPL_BY_NAME: Record<string, string> = {};
 for (const [p, src] of Object.entries(RAW_TEMPLATES)) TPL_BY_NAME[fileToName(p)] = src;
@@ -41,7 +50,8 @@ const PALETTE_SRC = Object.values(RAW_PALETTE)[0] ?? "";
 const HANDCRAFTED_FILE_BY_SLUG: Record<string, string> = {};
 for (const slug of Object.keys(handcraftedFx)) {
   const loader = handcraftedFx[slug].toString();
-  const m = loader.match(/["']\.\/fx\/([A-Za-z0-9_]+)["']/);
+  // capture path after ./fx/ — may include subfolder (e.g. hero/Hero1BigType)
+  const m = loader.match(/["']\.\/fx\/([A-Za-z0-9_/]+)["']/);
   if (m) HANDCRAFTED_FILE_BY_SLUG[slug] = m[1];
 }
 
