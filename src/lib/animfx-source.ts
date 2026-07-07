@@ -3,7 +3,7 @@
 // /api/public/registry endpoints to serve the source of each of the 280
 // animmaster components.
 
-import { handcraftedFx } from "@/animfx/registry";
+import { handcraftedFx, handcraftedFxPaths } from "@/animfx/registry";
 import { seedFromSlug } from "@/animfx/templates/palette";
 
 const RAW_FX = import.meta.glob("../animfx/fx/**/*.{tsx,ts}", {
@@ -47,12 +47,16 @@ const PALETTE_SRC = Object.values(RAW_PALETTE)[0] ?? "";
 
 // Map slug -> handcrafted component name by walking the loader source.
 // registry.ts uses `() => import("./fx/Name")` so we extract the last path segment.
-const HANDCRAFTED_FILE_BY_SLUG: Record<string, string> = {};
+// Use the static map (regex on loader.toString() fails after Vite transform).
+const HANDCRAFTED_FILE_BY_SLUG: Record<string, string> = { ...handcraftedFxPaths };
+// Guard against divergence between registry entries and static path map.
 for (const slug of Object.keys(handcraftedFx)) {
-  const loader = handcraftedFx[slug].toString();
-  // capture path after ./fx/ — may include subfolder (e.g. hero/Hero1BigType)
-  const m = loader.match(/["']\.\/fx\/([A-Za-z0-9_/]+)["']/);
-  if (m) HANDCRAFTED_FILE_BY_SLUG[slug] = m[1];
+  if (!(slug in HANDCRAFTED_FILE_BY_SLUG)) {
+    // Falls back to matching the loader string when possible (dev only).
+    const loader = handcraftedFx[slug].toString();
+    const m = loader.match(/["']\.\/fx\/([A-Za-z0-9_/]+)["']/);
+    if (m) HANDCRAFTED_FILE_BY_SLUG[slug] = m[1];
+  }
 }
 
 const CATEGORY_TO_TEMPLATE: Record<string, string> = {
