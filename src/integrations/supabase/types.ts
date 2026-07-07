@@ -19,33 +19,42 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          mirrored: boolean
           name: string
           position: number
+          poster_local: string | null
           poster_url: string
           slug: string
           type_name: string
+          video_local: string | null
           video_url: string
         }
         Insert: {
           category: string
           created_at?: string
           id?: string
+          mirrored?: boolean
           name: string
           position?: number
+          poster_local?: string | null
           poster_url?: string
           slug: string
           type_name?: string
+          video_local?: string | null
           video_url?: string
         }
         Update: {
           category?: string
           created_at?: string
           id?: string
+          mirrored?: boolean
           name?: string
           position?: number
+          poster_local?: string | null
           poster_url?: string
           slug?: string
           type_name?: string
+          video_local?: string | null
           video_url?: string
         }
         Relationships: []

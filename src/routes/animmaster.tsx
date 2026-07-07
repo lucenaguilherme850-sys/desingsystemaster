@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { PricingSection } from "@/components/animmaster/PricingSection";
+import { FaqSection } from "@/components/animmaster/FaqSection";
 
 type Item = {
   id: string;
@@ -11,6 +13,9 @@ type Item = {
   type_name: string;
   poster_url: string;
   video_url: string;
+  poster_local: string | null;
+  video_local: string | null;
+  mirrored: boolean;
   position: number;
 };
 
@@ -147,6 +152,9 @@ function AnimmasterMirror() {
           </div>
         </div>
       </section>
+
+      <PricingSection />
+      <FaqSection />
     </div>
   );
 }
@@ -167,15 +175,20 @@ function MirrorCard({ item }: { item: Item }) {
     v.currentTime = 0;
   };
 
+  const poster = item.poster_local ?? item.poster_url;
+  const video = item.video_local ?? item.video_url;
+
   return (
-    <article
+    <Link
+      to="/animmaster/$slug"
+      params={{ slug: item.slug }}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
-      className="group overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
+      className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-black">
         <img
-          src={item.poster_url}
+          src={poster}
           alt={item.name}
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-0"
@@ -190,8 +203,13 @@ function MirrorCard({ item }: { item: Item }) {
           loop
           playsInline
           preload="none"
-          src={item.video_url}
+          src={video}
         />
+        {item.mirrored && (
+          <span className="absolute left-2 top-2 rounded-full border border-neon/40 bg-background/70 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-neon backdrop-blur">
+            local
+          </span>
+        )}
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-3">
         <h3 className="truncate text-sm font-semibold">{item.type_name || item.name}</h3>
@@ -199,6 +217,6 @@ function MirrorCard({ item }: { item: Item }) {
           {item.category}
         </span>
       </div>
-    </article>
+    </Link>
   );
 }

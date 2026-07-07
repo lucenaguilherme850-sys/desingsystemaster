@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { CursorGlow } from "@/components/fx/CursorGlow";
+import { SiteFooter } from "@/components/SiteFooter";
 
 function NotFoundComponent() {
   return (
@@ -151,6 +152,7 @@ function RootComponent() {
         <main className="relative z-10 flex-1">
           <Outlet />
         </main>
+        <SiteFooter />
       </div>
       <Toaster theme="dark" />
     </QueryClientProvider>
