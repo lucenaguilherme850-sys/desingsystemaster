@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PricingSection } from "@/components/animmaster/PricingSection";
 import { FaqSection } from "@/components/animmaster/FaqSection";
-import { isSlugLive } from "@/animfx/registry";
+import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 
 type Item = {
   id: string;
@@ -69,10 +69,19 @@ function AnimmasterMirror() {
   });
 
   const filtered = useMemo(
-    () => (items ?? []).filter((i) =>
-      (cat === "all" || i.category === cat) &&
-      (!onlyLive || isSlugLive(i.slug))
-    ),
+    () => {
+      const list = (items ?? []).filter((i) =>
+        (cat === "all" || i.category === cat) &&
+        (!onlyLive || isSlugLive(i.slug))
+      );
+      // Handcrafted primeiro, depois demais por position
+      return [...list].sort((a, b) => {
+        const ah = isSlugHandcrafted(a.slug) ? 0 : 1;
+        const bh = isSlugHandcrafted(b.slug) ? 0 : 1;
+        if (ah !== bh) return ah - bh;
+        return a.position - b.position;
+      });
+    },
     [items, cat, onlyLive],
   );
 
@@ -114,6 +123,10 @@ function AnimmasterMirror() {
               <span>● só efeitos ao vivo</span>
               <span className="font-mono text-[10px]">{(items ?? []).filter((i) => isSlugLive(i.slug)).length}</span>
             </button>
+            <div className="mb-3 rounded-lg border border-border/60 bg-card/40 p-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              <div className="flex items-center gap-2"><span className="inline-block h-2 w-2 rounded-full bg-[#ff00c8] shadow-[0_0_8px_#ff00c8]" /> handcrafted ({(items ?? []).filter((i) => isSlugHandcrafted(i.slug)).length})</div>
+              <div className="mt-1 flex items-center gap-2"><span className="inline-block h-2 w-2 rounded-full bg-neon" /> template</div>
+            </div>
             <div className="flex flex-col gap-1.5">
               {CATEGORIES.map((c) => {
                 const active = cat === c.slug;
@@ -227,14 +240,21 @@ function MirrorCard({ item }: { item: Item }) {
             local
           </span>
         )}
-        {isSlugLive(item.slug) && (
+        {isSlugHandcrafted(item.slug) ? (
+          <span className="absolute right-2 top-2 rounded-full border border-[#ff00c8] bg-[#ff00c8] px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-black shadow-[0_0_16px_#ff00c8aa]">
+            ● handcrafted
+          </span>
+        ) : isSlugLive(item.slug) ? (
           <span className="absolute right-2 top-2 rounded-full border border-neon bg-neon px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-background shadow-[0_0_16px_oklch(0.82_0.17_225/60%)]">
             ● live
           </span>
-        )}
+        ) : null}
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-3">
-        <h3 className="truncate text-sm font-semibold">{item.type_name || item.name}</h3>
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-semibold">{item.type_name || item.name}</h3>
+          <div className="truncate font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{item.slug}</div>
+        </div>
         <span className="shrink-0 rounded-full border border-neon/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-neon">
           {item.category}
         </span>
