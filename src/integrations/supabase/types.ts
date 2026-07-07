@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      animmaster_items: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+          position: number
+          poster_url: string
+          slug: string
+          type_name: string
+          video_url: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          poster_url?: string
+          slug: string
+          type_name?: string
+          video_url?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          poster_url?: string
+          slug?: string
+          type_name?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           accessibility: string
