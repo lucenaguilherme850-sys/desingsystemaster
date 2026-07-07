@@ -11,13 +11,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 function buildPrompt(asset: Asset): string {
-  const parts = [
-    `Build a React + Tailwind component called "${asset.name}" — ${asset.category}.`,
+  const src = getDemoSource(asset.demo_component);
+  const intro = [
+    `Recreate this React + Tailwind effect: "${asset.name}" (${asset.category}).`,
     asset.short_description && `Effect: ${asset.short_description}`,
     asset.objective && `Goal: ${asset.objective}`,
     asset.how_it_works && `How it works: ${asset.how_it_works}`,
-  ].filter(Boolean);
-  return parts.join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
+  if (!src) return intro;
+  return `${intro}\n\nReference implementation (React + Tailwind, self-contained):\n\n\`\`\`tsx\n${src}\n\`\`\``;
 }
 
 export const Route = createFileRoute("/assets/$slug")({
