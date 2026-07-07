@@ -15,10 +15,10 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#top" className="hover:text-foreground transition-colors">Scroll to top</a>
-          <a href="#components" className="hover:text-foreground transition-colors">Components</a>
-          <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
-          <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+          <Link to="/" className="hover:text-foreground transition-colors">Effects</Link>
+          <Link to="/animmaster" className="hover:text-foreground transition-colors">
+            Animmaster <span className="text-neon">280</span>
+          </Link>
         </nav>
 
         <a
