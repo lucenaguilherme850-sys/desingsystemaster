@@ -19,6 +19,7 @@ export const mirrorAnimmasterAsset = createServerFn({ method: "POST" })
     if (!row) throw new Error("not found");
 
     async function ensureUpload(remote: string, ext: string, kind: "poster" | "video") {
+      if (!remote) return null;
       const path = `${kind}/${row!.slug}.${ext}`;
       // list to check existence
       const { data: existing } = await supabaseAdmin.storage
@@ -27,7 +28,11 @@ export const mirrorAnimmasterAsset = createServerFn({ method: "POST" })
       const hit = existing?.some((f) => f.name === `${row!.slug}.${ext}`);
       if (!hit) {
         const res = await fetch(remote);
-        if (!res.ok) throw new Error(`fetch ${kind} ${res.status}`);
+        if (!res.ok) {
+          // upstream asset missing — fall back to the remote URL instead of failing
+          console.warn(`[mirror] fetch ${kind} ${res.status} for ${remote}`);
+          return remote;
+        }
         const buf = new Uint8Array(await res.arrayBuffer());
         const contentType =
           kind === "poster" ? "image/webp" : "video/webm";
@@ -46,11 +51,13 @@ export const mirrorAnimmasterAsset = createServerFn({ method: "POST" })
     let posterLocal = row.poster_local;
     let videoLocal = row.video_local;
     if (!row.mirrored || !posterLocal || !videoLocal) {
-      posterLocal = await ensureUpload(row.poster_url, "webp", "poster");
-      videoLocal = await ensureUpload(row.video_url, "webm", "video");
+      posterLocal = (await ensureUpload(row.poster_url, "webp", "poster")) ?? row.poster_url;
+      videoLocal = (await ensureUpload(row.video_url, "webm", "video")) ?? row.video_url;
+      const fullyMirrored =
+        posterLocal !== row.poster_url && videoLocal !== row.video_url;
       await supabaseAdmin
         .from("animmaster_items")
-        .update({ poster_local: posterLocal, video_local: videoLocal, mirrored: true })
+        .update({ poster_local: posterLocal, video_local: videoLocal, mirrored: fullyMirrored })
         .eq("id", row.id);
     }
 
