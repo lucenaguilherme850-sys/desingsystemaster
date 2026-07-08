@@ -3,20 +3,36 @@ import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
-  const header = `Quero adicionar o componente animado "${name}" (slug \`${slug}\`) da minha galeria Animmaster ao meu app.
+  const fileList = files.map((f) => `- src/${f.path}`).join("\n");
+  const header = `TAREFA: Instalar um componente React de animação PRONTO no meu projeto (React 18 + Tailwind + TypeScript).
 
-Antes de instalar, me pergunte:
-1. Em qual rota / página devo montar este componente? (ex: /, /landing, um bloco dentro de uma página existente)
-2. Devo criar uma nova página só para ele ou embutir dentro de uma seção existente?
-3. Precisa adaptar cores, textos ou tamanhos ao design atual do meu app?
+IMPORTANTE — LEIA ANTES DE FAZER QUALQUER COISA:
+- Este prompt NÃO é um pedido de texto, descrição ou explicação.
+- Este prompt NÃO pede que você "escreva sobre" um efeito ou "gere um exemplo".
+- Abaixo há CÓDIGO-FONTE REAL de um componente animado chamado "${name}" (slug: ${slug}).
+- Sua tarefa é CRIAR OS ARQUIVOS listados abaixo com o conteúdo EXATO fornecido (copiar e colar, verbatim, caractere por caractere). Não reescreva, não resuma, não "melhore", não traduza, não substitua por um placeholder.
+- Depois de criar os arquivos, instale automaticamente qualquer dependência npm que faltar e importe o componente na página que o usuário indicar.
 
-Depois de eu responder, crie os arquivos EXATAMENTE como abaixo (mesmos caminhos), instale dependências ausentes se necessário e importe/monte o componente no lugar combinado. Não invente variações — copie o código verbatim.
+ANTES DE CRIAR OS ARQUIVOS, PERGUNTE AO USUÁRIO (uma pergunta por vez):
+1. Em qual rota/página devo montar o componente "${name}"? (ex: /, /landing, dentro de uma seção existente, ou uma nova página dedicada)
+2. Ele deve ocupar a tela toda, ser uma seção dentro de uma página existente, ou substituir algum bloco atual?
+3. Precisa adaptar cores/textos/tamanhos ao design system atual, ou usar o visual original do componente?
 
-──────────────── ARQUIVOS ────────────────`;
+DEPOIS que o usuário responder, você DEVE:
+a) Criar exatamente estes arquivos com o conteúdo verbatim mostrado adiante:
+${fileList}
+b) Rodar \`npm install\` (ou equivalente) para quaisquer dependências não presentes.
+c) Importar o componente default do primeiro arquivo (\`src/${files[0]?.path.replace(/\.(tsx|ts)$/, "")}\`) e montá-lo no local combinado.
+d) NÃO gerar variações, NÃO gerar apenas um trecho, NÃO responder apenas com texto explicativo. O resultado esperado é código funcional rodando no preview.
+
+──────────────── ARQUIVOS (conteúdo verbatim) ────────────────`;
   const body = files
-    .map((f) => `\n\n// FILE: src/${f.path}\n\`\`\`tsx\n${f.content}\n\`\`\``)
+    .map(
+      (f) =>
+        `\n\n// ===== FILE: src/${f.path} =====\n\`\`\`tsx\n${f.content}\n\`\`\``,
+    )
     .join("");
-  return header + body;
+  return header + body + `\n\n──────────────── FIM ────────────────\nLembrete final: crie os arquivos acima com o conteúdo EXATO. Não descreva o efeito — instale-o.`;
 }
 
 export default function FxSourceViewer({ slug, name }: { slug: string; name: string }) {
