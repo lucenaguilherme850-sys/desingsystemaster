@@ -84,12 +84,38 @@ export default function FxSourceViewer({ slug, name }: { slug: string; name: str
   const file = info.files[active];
 
   const copy = async (text: string, kind: "code" | "prompt") => {
+    let ok = false;
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      }
+    } catch {
+      ok = false;
+    }
+    if (!ok) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.top = "0";
+        ta.style.left = "0";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch {
+        ok = false;
+      }
+    }
+    if (ok) {
       setCopied(kind);
       setTimeout(() => setCopied(null), 1600);
-    } catch {
-      /* ignore */
+    } else {
+      window.prompt("Copie manualmente (Ctrl/Cmd+C):", text);
     }
   };
 
