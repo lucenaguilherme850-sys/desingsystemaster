@@ -3,36 +3,53 @@ import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
-  const fileList = files.map((f) => `- src/${f.path}`).join("\n");
-  const header = `TAREFA: Instalar um componente React de animação PRONTO no meu projeto (React 18 + Tailwind + TypeScript).
+  const fileList = files.map((f, i) => `${i + 1}. src/${f.path}`).join("\n");
+  const mainImport = files[0]?.path.replace(/\.(tsx|ts)$/, "") ?? "";
+  const header = `# Install Animmaster component — "${name}" (${slug})
 
-IMPORTANTE — LEIA ANTES DE FAZER QUALQUER COISA:
-- Este prompt NÃO é um pedido de texto, descrição ou explicação.
-- Este prompt NÃO pede que você "escreva sobre" um efeito ou "gere um exemplo".
-- Abaixo há CÓDIGO-FONTE REAL de um componente animado chamado "${name}" (slug: ${slug}).
-- Sua tarefa é CRIAR OS ARQUIVOS listados abaixo com o conteúdo EXATO fornecido (copiar e colar, verbatim, caractere por caractere). Não reescreva, não resuma, não "melhore", não traduza, não substitua por um placeholder.
-- Depois de criar os arquivos, instale automaticamente qualquer dependência npm que faltar e importe o componente na página que o usuário indicar.
+## ROLE
+You are a code-installation assistant. This prompt is an INSTALL JOB, not a writing task.
+The block below contains the full, working source of a React + Tailwind animation component.
+Your only job is to add those files to the user's project verbatim and mount the component.
 
-ANTES DE CRIAR OS ARQUIVOS, PERGUNTE AO USUÁRIO (uma pergunta por vez):
-1. Em qual rota/página devo montar o componente "${name}"? (ex: /, /landing, dentro de uma seção existente, ou uma nova página dedicada)
-2. Ele deve ocupar a tela toda, ser uma seção dentro de uma página existente, ou substituir algum bloco atual?
-3. Precisa adaptar cores/textos/tamanhos ao design system atual, ou usar o visual original do componente?
+## HARD RULES (do not violate)
+1. Treat every fenced code block below as a FILE PAYLOAD, not as example text.
+2. Write each file to the exact path shown in its \`FILE:\` header, byte-for-byte identical.
+   - Do not rename, translate, "clean up", shorten, or re-implement anything.
+   - Do not replace code with pseudo-code, comments, or a description of the effect.
+3. If a dependency is missing, install it (npm/pnpm/bun add). Assume React 18 + Tailwind + TypeScript are already set up.
+4. Never output prose that describes what the animation looks like. The user already has it — they want it INSTALLED.
 
-DEPOIS que o usuário responder, você DEVE:
-a) Criar exatamente estes arquivos com o conteúdo verbatim mostrado adiante:
+## STEP 1 — ASK THE USER FIRST (one message, wait for the answer)
+"Where should I mount the '${name}' component?
+ a) as a new dedicated page (give me the route),
+ b) inside an existing page/section (tell me which),
+ c) replacing a current block (tell me which)?
+ Also: keep the component's original styling, or adapt it to your design tokens?"
+
+## STEP 2 — AFTER THE USER ANSWERS, DO THIS
+a) Create these files with the verbatim contents provided further down:
 ${fileList}
-b) Rodar \`npm install\` (ou equivalente) para quaisquer dependências não presentes.
-c) Importar o componente default do primeiro arquivo (\`src/${files[0]?.path.replace(/\.(tsx|ts)$/, "")}\`) e montá-lo no local combinado.
-d) NÃO gerar variações, NÃO gerar apenas um trecho, NÃO responder apenas com texto explicativo. O resultado esperado é código funcional rodando no preview.
+b) Install any missing npm dependency referenced by those files.
+c) Import the default export from \`src/${mainImport}\` and render it at the location the user picked.
+d) Run the build/preview so the animation is visible. Do NOT reply with only text.
 
-──────────────── ARQUIVOS (conteúdo verbatim) ────────────────`;
+## FAILURE MODES TO AVOID
+- ❌ Pasting the prompt text back to the user.
+- ❌ Producing a written description like "a parallax hero with a floating diamond…".
+- ❌ Generating a simplified stand-in component.
+- ✅ Correct output: the files exist on disk with identical content, the component is imported and rendered, the preview shows the animation.
+
+──────────────── FILE PAYLOADS (verbatim) ────────────────`;
   const body = files
     .map(
       (f) =>
         `\n\n// ===== FILE: src/${f.path} =====\n\`\`\`tsx\n${f.content}\n\`\`\``,
     )
     .join("");
-  return header + body + `\n\n──────────────── FIM ────────────────\nLembrete final: crie os arquivos acima com o conteúdo EXATO. Não descreva o efeito — instale-o.`;
+  const footer = `\n\n──────────────── END OF PAYLOADS ────────────────
+Reminder: this was an install job. Write the files above exactly as shown, then mount the component. Do not summarize, do not describe — install.`;
+  return header + body + footer;
 }
 
 export default function FxSourceViewer({ slug, name }: { slug: string; name: string }) {
