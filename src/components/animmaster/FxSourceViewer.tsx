@@ -3,63 +3,67 @@ import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
-  const fileList = files.map((f, i) => `${i + 1}. src/${f.path}`).join("\n");
-  const mainImport = files[0]?.path.replace(/\.(tsx|ts)$/, "") ?? "";
   const previewUrl = `https://animmaster.lovable.app/animmaster/${slug}`;
-  const header = `# Install Animmaster component — "${name}" (${slug})
+  const header = `# Recriar efeito Animmaster — "${name}" (${slug})
 
-## ROLE
-You are a code-installation assistant. This prompt is an INSTALL JOB, not a writing task.
-The block below contains the full, working source of a React + Tailwind animation component
-exactly as it renders on the live Animmaster preview: ${previewUrl}
-Your only job is to add those files to the user's project verbatim and mount the component
-so the result is visually identical to that preview.
+## OBJETIVO
+Recrie no MEU projeto o **mesmo efeito visual e de interação** demonstrado nesta prévia:
+${previewUrl}
 
-## HARD RULES (do not violate)
-1. Treat every fenced code block below as a FILE PAYLOAD, not as example text.
-2. Write each file to the exact path shown in its \`FILE:\` header, byte-for-byte identical.
-   - Do not rename, translate, "clean up", shorten, or re-implement anything.
-   - Do not replace code with pseudo-code, comments, or a description of the effect.
-3. Preserve ALL demo content exactly: sample copy (e.g. "NATURAL GARMENTS…"), image URLs,
-   array items, colors, class names, timings, easings. That content IS the demo —
-   it is what makes the installed component match the preview. Do not swap in
-   lorem ipsum, placeholder images, your own copy, or "improved" values.
-4. If a dependency is missing, install it (npm/pnpm/bun add). Assume React 18 + Tailwind + TypeScript are already set up.
-5. Never output prose that describes what the animation looks like. The user already has it — they want it INSTALLED.
+O que importa é o EFEITO (o tipo de animação, a mecânica, o timing, a "sensação"),
+não o conteúdo específico da demo. Você vai adaptar cores, tipografia, cópia,
+imagens e estrutura ao design system e ao conteúdo do meu projeto atual.
 
-## STEP 1 — ASK THE USER FIRST (one message, wait for the answer)
-"Where should I mount the '${name}' component?
- a) as a new dedicated page (give me the route),
- b) inside an existing page/section (tell me which),
- c) replacing a current block (tell me which)?
- Also: keep the component's original styling and demo content (recommended — matches ${previewUrl}),
- or adapt colors/copy to your design tokens later?"
+## COMO VOCÊ DEVE AGIR
+1. Abra a URL acima e observe o efeito com atenção: tipo (3D, scroll, hover, texto,
+   webgl, menu, transição, física, etc.), mecânica (o que dispara, o que se move,
+   easing, duração), camadas envolvidas (canvas/DOM/SVG), dependências prováveis
+   (framer-motion, three.js, gsap, lenis, etc.).
+2. Antes de escrever qualquer código, me faça 2 a 4 **perguntas estratégicas** para
+   adaptar o efeito ao meu projeto. Exemplos do que perguntar:
+   - Em qual página/rota você quer aplicar? (nova rota ou dentro de uma existente?)
+   - Que conteúdo real deve entrar (títulos, textos, imagens, produtos, seções)?
+   - Deve usar os tokens de cor / fonte / spacing atuais do meu projeto (recomendado)
+     ou uma paleta separada só para essa seção?
+   - Preferência de intensidade (sutil / médio / intenso)?
+   - Precisa ser responsivo mobile também, ou desktop-only?
+   - Alguma restrição de performance / acessibilidade (prefers-reduced-motion, etc.)?
+3. Depois que eu responder, implemente o efeito **de forma nativa ao meu projeto**:
+   - Use meus tokens semânticos (bg-background, text-foreground, bg-primary…) — nunca
+     hard-code cores da demo original.
+   - Use minha tipografia e meu conteúdo real, não a cópia da demo (nada de
+     "NATURAL GARMENTS…", "Lorem ipsum", ou textos da prévia).
+   - Instale as libs necessárias (framer-motion, three, gsap etc.) se ainda não
+     estiverem no projeto.
+   - Componentize dentro da minha estrutura (src/components/... ou onde fizer sentido).
+   - Respeite prefers-reduced-motion e mobile.
+4. Entregue o efeito rodando na página que eu indicar, revisando que o
+   COMPORTAMENTO bate com o da prévia (${previewUrl}) mesmo que o visual/cores/copy
+   sejam diferentes.
 
-## STEP 2 — AFTER THE USER ANSWERS, DO THIS
-a) Create these files with the verbatim contents provided further down:
-${fileList}
-b) Install any missing npm dependency referenced by those files.
-c) Import the default export from \`src/${mainImport}\` and render it at the location the user picked.
-d) Run the build/preview. The rendered output MUST match ${previewUrl} — same layout,
-   same demo text, same images, same motion. If it doesn't, you edited the payload; re-paste it verbatim.
+## O QUE NÃO FAZER
+- ❌ Copiar textos, imagens, cores, classes ou paleta da demo original.
+- ❌ Recriar o layout exato da prévia — o que interessa é o efeito, não a página demo.
+- ❌ Começar a codar antes de me fazer as perguntas estratégicas.
+- ❌ Devolver só uma descrição escrita do efeito. Precisa entregar código funcionando.
+- ❌ Ignorar meu design system e injetar cores/fontes novas sem me perguntar.
 
-## FAILURE MODES TO AVOID
-- ❌ Pasting the prompt text back to the user.
-- ❌ Producing a written description like "a parallax hero with a floating diamond…".
-- ❌ Generating a simplified stand-in component.
-- ❌ Replacing the demo copy/images/arrays with your own content.
-- ❌ Rewriting Tailwind classes "to match the user's theme" before install.
-- ✅ Correct output: files on disk are byte-identical to the payloads, the component is imported and rendered, and the preview looks the same as ${previewUrl}.
+## REFERÊNCIA TÉCNICA (apenas inspiração, NÃO copie 1:1)
+Abaixo vai o código-fonte do componente exatamente como ele existe no projeto
+Animmaster. Use como **referência de mecânica** (que libs, que hooks, que
+matemática de animação, que estrutura de camadas). Reescreva adaptado ao meu
+projeto — não cole verbatim, não mantenha a cópia/paleta/imagens da demo.
 
-──────────────── FILE PAYLOADS (verbatim) ────────────────`;
+──────────────── REFERÊNCIA (não copiar literalmente) ────────────────`;
   const body = files
     .map(
       (f) =>
-        `\n\n// ===== FILE: src/${f.path} =====\n\`\`\`tsx\n${f.content}\n\`\`\``,
+        `\n\n// ----- ref: src/${f.path} -----\n\`\`\`tsx\n${f.content}\n\`\`\``,
     )
     .join("");
-  const footer = `\n\n──────────────── END OF PAYLOADS ────────────────
-Reminder: this was an install job. Write the files above exactly as shown, then mount the component. Do not summarize, do not describe — install.`;
+  const footer = `\n\n──────────────── FIM DA REFERÊNCIA ────────────────
+Lembrete: entregue o MESMO EFEITO da prévia (${previewUrl}) adaptado ao meu design
+system e conteúdo. Faça as perguntas estratégicas primeiro, depois implemente.`;
   return header + body + footer;
 }
 
