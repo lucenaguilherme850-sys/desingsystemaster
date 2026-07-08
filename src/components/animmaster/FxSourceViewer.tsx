@@ -5,40 +5,51 @@ import { getFxSourceForSlug } from "@/lib/animfx-source";
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
   const fileList = files.map((f, i) => `${i + 1}. src/${f.path}`).join("\n");
   const mainImport = files[0]?.path.replace(/\.(tsx|ts)$/, "") ?? "";
+  const previewUrl = `https://animmaster.lovable.app/animmaster/${slug}`;
   const header = `# Install Animmaster component — "${name}" (${slug})
 
 ## ROLE
 You are a code-installation assistant. This prompt is an INSTALL JOB, not a writing task.
-The block below contains the full, working source of a React + Tailwind animation component.
-Your only job is to add those files to the user's project verbatim and mount the component.
+The block below contains the full, working source of a React + Tailwind animation component
+exactly as it renders on the live Animmaster preview: ${previewUrl}
+Your only job is to add those files to the user's project verbatim and mount the component
+so the result is visually identical to that preview.
 
 ## HARD RULES (do not violate)
 1. Treat every fenced code block below as a FILE PAYLOAD, not as example text.
 2. Write each file to the exact path shown in its \`FILE:\` header, byte-for-byte identical.
    - Do not rename, translate, "clean up", shorten, or re-implement anything.
    - Do not replace code with pseudo-code, comments, or a description of the effect.
-3. If a dependency is missing, install it (npm/pnpm/bun add). Assume React 18 + Tailwind + TypeScript are already set up.
-4. Never output prose that describes what the animation looks like. The user already has it — they want it INSTALLED.
+3. Preserve ALL demo content exactly: sample copy (e.g. "NATURAL GARMENTS…"), image URLs,
+   array items, colors, class names, timings, easings. That content IS the demo —
+   it is what makes the installed component match the preview. Do not swap in
+   lorem ipsum, placeholder images, your own copy, or "improved" values.
+4. If a dependency is missing, install it (npm/pnpm/bun add). Assume React 18 + Tailwind + TypeScript are already set up.
+5. Never output prose that describes what the animation looks like. The user already has it — they want it INSTALLED.
 
 ## STEP 1 — ASK THE USER FIRST (one message, wait for the answer)
 "Where should I mount the '${name}' component?
  a) as a new dedicated page (give me the route),
  b) inside an existing page/section (tell me which),
  c) replacing a current block (tell me which)?
- Also: keep the component's original styling, or adapt it to your design tokens?"
+ Also: keep the component's original styling and demo content (recommended — matches ${previewUrl}),
+ or adapt colors/copy to your design tokens later?"
 
 ## STEP 2 — AFTER THE USER ANSWERS, DO THIS
 a) Create these files with the verbatim contents provided further down:
 ${fileList}
 b) Install any missing npm dependency referenced by those files.
 c) Import the default export from \`src/${mainImport}\` and render it at the location the user picked.
-d) Run the build/preview so the animation is visible. Do NOT reply with only text.
+d) Run the build/preview. The rendered output MUST match ${previewUrl} — same layout,
+   same demo text, same images, same motion. If it doesn't, you edited the payload; re-paste it verbatim.
 
 ## FAILURE MODES TO AVOID
 - ❌ Pasting the prompt text back to the user.
 - ❌ Producing a written description like "a parallax hero with a floating diamond…".
 - ❌ Generating a simplified stand-in component.
-- ✅ Correct output: the files exist on disk with identical content, the component is imported and rendered, the preview shows the animation.
+- ❌ Replacing the demo copy/images/arrays with your own content.
+- ❌ Rewriting Tailwind classes "to match the user's theme" before install.
+- ✅ Correct output: files on disk are byte-identical to the payloads, the component is imported and rendered, and the preview looks the same as ${previewUrl}.
 
 ──────────────── FILE PAYLOADS (verbatim) ────────────────`;
   const body = files
