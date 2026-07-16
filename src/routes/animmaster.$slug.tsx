@@ -8,6 +8,7 @@ import { mirrorAnimmasterAsset } from "@/lib/animmaster-mirror.functions";
 import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { hasLiveFx, loadLiveFx } from "@/animfx/registry";
 import FxSourceViewer from "@/components/animmaster/FxSourceViewer";
+import DriveCodeBrowser from "@/components/animmaster/DriveCodeBrowser";
 
 type Item = {
   id: string;
@@ -294,7 +295,11 @@ function AnimmasterDetail() {
             no Lovable — ele vai perguntar em qual página do seu app você quer
             montar antes de instalar.
           </p>
-          <FxSourceViewer slug={item.slug} name={heading} />
+          {item.drive_zip_id ? (
+            <DriveCodeBrowser slug={item.slug} />
+          ) : (
+            <FxSourceViewer slug={item.slug} name={heading} />
+          )}
         </section>
       </div>
     </div>
