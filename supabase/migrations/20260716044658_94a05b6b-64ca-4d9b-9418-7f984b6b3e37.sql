@@ -1,0 +1,1 @@
+DELETE FROM public.animmaster_items WHERE drive_video_id IS NULL;
