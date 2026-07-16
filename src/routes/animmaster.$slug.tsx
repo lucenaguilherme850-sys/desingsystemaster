@@ -5,6 +5,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ExternalLink, Loader2, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mirrorAnimmasterAsset } from "@/lib/animmaster-mirror.functions";
+import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { hasLiveFx, loadLiveFx } from "@/animfx/registry";
 import FxSourceViewer from "@/components/animmaster/FxSourceViewer";
 
@@ -20,6 +21,10 @@ type Item = {
   video_local: string | null;
   mirrored: boolean;
   position: number;
+  drive_video_id: string | null;
+  drive_zip_id: string | null;
+  drive_instruction_id: string | null;
+  instruction_text: string | null;
 };
 
 export const Route = createFileRoute("/animmaster/$slug")({
@@ -39,11 +44,13 @@ function AnimmasterDetail() {
   const { slug } = Route.useParams();
   const router = useRouter();
   const mirror = useServerFn(mirrorAnimmasterAsset);
+  const mirrorDrive = useServerFn(mirrorAnimmasterDrive);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mirrorState, setMirrorState] = useState<
     { poster: string; video: string } | null
   >(null);
   const [mirroring, setMirroring] = useState(false);
+  const [drive, setDrive] = useState<{ video: string | null; zipUrl: string | null; instruction: string | null } | null>(null);
 
   const { data: item, isLoading } = useQuery({
     queryKey: ["animmaster-item", slug],
@@ -76,6 +83,17 @@ function AnimmasterDetail() {
   // Trigger mirroring on mount
   useEffect(() => {
     if (!item) return;
+    if (item.drive_video_id || item.drive_zip_id) {
+      setMirroring(true);
+      mirrorDrive({ data: { slug: item.slug } })
+        .then((r) => {
+          setDrive(r);
+          if (r.video) setMirrorState({ poster: item.poster_url, video: r.video });
+        })
+        .catch((e) => console.error("drive mirror failed", e))
+        .finally(() => setMirroring(false));
+      return;
+    }
     if (item.mirrored && item.poster_local && item.video_local) {
       setMirrorState({ poster: item.poster_local, video: item.video_local });
       return;
@@ -85,7 +103,7 @@ function AnimmasterDetail() {
       .then((r) => setMirrorState(r))
       .catch((e) => console.error("mirror failed", e))
       .finally(() => setMirroring(false));
-  }, [item, mirror]);
+  }, [item, mirror, mirrorDrive]);
 
   const posterSrc = mirrorState?.poster ?? item?.poster_url;
   const videoSrc = mirrorState?.video ?? item?.video_url;
@@ -217,6 +235,25 @@ function AnimmasterDetail() {
             >
               vídeo original <ExternalLink className="size-3" />
             </a>
+
+            {drive?.zipUrl && (
+              <a
+                href={drive.zipUrl}
+                className="inline-flex items-center gap-2 rounded-full border border-neon/60 bg-neon/10 px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-neon transition-colors hover:bg-neon hover:text-background"
+              >
+                baixar code.zip <ExternalLink className="size-3" />
+              </a>
+            )}
+            {drive?.instruction && (
+              <div className="rounded-xl border border-border bg-card/60 p-4">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  instruções do autor
+                </div>
+                <pre className="mt-2 whitespace-pre-wrap font-mono text-xs text-foreground">
+                  {drive.instruction}
+                </pre>
+              </div>
+            )}
           </aside>
         </div>
 

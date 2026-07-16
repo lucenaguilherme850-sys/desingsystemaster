@@ -18,7 +18,12 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          drive_folder_id: string | null
+          drive_instruction_id: string | null
+          drive_video_id: string | null
+          drive_zip_id: string | null
           id: string
+          instruction_text: string | null
           mirrored: boolean
           name: string
           position: number
@@ -32,7 +37,12 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
+          drive_folder_id?: string | null
+          drive_instruction_id?: string | null
+          drive_video_id?: string | null
+          drive_zip_id?: string | null
           id?: string
+          instruction_text?: string | null
           mirrored?: boolean
           name: string
           position?: number
@@ -46,7 +56,12 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          drive_folder_id?: string | null
+          drive_instruction_id?: string | null
+          drive_video_id?: string | null
+          drive_zip_id?: string | null
           id?: string
+          instruction_text?: string | null
           mirrored?: boolean
           name?: string
           position?: number
