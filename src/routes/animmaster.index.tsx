@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { PricingSection } from "@/components/animmaster/PricingSection";
 import { FaqSection } from "@/components/animmaster/FaqSection";
@@ -18,6 +20,7 @@ type Item = {
   video_local: string | null;
   mirrored: boolean;
   position: number;
+  drive_video_id: string | null;
 };
 
 const CATEGORIES: { slug: string; label: string }[] = [
