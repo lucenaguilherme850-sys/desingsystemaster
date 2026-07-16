@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -205,27 +205,62 @@ function LibraryIndex() {
 
 function MirrorCard({ item }: { item: Item }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const rootRef = useRef<HTMLAnchorElement>(null);
   const mirror = useServerFn(mirrorAnimmasterDrive);
   const [videoUrl, setVideoUrl] = useState<string | null>(
     item.video_local ?? (item.video_url || null),
   );
   const triedRef = useRef(false);
+  const hoveringRef = useRef(false);
+
+  const ensureMirrored = () => {
+    if (videoUrl || !item.drive_video_id || triedRef.current) return;
+    triedRef.current = true;
+    mirror({ data: { slug: item.slug } })
+      .then((r) => {
+        if (r?.video) {
+          setVideoUrl(r.video);
+          if (hoveringRef.current) {
+            requestAnimationFrame(() => {
+              const v = videoRef.current;
+              if (v) void v.play().catch(() => undefined);
+            });
+          }
+        }
+      })
+      .catch(() => undefined);
+  };
+
+  useEffect(() => {
+    if (!rootRef.current || videoUrl) return;
+    const el = rootRef.current;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            ensureMirrored();
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: "400px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEnter = () => {
-    if (!videoUrl && item.drive_video_id && !triedRef.current) {
-      triedRef.current = true;
-      mirror({ data: { slug: item.slug } })
-        .then((r) => {
-          if (r?.video) setVideoUrl(r.video);
-        })
-        .catch(() => undefined);
-    }
+    hoveringRef.current = true;
+    ensureMirrored();
     const v = videoRef.current;
     if (!v) return;
     v.currentTime = 0;
     void v.play().catch(() => undefined);
   };
   const handleLeave = () => {
+    hoveringRef.current = false;
     const v = videoRef.current;
     if (!v) return;
     v.pause();
@@ -240,6 +275,7 @@ function MirrorCard({ item }: { item: Item }) {
 
   return (
     <Link
+      ref={rootRef}
       to="/animmaster/$slug"
       params={{ slug: item.slug }}
       onMouseEnter={handleEnter}
