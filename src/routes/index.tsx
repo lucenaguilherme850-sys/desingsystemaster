@@ -191,7 +191,7 @@ function MirrorCard({ item }: { item: Item }) {
             src={poster}
             alt={item.name}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+            className="absolute inset-0 h-full w-full object-cover"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
             }}
@@ -200,14 +200,25 @@ function MirrorCard({ item }: { item: Item }) {
         {video && (
           <video
             ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="absolute inset-0 h-full w-full object-cover"
             muted
             loop
             playsInline
-            preload="none"
+            autoPlay
+            preload="metadata"
+            poster={poster ?? undefined}
             src={video}
           />
         )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3">
+          <h3 className="truncate text-base font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+            {item.type_name || item.name}
+          </h3>
+          <div className="truncate font-mono text-[10px] uppercase tracking-widest text-white/80">
+            {item.slug}
+          </div>
+        </div>
         {isSlugHandcrafted(item.slug) ? (
           <span className="absolute right-2 top-2 rounded-full border border-[#ff00c8] bg-[#ff00c8] px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-black shadow-[0_0_16px_#ff00c8aa]">
             ● handcrafted
