@@ -205,8 +205,21 @@ function LibraryIndex() {
 
 function MirrorCard({ item }: { item: Item }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mirror = useServerFn(mirrorAnimmasterDrive);
+  const [videoUrl, setVideoUrl] = useState<string | null>(
+    item.video_local ?? (item.video_url || null),
+  );
+  const triedRef = useRef(false);
 
   const handleEnter = () => {
+    if (!videoUrl && item.drive_video_id && !triedRef.current) {
+      triedRef.current = true;
+      mirror({ data: { slug: item.slug } })
+        .then((r) => {
+          if (r?.video) setVideoUrl(r.video);
+        })
+        .catch(() => undefined);
+    }
     const v = videoRef.current;
     if (!v) return;
     v.currentTime = 0;
@@ -219,8 +232,11 @@ function MirrorCard({ item }: { item: Item }) {
     v.currentTime = 0;
   };
 
-  const poster = item.poster_local ?? item.poster_url;
-  const video = item.video_local ?? item.video_url;
+  const drivePoster = item.drive_video_id
+    ? `https://drive.google.com/thumbnail?id=${item.drive_video_id}&sz=w1000`
+    : null;
+  const poster = item.poster_local || item.poster_url || drivePoster;
+  const video = videoUrl;
 
   return (
     <Link
@@ -231,17 +247,17 @@ function MirrorCard({ item }: { item: Item }) {
       className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-black">
-        {poster && (
+        {poster ? (
           <img
             src={poster}
             alt={item.name}
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+              (e.currentTarget as HTMLImageElement).style.display = "none";
             }}
           />
-        )}
+        ) : null}
         {video && (
           <video
             ref={videoRef}
