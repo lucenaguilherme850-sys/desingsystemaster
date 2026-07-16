@@ -1,26 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
 import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
+import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
 
-type Item = {
-  id: string;
-  slug: string;
-  category: string;
-  name: string;
-  type_name: string;
-  poster_url: string;
-  video_url: string;
-  poster_local: string | null;
-  video_local: string | null;
-  mirrored: boolean;
-  position: number;
-  drive_video_id: string | null;
-};
+type Item = MirrorItem & { position: number };
 
 const CATEGORIES: { key: string; label: string }[] = [
   { key: "all", label: "Todos" },
@@ -203,138 +189,3 @@ function LibraryIndex() {
   );
 }
 
-function MirrorCard({ item }: { item: Item }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const rootRef = useRef<HTMLAnchorElement>(null);
-  const mirror = useServerFn(mirrorAnimmasterDrive);
-  const [videoUrl, setVideoUrl] = useState<string | null>(
-    item.video_local ?? (item.video_url || null),
-  );
-  const triedRef = useRef(false);
-  const hoveringRef = useRef(false);
-
-  const ensureMirrored = () => {
-    if (videoUrl || !item.drive_video_id || triedRef.current) return;
-    triedRef.current = true;
-    mirror({ data: { slug: item.slug } })
-      .then((r) => {
-        if (r?.video) {
-          setVideoUrl(r.video);
-          if (hoveringRef.current) {
-            requestAnimationFrame(() => {
-              const v = videoRef.current;
-              if (v) void v.play().catch(() => undefined);
-            });
-          }
-        }
-      })
-      .catch(() => undefined);
-  };
-
-  useEffect(() => {
-    if (!rootRef.current || videoUrl) return;
-    const el = rootRef.current;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            ensureMirrored();
-            io.disconnect();
-            break;
-          }
-        }
-      },
-      { rootMargin: "400px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleEnter = () => {
-    hoveringRef.current = true;
-    ensureMirrored();
-    const v = videoRef.current;
-    if (!v) return;
-    v.currentTime = 0;
-    void v.play().catch(() => undefined);
-  };
-  const handleLeave = () => {
-    hoveringRef.current = false;
-    const v = videoRef.current;
-    if (!v) return;
-    v.pause();
-    v.currentTime = 0;
-  };
-
-  const drivePoster = item.drive_video_id
-    ? `https://drive.google.com/thumbnail?id=${item.drive_video_id}&sz=w1000`
-    : null;
-  const poster = item.poster_local || item.poster_url || drivePoster;
-  const video = videoUrl;
-
-  return (
-    <Link
-      ref={rootRef}
-      to="/animmaster/$slug"
-      params={{ slug: item.slug }}
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-      className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-black">
-        {poster ? (
-          <img
-            src={poster}
-            alt={item.name}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
-          />
-        ) : null}
-        {video && (
-          <video
-            ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover"
-            muted
-            loop
-            playsInline
-            autoPlay
-            preload="metadata"
-            poster={poster ?? undefined}
-            src={video}
-          />
-        )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3">
-          <h3 className="truncate text-base font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-            {item.type_name || item.name}
-          </h3>
-          <div className="truncate font-mono text-[10px] uppercase tracking-widest text-white/80">
-            {item.slug}
-          </div>
-        </div>
-        {isSlugHandcrafted(item.slug) ? (
-          <span className="absolute right-2 top-2 rounded-full border border-[#ff00c8] bg-[#ff00c8] px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-black shadow-[0_0_16px_#ff00c8aa]">
-            ● handcrafted
-          </span>
-        ) : isSlugLive(item.slug) ? (
-          <span className="absolute right-2 top-2 rounded-full border border-neon bg-neon px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-background shadow-[0_0_16px_oklch(0.82_0.17_225/60%)]">
-            ● live
-          </span>
-        ) : null}
-      </div>
-      <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-sm font-semibold">{item.type_name || item.name}</h3>
-          <div className="truncate font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{item.slug}</div>
-        </div>
-        <span className="shrink-0 rounded-full border border-neon/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-neon">
-          {item.category}
-        </span>
-      </div>
-    </Link>
-  );
-}
