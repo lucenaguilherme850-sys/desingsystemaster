@@ -1,58 +1,77 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Asset } from "@/lib/asset-types";
-import { ASSET_CATEGORIES } from "@/lib/asset-types";
-import { ArrowUpRight, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
 import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
-import { getDemoSource } from "@/lib/demo-source";
-import { Copy, Check } from "lucide-react";
-import { toast } from "sonner";
-import { DemoRenderer } from "@/components/demos";
+import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 
-function buildPrompt(asset: Asset): string {
-  const src = getDemoSource(asset.demo_component);
-  const intro = [
-    `Recreate this React + Tailwind effect: "${asset.name}" (${asset.category}).`,
-    asset.short_description && `Effect: ${asset.short_description}`,
-    asset.how_it_works && `How it works: ${asset.how_it_works}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-  if (!src) return intro;
-  return `${intro}\n\nReference implementation (React + Tailwind, self-contained):\n\n\`\`\`tsx\n${src}\n\`\`\``;
-}
+type Item = {
+  id: string;
+  slug: string;
+  category: string;
+  name: string;
+  type_name: string;
+  poster_url: string;
+  video_url: string;
+  poster_local: string | null;
+  video_local: string | null;
+  mirrored: boolean;
+  position: number;
+};
+
+const CATEGORIES: { slug: string; label: string }[] = [
+  { slug: "all", label: "All" },
+  { slug: "scroll", label: "Scroll" },
+  { slug: "mouseeff", label: "Interaction" },
+  { slug: "navs", label: "Navigation" },
+  { slug: "grids", label: "Layout" },
+  { slug: "sliders", label: "Slider" },
+  { slug: "hero", label: "Hero" },
+  { slug: "webgl", label: "WebGL" },
+  { slug: "bg", label: "Background" },
+  { slug: "hovers", label: "Hover" },
+  { slug: "text", label: "Typography" },
+  { slug: "3d", label: "3D" },
+  { slug: "physics", label: "Physics" },
+  { slug: "svgs", label: "SVG" },
+  { slug: "pagetr", label: "Transition" },
+];
 
 export const Route = createFileRoute("/")({
   component: LibraryIndex,
 });
 
 function LibraryIndex() {
-  const [category, setCategory] = useState<string>("All");
+  const [cat, setCat] = useState<string>("all");
 
-  const { data: assets, isLoading } = useQuery({
-    queryKey: ["assets"],
-    queryFn: async (): Promise<Asset[]> => {
+  const { data: items, isLoading } = useQuery({
+    queryKey: ["animmaster-items"],
+    queryFn: async (): Promise<Item[]> => {
       const { data, error } = await supabase
-        .from("assets")
+        .from("animmaster_items")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("position", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as Asset[];
+      return (data ?? []) as unknown as Item[];
     },
   });
 
-  const filtered = useMemo(
-    () => (assets ?? []).filter((a) => category === "All" || a.category === category),
-    [assets, category],
-  );
+  const filtered = useMemo(() => {
+    const list = (items ?? []).filter((i) => cat === "all" || i.category === cat);
+    return [...list].sort((a, b) => {
+      const ah = isSlugHandcrafted(a.slug) ? 0 : 1;
+      const bh = isSlugHandcrafted(b.slug) ? 0 : 1;
+      if (ah !== bh) return ah - bh;
+      return a.position - b.position;
+    });
+  }, [items, cat]);
 
   const categoriesPresent = useMemo(() => {
     const set = new Set<string>();
-    assets?.forEach((a) => set.add(a.category));
-    return ["All", ...ASSET_CATEGORIES.filter((c) => set.has(c))];
-  }, [assets]);
+    items?.forEach((i) => set.add(i.category));
+    return CATEGORIES.filter((c) => c.slug === "all" || set.has(c.slug));
+  }, [items]);
 
   return (
     <div>
@@ -99,16 +118,16 @@ function LibraryIndex() {
         <div className="flex flex-wrap items-center justify-center gap-2 pb-6">
           {categoriesPresent.map((c) => (
             <button
-              key={c}
-              onClick={() => setCategory(c)}
+              key={c.slug}
+              onClick={() => setCat(c.slug)}
               className={
                 "rounded-full border px-4 py-1.5 text-xs font-medium transition-all " +
-                (category === c
+                (cat === c.slug
                   ? "border-neon bg-neon text-background shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]"
                   : "border-border bg-card/40 text-muted-foreground hover:border-neon/50 hover:text-foreground")
               }
             >
-              {c}
+              {c.label}
             </button>
           ))}
         </div>
@@ -125,12 +144,12 @@ function LibraryIndex() {
         ) : filtered.length === 0 ? (
           <div className="grid place-items-center rounded-xl border border-dashed border-border py-24 text-center">
             <Layers className="size-6 text-muted-foreground" />
-            <p className="mt-3 font-mono text-sm text-muted-foreground">no assets in this category</p>
+            <p className="mt-3 font-mono text-sm text-muted-foreground">no components in this category</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((asset, i) => (
-              <AssetCard key={asset.id} asset={asset} index={i + 1} />
+            {filtered.map((item) => (
+              <MirrorCard key={item.id} item={item} />
             ))}
           </div>
         )}
@@ -139,99 +158,74 @@ function LibraryIndex() {
   );
 }
 
-function AssetCard({ asset, index }: { asset: Asset; index: number }) {
-  const [copied, setCopied] = useState(false);
-  const [promptCopied, setPromptCopied] = useState(false);
-  const prompt = buildPrompt(asset);
+function MirrorCard({ item }: { item: Item }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const src = getDemoSource(asset.demo_component);
-    if (!src) {
-      toast.error("Fonte do componente indisponível");
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(src);
-      setCopied(true);
-      toast.success(`${asset.demo_component}.tsx copiado`);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      toast.error("Não foi possível copiar");
-    }
+  const handleEnter = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = 0;
+    void v.play().catch(() => undefined);
+  };
+  const handleLeave = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.pause();
+    v.currentTime = 0;
   };
 
-  const handleCopyPrompt = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setPromptCopied(true);
-      toast.success("prompt copiado");
-      setTimeout(() => setPromptCopied(false), 1800);
-    } catch {
-      toast.error("Não foi possível copiar");
-    }
-  };
+  const poster = item.poster_local ?? item.poster_url;
+  const video = item.video_local ?? item.video_url;
 
   return (
     <Link
-      to="/assets/$slug"
-      params={{ slug: asset.slug }}
-      className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card/60 p-5 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
+      to="/animmaster/$slug"
+      params={{ slug: item.slug }}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
-      <div className="pointer-events-none absolute -inset-px opacity-0 transition-opacity group-hover:opacity-100" style={{ background: "radial-gradient(400px circle at 50% 0%, oklch(0.82 0.17 225 / 12%), transparent 60%)" }} />
-      <button
-        type="button"
-        onClick={handleCopy}
-        aria-label={`Copiar ${asset.demo_component}.tsx`}
-        className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-neon/40 bg-background/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neon backdrop-blur transition-all hover:border-neon hover:bg-neon hover:text-background hover:shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]"
-      >
-        {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
-        {copied ? "copiado" : "copiar .tsx"}
-      </button>
-      {/* Preview real do demo — escalado para caber no card, sem capturar cliques */}
-      <div className="relative -mx-1 -mt-1 mb-1 h-56 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-background/80 to-card">
-        <div
-          className="pointer-events-none absolute left-0 top-0 origin-top-left"
-          style={{ width: "200%", height: "200%", transform: "scale(0.5)" }}
-          aria-hidden="true"
-        >
-          <DemoRenderer name={asset.demo_component} />
-        </div>
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
+      <div className="relative aspect-[4/3] overflow-hidden bg-black">
+        {poster && (
+          <img
+            src={poster}
+            alt={item.name}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+            }}
+          />
+        )}
+        {video && (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            muted
+            loop
+            playsInline
+            preload="none"
+            src={video}
+          />
+        )}
+        {isSlugHandcrafted(item.slug) ? (
+          <span className="absolute right-2 top-2 rounded-full border border-[#ff00c8] bg-[#ff00c8] px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-black shadow-[0_0_16px_#ff00c8aa]">
+            ● handcrafted
+          </span>
+        ) : isSlugLive(item.slug) ? (
+          <span className="absolute right-2 top-2 rounded-full border border-neon bg-neon px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-background shadow-[0_0_16px_oklch(0.82_0.17_225/60%)]">
+            ● live
+          </span>
+        ) : null}
       </div>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          <span>{String(index).padStart(2, "0")}</span>
-          <span className="text-border">/</span>
-          <span className="text-neon">{asset.category}</span>
+      <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-3">
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-semibold">{item.type_name || item.name}</h3>
+          <div className="truncate font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{item.slug}</div>
         </div>
-        <ArrowUpRight className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-neon" />
-      </div>
-
-      <div>
-        <h3 className="text-xl font-semibold tracking-tight">{asset.name}</h3>
-
-        {/* Prompt do efeito — visível em cada card */}
-        <div className="mt-3 rounded-lg border border-border/60 bg-background/40 p-3">
-          <div className="mb-1.5 flex items-center justify-between gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-neon">prompt</span>
-            <button
-              type="button"
-              onClick={handleCopyPrompt}
-              aria-label="Copiar prompt"
-              className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-neon hover:text-neon"
-            >
-              {promptCopied ? <Check className="size-2.5" /> : <Copy className="size-2.5" />}
-              {promptCopied ? "ok" : "copy"}
-            </button>
-          </div>
-          <p className="line-clamp-3 whitespace-pre-line font-mono text-[11px] leading-relaxed text-muted-foreground">
-            {prompt}
-          </p>
-        </div>
+        <span className="shrink-0 rounded-full border border-neon/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-neon">
+          {item.category}
+        </span>
       </div>
     </Link>
   );
