@@ -236,15 +236,18 @@ function MirrorCard({ item }: { item: Item }) {
       className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-black">
-        <img
-          src={poster}
-          alt={item.name}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
-          }}
-        />
+        {poster ? (
+          <img
+            src={poster}
+            alt={item.name}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+        ) : null}
+        {video ? (
         <video
           ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover"
@@ -253,9 +256,10 @@ function MirrorCard({ item }: { item: Item }) {
           playsInline
           autoPlay
           preload="metadata"
-          poster={poster}
+          poster={poster ?? undefined}
           src={video}
         />
+        ) : null}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3">
           <h3 className="truncate text-base font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
