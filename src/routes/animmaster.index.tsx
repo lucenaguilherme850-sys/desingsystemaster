@@ -194,8 +194,21 @@ function AnimmasterMirror() {
 
 function MirrorCard({ item }: { item: Item }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mirror = useServerFn(mirrorAnimmasterDrive);
+  const [videoUrl, setVideoUrl] = useState<string | null>(
+    item.video_local ?? (item.video_url || null),
+  );
+  const triedRef = useRef(false);
 
   const handleEnter = () => {
+    if (!videoUrl && item.drive_video_id && !triedRef.current) {
+      triedRef.current = true;
+      mirror({ data: { slug: item.slug } })
+        .then((r) => {
+          if (r?.video) setVideoUrl(r.video);
+        })
+        .catch(() => undefined);
+    }
     const v = videoRef.current;
     if (!v) return;
     v.currentTime = 0;
@@ -208,8 +221,11 @@ function MirrorCard({ item }: { item: Item }) {
     v.currentTime = 0;
   };
 
-  const poster = item.poster_local ?? item.poster_url;
-  const video = item.video_local ?? item.video_url;
+  const drivePoster = item.drive_video_id
+    ? `https://drive.google.com/thumbnail?id=${item.drive_video_id}&sz=w1000`
+    : null;
+  const poster = item.poster_local || item.poster_url || drivePoster;
+  const video = videoUrl;
 
   return (
     <Link
