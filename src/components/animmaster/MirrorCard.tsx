@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
+import { usePreviewQuality } from "@/hooks/use-preview-quality";
 
 export type MirrorItem = {
   id: string;
@@ -49,14 +50,18 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const rootRef = useRef<HTMLAnchorElement>(null);
   const mirror = useServerFn(mirrorAnimmasterDrive);
+  const { config } = usePreviewQuality();
   const [videoUrl, setVideoUrl] = useState<string | null>(
     item.video_local ?? (item.video_url || null),
   );
   const [visible, setVisible] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const triedRef = useRef(false);
 
   const ensureMirrored = () => {
     if (videoUrl || !item.drive_video_id || triedRef.current) return;
+    // Low quality: don't fetch the mp4 at all until user hovers.
+    if (config.preload === "none" && !hovered) return;
     triedRef.current = true;
     void enqueue(() =>
       mirror({ data: { slug: item.slug } }).then((r) => {
@@ -68,6 +73,7 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
   // Pre-mirror as soon as card comes near viewport
   useEffect(() => {
     if (!rootRef.current) return;
+    if (config.preload === "none") return; // wait for hover
     const el = rootRef.current;
     const preload = new IntersectionObserver(
       (entries) => {
@@ -84,7 +90,7 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
     preload.observe(el);
     return () => preload.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [config.preload]);
 
   // Play/pause based on actual visibility
   useEffect(() => {
@@ -103,12 +109,15 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (visible && videoUrl) {
+    const shouldPlay =
+      videoUrl != null &&
+      (config.hoverOnly ? hovered : config.autoplay && visible);
+    if (shouldPlay) {
       void v.play().catch(() => undefined);
     } else {
       v.pause();
     }
-  }, [visible, videoUrl]);
+  }, [visible, videoUrl, hovered, config.hoverOnly, config.autoplay]);
 
   const drivePoster = item.drive_video_id
     ? `https://drive.google.com/thumbnail?id=${item.drive_video_id}&sz=w1000`
@@ -120,6 +129,11 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
       ref={rootRef}
       to="/animmaster/$slug"
       params={{ slug: item.slug }}
+      onMouseEnter={() => {
+        setHovered(true);
+        ensureMirrored();
+      }}
+      onMouseLeave={() => setHovered(false)}
       className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-black">
@@ -141,8 +155,8 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
             muted
             loop
             playsInline
-            autoPlay
-            preload="auto"
+            autoPlay={config.autoplay}
+            preload={config.preload}
             poster={poster ?? undefined}
             src={videoUrl}
           />
