@@ -92,10 +92,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Live demos + full technical specs for Magnetic Button, Hero Reveal, Infinite Marquee, Cursor Trail, Text Split Reveal and Pinned Gallery.",
+          "A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Motion Library — Interactive UI Asset Catalog" },
+      { name: "twitter:description", content: "A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c8630442-f0d0-4844-ad76-0c6a3208ba0d/id-preview-b9391da4--63a45406-1556-4a66-a6b0-c4f85457edd2.lovable.app-1784307898269.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c8630442-f0d0-4844-ad76-0c6a3208ba0d/id-preview-b9391da4--63a45406-1556-4a66-a6b0-c4f85457edd2.lovable.app-1784307898269.png" },
     ],
     links: [
       {
