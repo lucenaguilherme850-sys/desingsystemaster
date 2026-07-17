@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
 import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
+import { PreviewQualityPicker } from "@/components/animmaster/PreviewQualityPicker";
 
 type Item = MirrorItem & { position: number };
 
@@ -107,6 +108,7 @@ function LibraryIndex() {
       <section id="components" className="mx-auto max-w-[1400px] px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
+            <PreviewQualityPicker className="mb-3" />
             <button
               onClick={() => setOnlyLive((v) => !v)}
               className={
