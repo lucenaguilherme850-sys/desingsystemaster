@@ -9,6 +9,9 @@ import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { hasLiveFx, loadLiveFx } from "@/animfx/registry";
 import FxSourceViewer from "@/components/animmaster/FxSourceViewer";
 import DriveCodeBrowser from "@/components/animmaster/DriveCodeBrowser";
+import ComponentSpec from "@/components/animmaster/ComponentSpec";
+import ComponentSpecDrive from "@/components/animmaster/ComponentSpecDrive";
+import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 type Item = {
   id: string;
@@ -299,6 +302,28 @@ function AnimmasterDetail() {
             <DriveCodeBrowser slug={item.slug} />
           ) : (
             <FxSourceViewer slug={item.slug} name={heading} />
+          )}
+
+          {item.drive_zip_id ? (
+            <ComponentSpecDrive
+              slug={item.slug}
+              name={heading}
+              category={item.category}
+              summary={item.instruction_text}
+            />
+          ) : (
+            (() => {
+              const info = getFxSourceForSlug(item.slug);
+              if (!info) return null;
+              return (
+                <ComponentSpec
+                  slug={item.slug}
+                  name={heading}
+                  category={item.category}
+                  files={info.files.map((f) => ({ path: f.path, content: f.content }))}
+                />
+              );
+            })()
           )}
         </section>
       </div>
