@@ -29,6 +29,7 @@ COMPORTAMENTO:
 - Ao recomendar componentes, use SEMPRE a ferramenta searchAnimasterLibrary primeiro para conhecer o que existe, depois getComponentDetails para inspecionar candidatos.
 - Ao final, use OBRIGATORIAMENTE a ferramenta saveReport para persistir o Design System, o Mapa de Seções e o Plano de Implementação estruturados.
 - Cada item do mapa de seções deve conter: seção (ex: "Hero"), componente Animaster (slug), motivo estratégico (2-4 linhas).
+- Quando o usuário compartilhar uma URL (site do concorrente, referência, portfólio, site atual), use SEMPRE a ferramenta fetchUrl para analisar o conteúdo real antes de comentar. Nunca invente o que está na página.
 
 CATÁLOGO ANIMMASTER (referência sempre disponível):
 `;
@@ -77,6 +78,66 @@ export const Route = createFileRoute("/api/chat-director")({
         const model = gateway("openai/gpt-5.5");
 
         const tools = {
+          fetchUrl: tool({
+            description:
+              "Baixa o HTML de uma URL pública e retorna título, meta description, headings (h1/h2/h3) e um resumo do texto visível. Use para analisar sites, concorrentes ou referências enviadas pelo usuário.",
+            inputSchema: z.object({
+              url: z.string().url(),
+              maxChars: z.number().min(500).max(20000).default(6000),
+            }),
+            execute: async ({ url, maxChars }) => {
+              try {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 15000);
+                const res = await fetch(url, {
+                  headers: {
+                    "user-agent":
+                      "Mozilla/5.0 (compatible; AnimMasterAgent/1.0; +https://animemaster.lovable.app)",
+                    accept: "text/html,application/xhtml+xml",
+                  },
+                  signal: controller.signal,
+                });
+                clearTimeout(timer);
+                if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status}` };
+                const ct = res.headers.get("content-type") ?? "";
+                if (!ct.includes("text/html") && !ct.includes("xml") && !ct.includes("text/plain")) {
+                  return { ok: false, error: `Tipo não suportado: ${ct}` };
+                }
+                const html = (await res.text()).slice(0, 500_000);
+                const pick = (re: RegExp) => (html.match(re)?.[1] ?? "").trim();
+                const title = pick(/<title[^>]*>([\s\S]*?)<\/title>/i);
+                const description =
+                  pick(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) ||
+                  pick(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+                const ogImage = pick(
+                  /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
+                );
+                const grabAll = (tag: string) =>
+                  Array.from(html.matchAll(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "gi")))
+                    .map((m) => m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
+                    .filter(Boolean)
+                    .slice(0, 20);
+                const h1 = grabAll("h1");
+                const h2 = grabAll("h2");
+                const h3 = grabAll("h3");
+                const text = html
+                  .replace(/<script[\s\S]*?<\/script>/gi, " ")
+                  .replace(/<style[\s\S]*?<\/style>/gi, " ")
+                  .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+                  .replace(/<[^>]+>/g, " ")
+                  .replace(/&nbsp;/gi, " ")
+                  .replace(/&amp;/gi, "&")
+                  .replace(/&lt;/gi, "<")
+                  .replace(/&gt;/gi, ">")
+                  .replace(/\s+/g, " ")
+                  .trim()
+                  .slice(0, maxChars);
+                return { ok: true, url, title, description, ogImage, h1, h2, h3, text };
+              } catch (e) {
+                return { ok: false, error: e instanceof Error ? e.message : String(e) };
+              }
+            },
+          }),
           searchAnimasterLibrary: tool({
             description:
               "Pesquisa a biblioteca AnimMaster. Filtra por categoria e/ou termos-chave. Retorna slug, nome e categoria.",
