@@ -1,7 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { isAdmin } from "@/lib/admin.functions";
 
 export function SiteHeader() {
+  const check = useServerFn(isAdmin);
+  const { data: admin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: () => check().catch(() => false),
+    staleTime: 60_000,
+    retry: false,
+  });
   return (
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-8">
@@ -19,9 +29,11 @@ export function SiteHeader() {
           <Link to="/animmaster" className="hover:text-foreground transition-colors">
             Animmaster <span className="text-neon">280</span>
           </Link>
-          <Link to="/agent" className="hover:text-foreground transition-colors">
-            Agent <span className="text-neon">AI</span>
-          </Link>
+          {admin && (
+            <Link to="/agent" className="hover:text-foreground transition-colors">
+              Agent <span className="text-neon">AI</span>
+            </Link>
+          )}
         </nav>
 
         <a
