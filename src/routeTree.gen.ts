@@ -9,13 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnimmasterIndexRouteImport } from './routes/animmaster.index'
 import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
+import { Route as ApiChatDirectorRouteImport } from './routes/api/chat-director'
 import { Route as AnimmasterSlugRouteImport } from './routes/animmaster.$slug'
+import { Route as AuthenticatedAgentIndexRouteImport } from './routes/_authenticated/agent.index'
 import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
+import { Route as AuthenticatedAgentThreadIdRouteImport } from './routes/_authenticated/agent.$threadId'
 import { Route as ApiPublicRegistryNameRouteImport } from './routes/api/public/registry.$name'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,16 +45,32 @@ const AssetsSlugRoute = AssetsSlugRouteImport.update({
   path: '/assets/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatDirectorRoute = ApiChatDirectorRouteImport.update({
+  id: '/api/chat-director',
+  path: '/api/chat-director',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnimmasterSlugRoute = AnimmasterSlugRouteImport.update({
   id: '/animmaster/$slug',
   path: '/animmaster/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAgentIndexRoute = AuthenticatedAgentIndexRouteImport.update({
+  id: '/agent/',
+  path: '/agent/',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicRegistryRoute = ApiPublicRegistryRouteImport.update({
   id: '/api/public/registry',
   path: '/api/public/registry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAgentThreadIdRoute =
+  AuthenticatedAgentThreadIdRouteImport.update({
+    id: '/agent/$threadId',
+    path: '/agent/$threadId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
   id: '/$name',
   path: '/$name',
@@ -49,59 +79,88 @@ const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
+  '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster/': typeof AnimmasterIndexRoute
+  '/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
+  '/agent/': typeof AuthenticatedAgentIndexRoute
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
+  '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster': typeof AnimmasterIndexRoute
+  '/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
+  '/agent': typeof AuthenticatedAgentIndexRoute
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
+  '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster/': typeof AnimmasterIndexRoute
+  '/_authenticated/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
+  '/_authenticated/agent/': typeof AuthenticatedAgentIndexRoute
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/animmaster/$slug'
+    | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster/'
+    | '/agent/$threadId'
     | '/api/public/registry'
+    | '/agent/'
     | '/api/public/registry/$name'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/animmaster/$slug'
+    | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster'
+    | '/agent/$threadId'
     | '/api/public/registry'
+    | '/agent'
     | '/api/public/registry/$name'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/animmaster/$slug'
+    | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster/'
+    | '/_authenticated/agent/$threadId'
     | '/api/public/registry'
+    | '/_authenticated/agent/'
     | '/api/public/registry/$name'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   AnimmasterSlugRoute: typeof AnimmasterSlugRoute
+  ApiChatDirectorRoute: typeof ApiChatDirectorRoute
   AssetsSlugRoute: typeof AssetsSlugRoute
   AnimmasterIndexRoute: typeof AnimmasterIndexRoute
   ApiPublicRegistryRoute: typeof ApiPublicRegistryRouteWithChildren
@@ -109,6 +168,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -130,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat-director': {
+      id: '/api/chat-director'
+      path: '/api/chat-director'
+      fullPath: '/api/chat-director'
+      preLoaderRoute: typeof ApiChatDirectorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/animmaster/$slug': {
       id: '/animmaster/$slug'
       path: '/animmaster/$slug'
@@ -137,12 +217,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnimmasterSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/agent/': {
+      id: '/_authenticated/agent/'
+      path: '/agent'
+      fullPath: '/agent/'
+      preLoaderRoute: typeof AuthenticatedAgentIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/registry': {
       id: '/api/public/registry'
       path: '/api/public/registry'
       fullPath: '/api/public/registry'
       preLoaderRoute: typeof ApiPublicRegistryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/agent/$threadId': {
+      id: '/_authenticated/agent/$threadId'
+      path: '/agent/$threadId'
+      fullPath: '/agent/$threadId'
+      preLoaderRoute: typeof AuthenticatedAgentThreadIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/registry/$name': {
       id: '/api/public/registry/$name'
@@ -153,6 +247,19 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAgentThreadIdRoute: typeof AuthenticatedAgentThreadIdRoute
+  AuthenticatedAgentIndexRoute: typeof AuthenticatedAgentIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAgentThreadIdRoute: AuthenticatedAgentThreadIdRoute,
+  AuthenticatedAgentIndexRoute: AuthenticatedAgentIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface ApiPublicRegistryRouteChildren {
   ApiPublicRegistryNameRoute: typeof ApiPublicRegistryNameRoute
@@ -167,7 +274,10 @@ const ApiPublicRegistryRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   AnimmasterSlugRoute: AnimmasterSlugRoute,
+  ApiChatDirectorRoute: ApiChatDirectorRoute,
   AssetsSlugRoute: AssetsSlugRoute,
   AnimmasterIndexRoute: AnimmasterIndexRoute,
   ApiPublicRegistryRoute: ApiPublicRegistryRouteWithChildren,
