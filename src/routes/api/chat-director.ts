@@ -344,6 +344,42 @@ function inferSection(category: string, name: string): string {
   return "Experiência visual";
 }
 
+function buildAdaptationNote(category: string, section: string, site?: LocalSiteSummary | null): string {
+  const c = normalizeForSearch(category);
+  const brand = site?.title?.split("|")[0]?.trim() || "o projeto alvo";
+  const base = `Encaixe: **${section}** de ${brand}. Adapte cores, tipografia e copy ao design system do projeto — mantenha timings, easings e a complexidade técnica do original 1:1.`;
+  if (c.includes("hero")) return `${base} Movimento: entrada dramática na primeira dobra, sincronizada com o headline principal. Sugira paleta e mídia coerentes com a marca (fotos reais do serviço, não stock genérico).`;
+  if (c.includes("scroll")) return `${base} Movimento: revelação progressiva conforme o usuário rola — use nas seções de prova social, resultados ou tratamentos.`;
+  if (c.includes("hover") || c.includes("mouse")) return `${base} Movimento: microinteração em cards de tratamento / CTA. Use a cor primária da marca no highlight.`;
+  if (c.includes("nav") || c.includes("menu")) return `${base} Movimento: navegação fixa no topo com transição suave entre âncoras (Tratamentos, Tecnologias, Sobre, Contato).`;
+  if (c.includes("text") || c.includes("title")) return `${base} Movimento: aplique no headline principal e nos títulos de seção — respeite hierarquia tipográfica.`;
+  if (c.includes("slider")) return `${base} Movimento: use em galeria de resultados antes/depois ou depoimentos.`;
+  if (c.includes("3d")) return `${base} Movimento: seção de destaque de tecnologia/equipamento — preserve luzes, câmera e materiais originais.`;
+  if (c.includes("grid")) return `${base} Movimento: grid de tratamentos/serviços com entradas escalonadas.`;
+  return `${base} Encaixe estratégico como camada de motion premium; teste em mobile antes de publicar.`;
+}
+
+function buildAdaptedPromptPreamble(site: LocalSiteSummary | null, section: string, adaptation: string): string {
+  const lines = [
+    `# CONTEXTO DO PROJETO ALVO`,
+    site?.url ? `- URL: ${site.url}` : undefined,
+    site?.title ? `- Marca / título: ${site.title}` : undefined,
+    site?.description ? `- Descrição: ${site.description}` : undefined,
+    `- Seção onde este componente deve entrar: **${section}**`,
+    ``,
+    `# INSTRUÇÕES DE ADAPTAÇÃO PARA ESTE PROJETO`,
+    adaptation,
+    ``,
+    `Antes de codar, pergunte ao usuário: 1) qual página/rota; 2) qual conteúdo real (títulos, mídia); 3) tokens de cor/fonte disponíveis; 4) restrições de mobile / prefers-reduced-motion.`,
+    ``,
+    `A seguir está o PROMPT MESTRE original do componente, com o código-fonte completo. NÃO simplifique, NÃO troque libs, NÃO reduza a complexidade técnica. Apenas adapte cores, tipografia e copy à marca acima.`,
+    ``,
+    `────────────────────────────────────────`,
+    ``,
+  ];
+  return lines.filter((l) => l !== undefined).join("\n");
+}
+
 function buildRecommendationReason(category: string, queryText: string): string {
   const categoryValue = normalizeForSearch(category);
   const query = normalizeForSearch(queryText);
@@ -415,7 +451,7 @@ async function buildLocalDirectorReply({
 }: {
   messages: UIMessage[];
   index: Awaited<ReturnType<typeof buildAnimasterIndex>>;
-}): Promise<string> {
+}): Promise<{ text: string; siteSummary: LocalSiteSummary | null; recommendations: LocalRecommendation[] }> {
   const latestText = extractMessageText(messages[messages.length - 1]);
   const siteSummary = await fetchLocalSiteSummary(latestText);
   const recommendations = getLocalRecommendations(index, latestText);
@@ -438,7 +474,7 @@ async function buildLocalDirectorReply({
       : `\n## ⚠️ Leitura do Site\n\n- **URL:** ${siteSummary.url}\n- **Status:** ${siteSummary.status ?? "indisponível"}\n- **Problema:** ${siteSummary.error || "não foi possível carregar a página."}\n- **Ação:** envie uma URL pública funcionando ou descreva o projeto em 3-5 linhas.\n`
     : "";
 
-  return `## 📋 Resumo Executivo
+  const text = `## 📋 Resumo Executivo
 
 Modo local sem consumo de créditos ativado. A análise abaixo usa regras estratégicas + o catálogo AnimMaster salvo no projeto.
 ${siteBlock}
@@ -482,6 +518,7 @@ Envie a seção onde quer aplicar o primeiro componente ou peça: “monte um pl
 | Status | Seção | Componente | Prioridade | Motivo |
 |--------|-------|------------|------------|--------|
 ${selectedRows || "| 🟡 Planejado | Hero | catálogo indisponível | Alta | Aguardando catálogo local. |"}`;
+  return { text, siteSummary, recommendations };
 }
 
 function createLocalStreamResponse(text: string): Response {
