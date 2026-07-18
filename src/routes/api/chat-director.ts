@@ -130,61 +130,129 @@ export const Route = createFileRoute("/api/chat-director")({
             description:
               "Analisa uma URL pública via Firecrawl. Retorna markdown limpo, título, descrição, links principais e (opcional) identidade de marca (cores, fontes, logo). Use para analisar sites do usuário, concorrentes ou referências.",
             inputSchema: z.object({
-              url: z.string().url(),
-              maxChars: z.number().min(500).max(20000).default(8000),
+              url: z.string(),
+              maxChars: z.number().default(8000),
               includeBranding: z.boolean().default(true),
             }),
             execute: async ({ url, maxChars, includeBranding }) => {
               try {
+                const normalizedUrl = normalizePublicUrl(url);
+                const safeMaxChars = Math.min(Math.max(Number(maxChars) || 8000, 500), 20000);
                 const lovableKey = process.env.LOVABLE_API_KEY;
                 const fcKey = process.env.FIRECRAWL_API_KEY;
-                if (!lovableKey || !fcKey) {
-                  return { ok: false, error: "Firecrawl não configurado" };
+                const fetchDirectFallback = async (reason: string) => {
+                  const directController = new AbortController();
+                  const directTimer = setTimeout(() => directController.abort(), 20000);
+                  try {
+                    const direct = await fetch(normalizedUrl, {
+                      headers: {
+                        Accept: "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.8",
+                        "User-Agent":
+                          "Mozilla/5.0 (compatible; AnimMasterCreativeDirector/1.0; +https://animemaster.lovable.app)",
+                      },
+                      redirect: "follow",
+                      signal: directController.signal,
+                    });
+                    const html = await direct.text();
+                    const text = textFromHtml(html);
+                    const unavailable = detectUnavailableSite(`${html} ${text}`, direct.status);
+                    const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim();
+                    const description = html
+                      .match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i)?.[1]
+                      ?.trim();
+
+                    if (unavailable.siteUnavailable) {
+                      return {
+                        ok: false,
+                        url: normalizedUrl,
+                        status: direct.status,
+                        finalUrl: direct.url,
+                        siteUnavailable: true,
+                        publicSiteNotFound: unavailable.publicSiteNotFound,
+                        appError: unavailable.appError,
+                        error: unavailable.publicSiteNotFound
+                          ? "A URL pública retornou 404: No Lovable project found at this address. O domínio parece não estar publicado, foi removido ou foi digitado errado."
+                          : "A página pública não carregou corretamente.",
+                        observedContent: text.slice(0, 800),
+                        fallbackReason: reason,
+                      };
+                    }
+
+                    return {
+                      ok: direct.ok,
+                      url: normalizedUrl,
+                      status: direct.status,
+                      finalUrl: direct.url,
+                      title,
+                      description,
+                      markdown: text.slice(0, safeMaxChars),
+                      warning: direct.ok
+                        ? `Análise feita por fallback HTTP direto porque ${reason}. Pode faltar conteúdo renderizado por JavaScript.`
+                        : `Fallback HTTP retornou status ${direct.status}.`,
+                    };
+                  } finally {
+                    clearTimeout(directTimer);
+                  }
+                };
+
+                if (!fcKey) {
+                  return fetchDirectFallback("Firecrawl não está configurado no runtime");
                 }
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 45000);
                 const formats: Array<string> = ["markdown", "links", "summary"];
                 if (includeBranding) formats.push("branding");
-                const res = await fetch(
-                  "https://connector-gateway.lovable.dev/firecrawl/v2/scrape",
-                  {
-                    method: "POST",
-                    headers: {
+                const gatewayMode = fcKey.startsWith("lovc_");
+                if (gatewayMode && !lovableKey) {
+                  return fetchDirectFallback("a chave do gateway do Firecrawl não está disponível");
+                }
+                const firecrawlEndpoint = gatewayMode
+                  ? "https://connector-gateway.lovable.dev/firecrawl/v2/scrape"
+                  : "https://api.firecrawl.dev/v2/scrape";
+                const firecrawlHeaders = gatewayMode
+                  ? {
                       "Content-Type": "application/json",
                       Authorization: `Bearer ${lovableKey}`,
                       "X-Connection-Api-Key": fcKey,
-                    },
-                    body: JSON.stringify({
-                      url,
-                      formats,
-                      onlyMainContent: true,
-                      waitFor: 4000,
-                      mobile: false,
-                      blockAds: true,
-                    }),
-                    signal: controller.signal,
-                  },
-                );
+                    }
+                  : {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${fcKey}`,
+                    };
+                const res = await fetch(firecrawlEndpoint, {
+                  method: "POST",
+                  headers: firecrawlHeaders,
+                  body: JSON.stringify({
+                    url: normalizedUrl,
+                    formats,
+                    onlyMainContent: true,
+                    waitFor: 4000,
+                    mobile: false,
+                    blockAds: true,
+                  }),
+                  signal: controller.signal,
+                });
                 clearTimeout(timer);
                 const raw = await res.text();
                 if (!res.ok) {
-                  return { ok: false, status: res.status, error: raw.slice(0, 500) };
+                  return fetchDirectFallback(`Firecrawl retornou status ${res.status}: ${raw.slice(0, 240)}`);
                 }
-                const json = JSON.parse(raw) as {
-                  data?: Record<string, unknown>;
-                  markdown?: string;
-                  metadata?: Record<string, unknown>;
-                  summary?: string;
-                  links?: string[];
-                  branding?: unknown;
-                };
+                const json = JSON.parse(raw) as FirecrawlScrapeResult;
                 const d = (json.data ?? json) as Record<string, unknown>;
                 const md = (d.markdown as string | undefined) ?? "";
                 const meta = (d.metadata as Record<string, unknown> | undefined) ?? {};
+                const statusCode = typeof meta.statusCode === "number" ? meta.statusCode : undefined;
                 const links = Array.isArray(d.links)
                   ? (d.links as string[]).slice(0, 30)
                   : [];
                 // Detecta páginas de erro/SPA que não hidrataram e tenta novamente com espera maior
+                const unavailable = detectUnavailableSite(
+                  `${md} ${String(meta.title ?? "")} ${String(meta.description ?? "")}`,
+                  statusCode,
+                );
+                if (unavailable.siteUnavailable) {
+                  return fetchDirectFallback("Firecrawl capturou uma página pública indisponível ou de erro");
+                }
                 const looksBroken =
                   md.length < 400 ||
                   /não carregou|algo deu errado|voltar ao início|application error|failed to load/i.test(
@@ -193,25 +261,18 @@ export const Route = createFileRoute("/api/chat-director")({
                 if (looksBroken) {
                   const retryController = new AbortController();
                   const retryTimer = setTimeout(() => retryController.abort(), 60000);
-                  const retry = await fetch(
-                    "https://connector-gateway.lovable.dev/firecrawl/v2/scrape",
-                    {
+                    const retry = await fetch(firecrawlEndpoint, {
                       method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${lovableKey}`,
-                        "X-Connection-Api-Key": fcKey,
-                      },
+                      headers: firecrawlHeaders,
                       body: JSON.stringify({
-                        url,
+                        url: normalizedUrl,
                         formats,
                         onlyMainContent: false,
                         waitFor: 10000,
                         blockAds: true,
                       }),
                       signal: retryController.signal,
-                    },
-                  );
+                    });
                   clearTimeout(retryTimer);
                   if (retry.ok) {
                     const rj = (await retry.json()) as { data?: Record<string, unknown> } & Record<
@@ -220,34 +281,41 @@ export const Route = createFileRoute("/api/chat-director")({
                     >;
                     const rd = (rj.data ?? rj) as Record<string, unknown>;
                     const rmd = (rd.markdown as string | undefined) ?? "";
+                    const rmeta = (rd.metadata as Record<string, unknown> | undefined) ?? {};
+                    const retryUnavailable = detectUnavailableSite(
+                      `${rmd} ${String(rmeta.title ?? "")} ${String(rmeta.description ?? "")}`,
+                      typeof rmeta.statusCode === "number" ? rmeta.statusCode : undefined,
+                    );
+                    if (retryUnavailable.siteUnavailable) {
+                      return fetchDirectFallback("a segunda tentativa do Firecrawl também capturou erro público");
+                    }
                     if (rmd.length > md.length) {
                       return {
                         ok: true,
-                        url,
+                        url: normalizedUrl,
                         retriedWithLongerWait: true,
-                        title: (rd.metadata as Record<string, unknown> | undefined)?.title,
-                        description: (rd.metadata as Record<string, unknown> | undefined)
-                          ?.description,
+                        title: rmeta.title,
+                        description: rmeta.description,
                         summary: rd.summary,
                         branding: includeBranding ? rd.branding : undefined,
                         links: Array.isArray(rd.links)
                           ? (rd.links as string[]).slice(0, 30)
                           : [],
-                        markdown: rmd.slice(0, maxChars),
+                        markdown: rmd.slice(0, safeMaxChars),
                       };
                     }
                   }
                 }
                 return {
                   ok: true,
-                  url,
+                  url: normalizedUrl,
                   title: meta.title,
                   description: meta.description,
                   language: meta.language,
                   summary: d.summary,
                   branding: includeBranding ? d.branding : undefined,
                   links,
-                  markdown: md.slice(0, maxChars),
+                  markdown: md.slice(0, safeMaxChars),
                   warning: looksBroken
                     ? "A página parece não ter carregado completamente (possível SPA sem SSR ou erro de deploy). Peça ao usuário para confirmar se o site está no ar."
                     : undefined,
