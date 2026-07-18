@@ -588,7 +588,8 @@ export const Route = createFileRoute("/api/chat-director")({
         const catalogSection = `\n\nCategorias disponíveis (${index.length} componentes no total):\n${categories.map((c) => `- ${c}`).join("\n")}`;
         const usePaidAi = process.env.ANIMMASTER_AGENT_PAID_AI === "true";
         if (!usePaidAi) {
-          const localReply = await buildLocalDirectorReply({ messages, index });
+          const local = await buildLocalDirectorReply({ messages, index });
+          const localReply = local.text;
           const userMsg = messages[messages.length - 1];
           if (userMsg?.role === "user") {
             await supabase.from("agent_messages").insert({
@@ -602,6 +603,41 @@ export const Route = createFileRoute("/api/chat-director")({
             role: "assistant",
             parts: [{ type: "text", text: localReply }] as never,
           });
+          // Persist a rich report so the sidebar renders per-component cards
+          // with adaptation notes + "copy adapted master prompt" buttons.
+          const sectionMap = local.recommendations.map((r, i) => ({
+            section: r.section,
+            componentSlug: r.slug,
+            reason: r.reason,
+            position: `Componente ${String(i + 1).padStart(2, "0")}`,
+            componentName: r.name,
+            category: r.category,
+            priority: r.priority,
+            adaptation: buildAdaptationNote(r.category, r.section, local.siteSummary),
+          }));
+          const business = local.siteSummary
+            ? {
+                url: local.siteSummary.url,
+                title: local.siteSummary.title,
+                description: local.siteSummary.description,
+                status: local.siteSummary.status,
+                ok: local.siteSummary.ok,
+                excerpt: local.siteSummary.excerpt,
+              }
+            : {};
+          await supabase.from("agent_reports").upsert(
+            {
+              thread_id: threadId,
+              business,
+              brand: {},
+              audience: {},
+              design_system: {},
+              section_map: sectionMap as never,
+              implementation_plan: [],
+              generated_at: new Date().toISOString(),
+            },
+            { onConflict: "thread_id" },
+          );
           await supabase
             .from("agent_threads")
             .update({ updated_at: new Date().toISOString() })
