@@ -510,9 +510,6 @@ export const Route = createFileRoute("/api/chat-director")({
         if (!Array.isArray(messages) || !threadId) {
           return new Response("Missing messages or threadId", { status: 400 });
         }
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
-
         const auth = request.headers.get("authorization") ?? "";
         const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : null;
         if (!token) return new Response("Unauthorized", { status: 401 });
@@ -552,6 +549,32 @@ export const Route = createFileRoute("/api/chat-director")({
         const index = await buildAnimasterIndex();
         const categories = Array.from(new Set(index.map((i) => i.category))).sort();
         const catalogSection = `\n\nCategorias disponíveis (${index.length} componentes no total):\n${categories.map((c) => `- ${c}`).join("\n")}`;
+        const usePaidAi = process.env.ANIMMASTER_AGENT_PAID_AI === "true";
+        if (!usePaidAi) {
+          const localReply = await buildLocalDirectorReply({ messages, index });
+          const userMsg = messages[messages.length - 1];
+          if (userMsg?.role === "user") {
+            await supabase.from("agent_messages").insert({
+              thread_id: threadId,
+              role: "user",
+              parts: userMsg.parts as never,
+            });
+          }
+          await supabase.from("agent_messages").insert({
+            thread_id: threadId,
+            role: "assistant",
+            parts: [{ type: "text", text: localReply }] as never,
+          });
+          await supabase
+            .from("agent_threads")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", threadId);
+
+          return createLocalStreamResponse(localReply);
+        }
+
+        const key = process.env.LOVABLE_API_KEY;
+        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("openai/gpt-5.5");
 
