@@ -80,59 +80,66 @@ export const Route = createFileRoute("/api/chat-director")({
         const tools = {
           fetchUrl: tool({
             description:
-              "Baixa o HTML de uma URL pública e retorna título, meta description, headings (h1/h2/h3) e um resumo do texto visível. Use para analisar sites, concorrentes ou referências enviadas pelo usuário.",
+              "Analisa uma URL pública via Firecrawl. Retorna markdown limpo, título, descrição, links principais e (opcional) identidade de marca (cores, fontes, logo). Use para analisar sites do usuário, concorrentes ou referências.",
             inputSchema: z.object({
               url: z.string().url(),
-              maxChars: z.number().min(500).max(20000).default(6000),
+              maxChars: z.number().min(500).max(20000).default(8000),
+              includeBranding: z.boolean().default(true),
             }),
-            execute: async ({ url, maxChars }) => {
+            execute: async ({ url, maxChars, includeBranding }) => {
               try {
-                const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 15000);
-                const res = await fetch(url, {
-                  headers: {
-                    "user-agent":
-                      "Mozilla/5.0 (compatible; AnimMasterAgent/1.0; +https://animemaster.lovable.app)",
-                    accept: "text/html,application/xhtml+xml",
-                  },
-                  signal: controller.signal,
-                });
-                clearTimeout(timer);
-                if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status}` };
-                const ct = res.headers.get("content-type") ?? "";
-                if (!ct.includes("text/html") && !ct.includes("xml") && !ct.includes("text/plain")) {
-                  return { ok: false, error: `Tipo não suportado: ${ct}` };
+                const lovableKey = process.env.LOVABLE_API_KEY;
+                const fcKey = process.env.FIRECRAWL_API_KEY;
+                if (!lovableKey || !fcKey) {
+                  return { ok: false, error: "Firecrawl não configurado" };
                 }
-                const html = (await res.text()).slice(0, 500_000);
-                const pick = (re: RegExp) => (html.match(re)?.[1] ?? "").trim();
-                const title = pick(/<title[^>]*>([\s\S]*?)<\/title>/i);
-                const description =
-                  pick(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) ||
-                  pick(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
-                const ogImage = pick(
-                  /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 30000);
+                const formats: Array<string> = ["markdown", "links", "summary"];
+                if (includeBranding) formats.push("branding");
+                const res = await fetch(
+                  "https://connector-gateway.lovable.dev/firecrawl/v2/scrape",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${lovableKey}`,
+                      "X-Connection-Api-Key": fcKey,
+                    },
+                    body: JSON.stringify({ url, formats, onlyMainContent: true }),
+                    signal: controller.signal,
+                  },
                 );
-                const grabAll = (tag: string) =>
-                  Array.from(html.matchAll(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "gi")))
-                    .map((m) => m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
-                    .filter(Boolean)
-                    .slice(0, 20);
-                const h1 = grabAll("h1");
-                const h2 = grabAll("h2");
-                const h3 = grabAll("h3");
-                const text = html
-                  .replace(/<script[\s\S]*?<\/script>/gi, " ")
-                  .replace(/<style[\s\S]*?<\/style>/gi, " ")
-                  .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
-                  .replace(/<[^>]+>/g, " ")
-                  .replace(/&nbsp;/gi, " ")
-                  .replace(/&amp;/gi, "&")
-                  .replace(/&lt;/gi, "<")
-                  .replace(/&gt;/gi, ">")
-                  .replace(/\s+/g, " ")
-                  .trim()
-                  .slice(0, maxChars);
-                return { ok: true, url, title, description, ogImage, h1, h2, h3, text };
+                clearTimeout(timer);
+                const raw = await res.text();
+                if (!res.ok) {
+                  return { ok: false, status: res.status, error: raw.slice(0, 500) };
+                }
+                const json = JSON.parse(raw) as {
+                  data?: Record<string, unknown>;
+                  markdown?: string;
+                  metadata?: Record<string, unknown>;
+                  summary?: string;
+                  links?: string[];
+                  branding?: unknown;
+                };
+                const d = (json.data ?? json) as Record<string, unknown>;
+                const md = (d.markdown as string | undefined) ?? "";
+                const meta = (d.metadata as Record<string, unknown> | undefined) ?? {};
+                const links = Array.isArray(d.links)
+                  ? (d.links as string[]).slice(0, 30)
+                  : [];
+                return {
+                  ok: true,
+                  url,
+                  title: meta.title,
+                  description: meta.description,
+                  language: meta.language,
+                  summary: d.summary,
+                  branding: includeBranding ? d.branding : undefined,
+                  links,
+                  markdown: md.slice(0, maxChars),
+                };
               } catch (e) {
                 return { ok: false, error: e instanceof Error ? e.message : String(e) };
               }
