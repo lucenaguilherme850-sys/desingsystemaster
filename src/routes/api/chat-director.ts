@@ -347,16 +347,125 @@ function inferSection(category: string, name: string): string {
 function buildAdaptationNote(category: string, section: string, site?: LocalSiteSummary | null): string {
   const c = normalizeForSearch(category);
   const brand = site?.title?.split("|")[0]?.trim() || "o projeto alvo";
-  const base = `Encaixe: **${section}** de ${brand}. Adapte cores, tipografia e copy ao design system do projeto — mantenha timings, easings e a complexidade técnica do original 1:1.`;
-  if (c.includes("hero")) return `${base} Movimento: entrada dramática na primeira dobra, sincronizada com o headline principal. Sugira paleta e mídia coerentes com a marca (fotos reais do serviço, não stock genérico).`;
-  if (c.includes("scroll")) return `${base} Movimento: revelação progressiva conforme o usuário rola — use nas seções de prova social, resultados ou tratamentos.`;
-  if (c.includes("hover") || c.includes("mouse")) return `${base} Movimento: microinteração em cards de tratamento / CTA. Use a cor primária da marca no highlight.`;
-  if (c.includes("nav") || c.includes("menu")) return `${base} Movimento: navegação fixa no topo com transição suave entre âncoras (Tratamentos, Tecnologias, Sobre, Contato).`;
-  if (c.includes("text") || c.includes("title")) return `${base} Movimento: aplique no headline principal e nos títulos de seção — respeite hierarquia tipográfica.`;
-  if (c.includes("slider")) return `${base} Movimento: use em galeria de resultados antes/depois ou depoimentos.`;
-  if (c.includes("3d")) return `${base} Movimento: seção de destaque de tecnologia/equipamento — preserve luzes, câmera e materiais originais.`;
-  if (c.includes("grid")) return `${base} Movimento: grid de tratamentos/serviços com entradas escalonadas.`;
-  return `${base} Encaixe estratégico como camada de motion premium; teste em mobile antes de publicar.`;
+  const profile = inferSiteProfile(site);
+  const bg = profile.background;
+  const accent = profile.accent;
+  const feel = profile.feel;
+  const speed = profile.speed;
+
+  const perCategory = (() => {
+    if (c.includes("hero")) return `**Onde usar:** primeira dobra de ${brand}, sincronizado com o headline principal.\n- Trocar background por **${bg}**.\n- Trocar partículas / glow / mesh por **${accent}**.\n- Ajustar velocidade da entrada para **${speed}** para reforçar sensação de ${feel}.\n- Substituir mídia de demo por foto real do serviço (nada de stock genérico).`;
+    if (c.includes("scroll")) return `**Onde usar:** seções de prova social, resultados ou serviços de ${brand}, revelando enquanto o usuário rola.\n- Fundo da seção em **${bg}**; destaques em **${accent}**.\n- Ajustar duração dos reveals para **${speed}** — precisa parecer ${feel}, não agressivo.\n- Preservar 100% a curva de easing e o trigger de scroll original.`;
+    if (c.includes("hover") || c.includes("mouse")) return `**Onde usar:** cards de serviço / CTA de ${brand}.\n- Highlight/glow do hover em **${accent}** sobre fundo **${bg}**.\n- Manter a intensidade do efeito, mas ajustar duração para **${speed}** (${feel}).\n- Preservar a física do cursor / lerp / spring do original.`;
+    if (c.includes("nav") || c.includes("menu")) return `**Onde usar:** navegação principal de ${brand}.\n- Barra em **${bg}** com item ativo / underline em **${accent}**.\n- Transições entre estados em **${speed}** para reforçar ${feel}.\n- Preservar 1:1 a animação de abertura/fechamento e o timing dos itens.`;
+    if (c.includes("text") || c.includes("title")) return `**Onde usar:** headline principal e títulos de seção de ${brand}.\n- Texto em cor de alto contraste sobre **${bg}**; destaque de palavra-chave em **${accent}**.\n- Stagger dos caracteres/palavras em **${speed}** para transmitir ${feel}.\n- Preservar split, mask e curva de easing exatamente como no original.`;
+    if (c.includes("slider")) return `**Onde usar:** galeria de antes/depois, depoimentos ou cases de ${brand}.\n- Fundo **${bg}**; controles/indicadores em **${accent}**.\n- Duração da transição em **${speed}** (${feel}).\n- Preservar drag, inércia e snap exatamente como no original.`;
+    if (c.includes("3d") || c.includes("webgl") || c.includes("shader")) return `**Onde usar:** seção-âncora de destaque de ${brand} (tecnologia, resultado, manifesto).\n- Ambiente em **${bg}**; material / emissivo / luz principal puxando para **${accent}**.\n- Reduzir intensidade global em ~15% para transmitir ${feel} sem perder profundidade.\n- Preservar shaders, câmera, luzes, geometria e loop de raf 1:1 — NÃO trocar por CSS.`;
+    if (c.includes("grid") || c.includes("card") || c.includes("gallery")) return `**Onde usar:** grid de serviços / cases de ${brand}.\n- Cards em **${bg}** com borda/hover em **${accent}**.\n- Stagger de entrada em **${speed}** (${feel}).\n- Preservar o padrão de entrada/saída e o IntersectionObserver.`;
+    return `**Onde usar:** camada de motion premium em uma seção estratégica de ${brand}.\n- Base em **${bg}**, destaques em **${accent}**.\n- Ritmo geral em **${speed}** para reforçar ${feel}.\n- Preservar toda a arquitetura de animação original.`;
+  })();
+
+  return [
+    `Encaixe: **${section}** de ${brand}.`,
+    perCategory,
+    ``,
+    `**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação — só cor, tipografia, copy, mídia e ritmo global mudam.`,
+  ].join("\n");
+}
+
+type SiteProfile = {
+  vertical: string;
+  feel: string;
+  background: string;
+  accent: string;
+  speed: string;
+};
+
+function inferSiteProfile(site?: LocalSiteSummary | null): SiteProfile {
+  const raw = normalizeForSearch(
+    [site?.title, site?.description, site?.excerpt].filter(Boolean).join(" "),
+  );
+  const match = (words: string[]) => words.some((w) => raw.includes(w));
+
+  if (match(["clinica", "estetica", "spa", "wellness", "beleza", "dermato", "harmoniz"])) {
+    return {
+      vertical: "clínica/estética",
+      feel: "leveza e sofisticação",
+      background: "off-white / nude claro (#F7F3EE)",
+      accent: "dourado fosco (#B08B57)",
+      speed: "20% mais lento que o original",
+    };
+  }
+  if (match(["fitness", "academia", "treino", "cross", "performance", "atleta"])) {
+    return {
+      vertical: "fitness/performance",
+      feel: "energia e explosão",
+      background: "preto profundo (#0A0A0A)",
+      accent: "verde-limão neon (#C6FF00)",
+      speed: "15% mais rápido que o original",
+    };
+  }
+  if (match(["fintech", "banco", "cripto", "invest", "financas", "trading"])) {
+    return {
+      vertical: "fintech",
+      feel: "confiança e precisão técnica",
+      background: "grafite (#0E1116)",
+      accent: "verde institucional (#00C489)",
+      speed: "no tempo original, sem exageros",
+    };
+  }
+  if (match(["saas", "software", "plataforma", "produto", "dashboard", "api"])) {
+    return {
+      vertical: "SaaS/produto",
+      feel: "clareza e agilidade",
+      background: "branco puro (#FFFFFF) ou grafite (#0F172A) em modo escuro",
+      accent: "cor primária do design system (fallback #6366F1)",
+      speed: "no tempo original",
+    };
+  }
+  if (match(["moda", "fashion", "roupa", "grife", "boutique", "atelier"])) {
+    return {
+      vertical: "moda/luxo",
+      feel: "elegância editorial",
+      background: "preto (#000) ou creme (#F2EDE4)",
+      accent: "champagne / cobre (#C9A97A)",
+      speed: "10% mais lento, embalado",
+    };
+  }
+  if (match(["restaurante", "gastronomia", "chef", "menu", "food", "bar"])) {
+    return {
+      vertical: "gastronomia",
+      feel: "aconchego e desejo",
+      background: "marrom escuro (#1B120C)",
+      accent: "âmbar (#E6A65D)",
+      speed: "no tempo original",
+    };
+  }
+  if (match(["escola", "curso", "educacao", "ensino", "faculdade"])) {
+    return {
+      vertical: "educação",
+      feel: "credibilidade e clareza",
+      background: "branco (#FFFFFF)",
+      accent: "azul institucional (#2A5BD7)",
+      speed: "10% mais lento para leitura confortável",
+    };
+  }
+  if (match(["agencia", "estudio", "studio", "creative", "criativa", "portfolio"])) {
+    return {
+      vertical: "agência/estúdio criativo",
+      feel: "assinatura visual autoral",
+      background: "preto (#0A0A0A)",
+      accent: "cor de assinatura da marca (fallback magenta #FF00C8)",
+      speed: "no tempo original — parte da identidade",
+    };
+  }
+  return {
+    vertical: "projeto genérico",
+    feel: "coerência com a marca detectada",
+    background: "token bg-background do design system",
+    accent: "token bg-primary do design system",
+    speed: "no tempo original",
+  };
 }
 
 function buildAdaptedPromptPreamble(site: LocalSiteSummary | null, section: string, adaptation: string): string {
