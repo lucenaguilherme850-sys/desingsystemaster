@@ -209,16 +209,13 @@ export const Route = createFileRoute("/api/chat-director")({
                 const firecrawlEndpoint = gatewayMode
                   ? "https://connector-gateway.lovable.dev/firecrawl/v2/scrape"
                   : "https://api.firecrawl.dev/v2/scrape";
-                const firecrawlHeaders = gatewayMode
-                  ? {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${lovableKey}`,
-                      "X-Connection-Api-Key": fcKey,
-                    }
-                  : {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${fcKey}`,
-                    };
+                const firecrawlHeaders: Record<string, string> = {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${gatewayMode ? lovableKey : fcKey}`,
+                };
+                if (gatewayMode) {
+                  firecrawlHeaders["X-Connection-Api-Key"] = fcKey;
+                }
                 const res = await fetch(firecrawlEndpoint, {
                   method: "POST",
                   headers: firecrawlHeaders,
@@ -261,18 +258,18 @@ export const Route = createFileRoute("/api/chat-director")({
                 if (looksBroken) {
                   const retryController = new AbortController();
                   const retryTimer = setTimeout(() => retryController.abort(), 60000);
-                    const retry = await fetch(firecrawlEndpoint, {
-                      method: "POST",
-                      headers: firecrawlHeaders,
-                      body: JSON.stringify({
-                        url: normalizedUrl,
-                        formats,
-                        onlyMainContent: false,
-                        waitFor: 10000,
-                        blockAds: true,
-                      }),
-                      signal: retryController.signal,
-                    });
+                  const retry = await fetch(firecrawlEndpoint, {
+                    method: "POST",
+                    headers: firecrawlHeaders,
+                    body: JSON.stringify({
+                      url: normalizedUrl,
+                      formats,
+                      onlyMainContent: false,
+                      waitFor: 10000,
+                      blockAds: true,
+                    }),
+                    signal: retryController.signal,
+                  });
                   clearTimeout(retryTimer);
                   if (retry.ok) {
                     const rj = (await retry.json()) as { data?: Record<string, unknown> } & Record<
