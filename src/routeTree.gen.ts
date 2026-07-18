@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnimmasterIndexRouteImport } from './routes/animmaster.index'
 import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
+import { Route as ApiChatDirectorRouteImport } from './routes/api/chat-director'
 import { Route as AnimmasterSlugRouteImport } from './routes/animmaster.$slug'
 import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
 import { Route as ApiPublicRegistryNameRouteImport } from './routes/api/public/registry.$name'
@@ -29,6 +30,11 @@ const AnimmasterIndexRoute = AnimmasterIndexRouteImport.update({
 const AssetsSlugRoute = AssetsSlugRouteImport.update({
   id: '/assets/$slug',
   path: '/assets/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatDirectorRoute = ApiChatDirectorRouteImport.update({
+  id: '/api/chat-director',
+  path: '/api/chat-director',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnimmasterSlugRoute = AnimmasterSlugRouteImport.update({
@@ -50,6 +56,7 @@ const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
+  '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster/': typeof AnimmasterIndexRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
+  '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster': typeof AnimmasterIndexRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
+  '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster/': typeof AnimmasterIndexRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/animmaster/$slug'
+    | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster/'
     | '/api/public/registry'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/animmaster/$slug'
+    | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster'
     | '/api/public/registry'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/animmaster/$slug'
+    | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster/'
     | '/api/public/registry'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnimmasterSlugRoute: typeof AnimmasterSlugRoute
+  ApiChatDirectorRoute: typeof ApiChatDirectorRoute
   AssetsSlugRoute: typeof AssetsSlugRoute
   AnimmasterIndexRoute: typeof AnimmasterIndexRoute
   ApiPublicRegistryRoute: typeof ApiPublicRegistryRouteWithChildren
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/assets/$slug'
       fullPath: '/assets/$slug'
       preLoaderRoute: typeof AssetsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat-director': {
+      id: '/api/chat-director'
+      path: '/api/chat-director'
+      fullPath: '/api/chat-director'
+      preLoaderRoute: typeof ApiChatDirectorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/animmaster/$slug': {
@@ -168,6 +188,7 @@ const ApiPublicRegistryRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnimmasterSlugRoute: AnimmasterSlugRoute,
+  ApiChatDirectorRoute: ApiChatDirectorRoute,
   AssetsSlugRoute: AssetsSlugRoute,
   AnimmasterIndexRoute: AnimmasterIndexRoute,
   ApiPublicRegistryRoute: ApiPublicRegistryRouteWithChildren,

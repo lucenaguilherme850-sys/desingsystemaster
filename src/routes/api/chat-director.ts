@@ -165,7 +165,7 @@ export const Route = createFileRoute("/api/chat-director")({
         const result = streamText({
           model,
           system: SYSTEM_BASE + catalogSection,
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
           tools,
           stopWhen: stepCountIs(50),
         });
@@ -178,7 +178,7 @@ export const Route = createFileRoute("/api/chat-director")({
             await supabase.from("agent_messages").insert({
               thread_id: threadId,
               role: last.role,
-              parts: last.parts as unknown as object,
+              parts: last.parts as never,
             });
             // also persist any new user message that wasn't stored yet
             const userMsg = messages[messages.length - 1];
@@ -186,7 +186,7 @@ export const Route = createFileRoute("/api/chat-director")({
               await supabase.from("agent_messages").insert({
                 thread_id: threadId,
                 role: "user",
-                parts: userMsg.parts as unknown as object,
+                parts: userMsg.parts as never,
               });
             }
             await supabase
