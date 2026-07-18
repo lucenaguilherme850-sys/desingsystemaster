@@ -1,13 +1,27 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, Copy, Check } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ExternalLink, Copy, Check, Loader2, Sparkles } from "lucide-react";
+import { getAnimmasterDriveCode } from "@/lib/animmaster-drive-code.functions";
+import { buildComponentSpec } from "@/lib/component-spec";
+
+type SectionMapItem = {
+  section: string;
+  componentSlug?: string;
+  reason: string;
+  position?: string;
+  componentName?: string;
+  category?: string;
+  priority?: string;
+  adaptation?: string;
+};
 
 export type Report = {
   business?: Record<string, unknown> | null;
   brand?: Record<string, unknown> | null;
   audience?: Record<string, unknown> | null;
   design_system?: Record<string, unknown> | null;
-  section_map?: Array<{ section: string; componentSlug?: string; reason: string }> | null;
+  section_map?: SectionMapItem[] | null;
   implementation_plan?: Array<{ step: number; title: string; details: string }> | null;
   updated_at?: string;
 } | null;
@@ -15,7 +29,8 @@ export type Report = {
 const TABS = [
   { id: "brief", label: "Briefing" },
   { id: "ds", label: "Design System" },
-  { id: "map", label: "Mapa de Seções" },
+  { id: "map", label: "Mapa" },
+  { id: "comps", label: "Componentes" },
   { id: "plan", label: "Implementação" },
 ] as const;
 
@@ -96,6 +111,17 @@ export function ReportPanel({ report }: { report: Report }) {
               </div>
             ))}
           </div>
+        ) : tab === "comps" ? (
+          <div className="space-y-3">
+            {(report.section_map ?? []).length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                Nenhum componente selecionado ainda. Envie uma mensagem descrevendo seu projeto (ou cole a URL do site) para o agente montar a seleção.
+              </p>
+            )}
+            {(report.section_map ?? []).map((s, i) => (
+              <SelectedComponentCard key={i} item={s} business={report.business ?? null} />
+            ))}
+          </div>
         ) : (
           <ol className="space-y-2">
             {(report.implementation_plan ?? []).length === 0 && (
@@ -114,6 +140,127 @@ export function ReportPanel({ report }: { report: Report }) {
         )}
       </div>
     </aside>
+  );
+}
+
+function SelectedComponentCard({
+  item,
+  business,
+}: {
+  item: SectionMapItem;
+  business: Record<string, unknown> | null;
+}) {
+  const fetchCode = useServerFn(getAnimmasterDriveCode);
+  const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  async function copyAdaptedPrompt() {
+    if (!item.componentSlug) return;
+    setState("loading");
+    try {
+      const r = await fetchCode({ data: { slug: item.componentSlug } });
+      const files = r.files.map((f) => ({ path: f.path, content: f.content, language: f.language }));
+      if (!files.length) throw new Error("sem arquivos");
+      const spec = buildComponentSpec({
+        slug: item.componentSlug,
+        name: item.componentName || item.componentSlug,
+        category: item.category,
+        files,
+      });
+      const b = business ?? {};
+      const url = (b.url as string) || "";
+      const title = (b.title as string) || "";
+      const description = (b.description as string) || "";
+      const preamble = [
+        `# CONTEXTO DO PROJETO ALVO`,
+        url && `- URL: ${url}`,
+        title && `- Marca / título: ${title}`,
+        description && `- Descrição: ${description}`,
+        `- Posição na seleção: ${item.position ?? "—"}`,
+        `- Seção onde encaixar: **${item.section}**`,
+        ``,
+        `# INSTRUÇÕES DE ADAPTAÇÃO PARA ESTE PROJETO`,
+        item.adaptation ||
+          "Adapte apenas cores, tipografia e copy ao design system do projeto. Preserve timings, easings e complexidade técnica 1:1.",
+        ``,
+        `Antes de codar, pergunte ao usuário: 1) qual página/rota; 2) qual conteúdo real (títulos, mídia); 3) tokens de cor/fonte; 4) restrições mobile / prefers-reduced-motion.`,
+        ``,
+        `────────────────────────────────────────`,
+        ``,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      const finalPrompt = `${preamble}\n${spec.prompt}`;
+      try {
+        await navigator.clipboard.writeText(finalPrompt);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = finalPrompt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setState("done");
+      setTimeout(() => setState("idle"), 2000);
+    } catch {
+      setState("error");
+      setTimeout(() => setState("idle"), 2500);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon">
+            {item.position ?? "Componente"} · {item.section}
+          </div>
+          <h4 className="mt-0.5 truncate text-sm font-semibold">
+            {item.componentName || item.componentSlug}
+          </h4>
+          {item.componentSlug && (
+            <Link
+              to="/animmaster/$slug"
+              params={{ slug: item.componentSlug }}
+              className="mt-0.5 inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground hover:text-neon"
+            >
+              {item.componentSlug} <ExternalLink className="size-3" />
+            </Link>
+          )}
+        </div>
+      </div>
+      <p className="mt-2 text-xs text-foreground/80">{item.reason}</p>
+      {item.adaptation && (
+        <p className="mt-2 rounded-md border border-neon/30 bg-neon/5 p-2 text-[11px] leading-relaxed text-foreground/85">
+          <span className="font-mono text-[9px] uppercase tracking-widest text-neon">
+            onde usar
+          </span>
+          <br />
+          {item.adaptation}
+        </p>
+      )}
+      <button
+        onClick={copyAdaptedPrompt}
+        disabled={!item.componentSlug || state === "loading"}
+        className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-[#ff00c8] px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-black transition-colors hover:bg-[#ff00c8]/90 disabled:opacity-50"
+      >
+        {state === "loading" ? (
+          <>
+            <Loader2 className="size-3 animate-spin" /> gerando prompt…
+          </>
+        ) : state === "done" ? (
+          <>
+            <Check className="size-3" /> copiado
+          </>
+        ) : state === "error" ? (
+          <>falha — tente novamente</>
+        ) : (
+          <>
+            <Sparkles className="size-3" /> copiar prompt mestre adaptado
+          </>
+        )}
+      </button>
+    </div>
   );
 }
 
