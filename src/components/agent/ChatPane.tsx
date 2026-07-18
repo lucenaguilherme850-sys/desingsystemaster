@@ -41,9 +41,21 @@ export function ChatPane({
     onFinish: () => onFinished(),
   });
 
+  const didInitialScroll = useRef(false);
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: didInitialScroll.current ? "smooth" : "auto",
+    });
+    didInitialScroll.current = true;
   }, [messages, status]);
+  useEffect(() => {
+    didInitialScroll.current = false;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [threadId]);
 
   useEffect(() => {
     textareaRef.current?.focus();
