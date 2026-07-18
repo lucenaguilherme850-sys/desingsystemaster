@@ -73,7 +73,7 @@ function AgentThread() {
           qc.invalidateQueries({ queryKey: ["agent-threads"] });
         }}
       />
-      <ReportPanel report={reportQ.data ?? null} />
+      <ReportPanel report={(reportQ.data ?? null) as never} />
     </div>
   );
 }
