@@ -19,6 +19,9 @@ export function SiteHeader() {
           <Link to="/animmaster" className="hover:text-foreground transition-colors">
             Animmaster <span className="text-neon">280</span>
           </Link>
+          <Link to="/agent" className="hover:text-foreground transition-colors">
+            Agent <span className="text-neon">AI</span>
+          </Link>
         </nav>
 
         <a
