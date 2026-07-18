@@ -64,15 +64,22 @@ function AgentThread() {
           qc.invalidateQueries({ queryKey: ["agent-threads"] });
         }}
       />
-      <ChatPane
-        threadId={threadId}
-        initialMessages={msgsQ.data ?? []}
-        onFinished={() => {
-          qc.invalidateQueries({ queryKey: ["agent-messages", threadId] });
-          qc.invalidateQueries({ queryKey: ["agent-report", threadId] });
-          qc.invalidateQueries({ queryKey: ["agent-threads"] });
-        }}
-      />
+      {msgsQ.isLoading || !msgsQ.data ? (
+        <div className="flex items-center justify-center text-sm text-muted-foreground">
+          Carregando conversa…
+        </div>
+      ) : (
+        <ChatPane
+          key={threadId}
+          threadId={threadId}
+          initialMessages={msgsQ.data}
+          onFinished={() => {
+            qc.invalidateQueries({ queryKey: ["agent-messages", threadId] });
+            qc.invalidateQueries({ queryKey: ["agent-report", threadId] });
+            qc.invalidateQueries({ queryKey: ["agent-threads"] });
+          }}
+        />
+      )}
       <ReportPanel report={(reportQ.data ?? null) as never} />
     </div>
   );
