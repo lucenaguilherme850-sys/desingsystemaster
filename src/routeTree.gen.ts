@@ -18,6 +18,7 @@ import { Route as ApiChatDirectorRouteImport } from './routes/api/chat-director'
 import { Route as AnimmasterSlugRouteImport } from './routes/animmaster.$slug'
 import { Route as AuthenticatedAgentIndexRouteImport } from './routes/_authenticated/agent.index'
 import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
+import { Route as AuthenticatedAgentThreadIdRouteImport } from './routes/_authenticated/agent.$threadId'
 import { Route as ApiPublicRegistryNameRouteImport } from './routes/api/public/registry.$name'
 
 const AuthRoute = AuthRouteImport.update({
@@ -64,6 +65,12 @@ const ApiPublicRegistryRoute = ApiPublicRegistryRouteImport.update({
   path: '/api/public/registry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAgentThreadIdRoute =
+  AuthenticatedAgentThreadIdRouteImport.update({
+    id: '/agent/$threadId',
+    path: '/agent/$threadId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
   id: '/$name',
   path: '/$name',
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster/': typeof AnimmasterIndexRoute
+  '/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/agent/': typeof AuthenticatedAgentIndexRoute
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
@@ -88,6 +96,7 @@ export interface FileRoutesByTo {
   '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster': typeof AnimmasterIndexRoute
+  '/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/agent': typeof AuthenticatedAgentIndexRoute
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
@@ -101,6 +110,7 @@ export interface FileRoutesById {
   '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
   '/animmaster/': typeof AnimmasterIndexRoute
+  '/_authenticated/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
   '/api/public/registry': typeof ApiPublicRegistryRouteWithChildren
   '/_authenticated/agent/': typeof AuthenticatedAgentIndexRoute
   '/api/public/registry/$name': typeof ApiPublicRegistryNameRoute
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster/'
+    | '/agent/$threadId'
     | '/api/public/registry'
     | '/agent/'
     | '/api/public/registry/$name'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster'
+    | '/agent/$threadId'
     | '/api/public/registry'
     | '/agent'
     | '/api/public/registry/$name'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
     | '/api/chat-director'
     | '/assets/$slug'
     | '/animmaster/'
+    | '/_authenticated/agent/$threadId'
     | '/api/public/registry'
     | '/_authenticated/agent/'
     | '/api/public/registry/$name'
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRegistryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/agent/$threadId': {
+      id: '/_authenticated/agent/$threadId'
+      path: '/agent/$threadId'
+      fullPath: '/agent/$threadId'
+      preLoaderRoute: typeof AuthenticatedAgentThreadIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/registry/$name': {
       id: '/api/public/registry/$name'
       path: '/$name'
@@ -229,10 +249,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAgentThreadIdRoute: typeof AuthenticatedAgentThreadIdRoute
   AuthenticatedAgentIndexRoute: typeof AuthenticatedAgentIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAgentThreadIdRoute: AuthenticatedAgentThreadIdRoute,
   AuthenticatedAgentIndexRoute: AuthenticatedAgentIndexRoute,
 }
 
