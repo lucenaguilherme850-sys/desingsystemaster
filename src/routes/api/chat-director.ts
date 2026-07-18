@@ -94,7 +94,7 @@ export const Route = createFileRoute("/api/chat-director")({
                   return { ok: false, error: "Firecrawl não configurado" };
                 }
                 const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 30000);
+                const timer = setTimeout(() => controller.abort(), 45000);
                 const formats: Array<string> = ["markdown", "links", "summary"];
                 if (includeBranding) formats.push("branding");
                 const res = await fetch(
@@ -106,7 +106,14 @@ export const Route = createFileRoute("/api/chat-director")({
                       Authorization: `Bearer ${lovableKey}`,
                       "X-Connection-Api-Key": fcKey,
                     },
-                    body: JSON.stringify({ url, formats, onlyMainContent: true }),
+                    body: JSON.stringify({
+                      url,
+                      formats,
+                      onlyMainContent: true,
+                      waitFor: 4000,
+                      mobile: false,
+                      blockAds: true,
+                    }),
                     signal: controller.signal,
                   },
                 );
@@ -129,6 +136,60 @@ export const Route = createFileRoute("/api/chat-director")({
                 const links = Array.isArray(d.links)
                   ? (d.links as string[]).slice(0, 30)
                   : [];
+                // Detecta páginas de erro/SPA que não hidrataram e tenta novamente com espera maior
+                const looksBroken =
+                  md.length < 400 ||
+                  /não carregou|algo deu errado|voltar ao início|application error|failed to load/i.test(
+                    md,
+                  );
+                if (looksBroken) {
+                  const retryController = new AbortController();
+                  const retryTimer = setTimeout(() => retryController.abort(), 60000);
+                  const retry = await fetch(
+                    "https://connector-gateway.lovable.dev/firecrawl/v2/scrape",
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${lovableKey}`,
+                        "X-Connection-Api-Key": fcKey,
+                      },
+                      body: JSON.stringify({
+                        url,
+                        formats,
+                        onlyMainContent: false,
+                        waitFor: 10000,
+                        blockAds: true,
+                      }),
+                      signal: retryController.signal,
+                    },
+                  );
+                  clearTimeout(retryTimer);
+                  if (retry.ok) {
+                    const rj = (await retry.json()) as { data?: Record<string, unknown> } & Record<
+                      string,
+                      unknown
+                    >;
+                    const rd = (rj.data ?? rj) as Record<string, unknown>;
+                    const rmd = (rd.markdown as string | undefined) ?? "";
+                    if (rmd.length > md.length) {
+                      return {
+                        ok: true,
+                        url,
+                        retriedWithLongerWait: true,
+                        title: (rd.metadata as Record<string, unknown> | undefined)?.title,
+                        description: (rd.metadata as Record<string, unknown> | undefined)
+                          ?.description,
+                        summary: rd.summary,
+                        branding: includeBranding ? rd.branding : undefined,
+                        links: Array.isArray(rd.links)
+                          ? (rd.links as string[]).slice(0, 30)
+                          : [],
+                        markdown: rmd.slice(0, maxChars),
+                      };
+                    }
+                  }
+                }
                 return {
                   ok: true,
                   url,
@@ -139,6 +200,9 @@ export const Route = createFileRoute("/api/chat-director")({
                   branding: includeBranding ? d.branding : undefined,
                   links,
                   markdown: md.slice(0, maxChars),
+                  warning: looksBroken
+                    ? "A página parece não ter carregado completamente (possível SPA sem SSR ou erro de deploy). Peça ao usuário para confirmar se o site está no ar."
+                    : undefined,
                 };
               } catch (e) {
                 return { ok: false, error: e instanceof Error ? e.message : String(e) };
