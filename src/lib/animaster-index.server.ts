@@ -11,10 +11,23 @@ let cache: { at: number; items: AnimasterIndexItem[] } | null = null;
 
 export async function buildAnimasterIndex(): Promise<AnimasterIndexItem[]> {
   if (cache && Date.now() - cache.at < 60_000 * 10) return cache.items;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
   const supabase = createClient<Database>(
     process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
+    key,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: {
+        fetch: (input, init) => {
+          const headers = new Headers(init?.headers);
+          if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
+            headers.delete("Authorization");
+          }
+          headers.set("apikey", key);
+          return fetch(input, { ...init, headers });
+        },
+      },
+    },
   );
   const { data } = await supabase
     .from("animmaster_items")
