@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, tool, stepCountIs, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStreamResponse,
+  streamText,
+  tool,
+  stepCountIs,
+  type UIMessage,
+  type UIMessageChunk,
+} from "ai";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -80,6 +88,25 @@ CATÁLOGO ANIMMASTER: use SEMPRE a tool searchAnimasterLibrary para descobrir co
 `;
 
 type Body = { messages: UIMessage[]; threadId: string };
+
+type LocalSiteSummary = {
+  url: string;
+  ok: boolean;
+  status?: number;
+  title?: string;
+  description?: string;
+  excerpt?: string;
+  error?: string;
+};
+
+type LocalRecommendation = {
+  section: string;
+  slug: string;
+  name: string;
+  category: string;
+  priority: "Alta" | "Média";
+  reason: string;
+};
 
 type ScrapeFormats = Array<string>;
 
@@ -199,6 +226,282 @@ function getReadableAiError(error: unknown): string {
   return text.trim() || "Falha ao gerar resposta do agente. Tente novamente.";
 }
 
+function extractMessageText(message: UIMessage | undefined): string {
+  if (!message) return "";
+  const parts = Array.isArray(message.parts) ? message.parts : [];
+  return parts
+    .map((part) => {
+      if (typeof part === "object" && part !== null && "type" in part && part.type === "text") {
+        const text = (part as { text?: unknown }).text;
+        return typeof text === "string" ? text : "";
+      }
+      return "";
+    })
+    .join("\n")
+    .trim();
+}
+
+function normalizeForSearch(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function tokenize(value: string): string[] {
+  const stopWords = new Set([
+    "para",
+    "com",
+    "uma",
+    "um",
+    "site",
+    "projeto",
+    "quero",
+    "preciso",
+    "de",
+    "do",
+    "da",
+    "dos",
+    "das",
+    "que",
+    "onde",
+    "como",
+    "mais",
+    "meu",
+    "minha",
+    "landing",
+    "page",
+  ]);
+  return normalizeForSearch(value)
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length > 2 && !stopWords.has(token));
+}
+
+function categoryIntentBoost(category: string, text: string): number {
+  const categoryValue = normalizeForSearch(category);
+  const rules: Array<{ words: string[]; categories: string[]; boost: number }> = [
+    { words: ["hero", "capa", "inicio", "primeira", "headline"], categories: ["hero"], boost: 8 },
+    { words: ["scroll", "rolagem", "parallax", "reveal"], categories: ["scroll", "rolagem"], boost: 8 },
+    { words: ["mouse", "cursor", "hover", "interacao"], categories: ["mouse", "hover"], boost: 7 },
+    { words: ["texto", "titulo", "heading", "headline", "typography"], categories: ["text", "texto"], boost: 7 },
+    { words: ["menu", "nav", "navegacao", "navbar"], categories: ["nav", "menu"], boost: 7 },
+    { words: ["shader", "webgl", "3d", "canvas"], categories: ["webgl", "shader", "3d"], boost: 7 },
+    { words: ["card", "grid", "galeria", "portfolio"], categories: ["card", "gallery", "grid"], boost: 6 },
+    { words: ["cta", "conversao", "venda", "checkout", "pricing", "preco"], categories: ["cta", "pricing", "button"], boost: 6 },
+  ];
+  return rules.reduce((score, rule) => {
+    const hasWord = rule.words.some((word) => text.includes(word));
+    const hasCategory = rule.categories.some((word) => categoryValue.includes(word));
+    return hasWord && hasCategory ? score + rule.boost : score;
+  }, 0);
+}
+
+function getLocalRecommendations(
+  index: Awaited<ReturnType<typeof buildAnimasterIndex>>,
+  queryText: string,
+): LocalRecommendation[] {
+  const normalizedQuery = normalizeForSearch(queryText);
+  const tokens = tokenize(queryText);
+  const scored = index
+    .map((item, position) => {
+      const haystack = normalizeForSearch(`${item.slug} ${item.name} ${item.category}`);
+      const tokenScore = tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 3 : 0), 0);
+      const categoryScore = categoryIntentBoost(item.category, normalizedQuery);
+      const earlyScore = Math.max(0, 4 - Math.floor(position / 40));
+      return { item, score: tokenScore + categoryScore + earlyScore };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  const picked: LocalRecommendation[] = [];
+  const usedCategories = new Set<string>();
+  for (const entry of scored) {
+    if (picked.length >= 7) break;
+    const categoryKey = normalizeForSearch(entry.item.category);
+    if (entry.score <= 0 && picked.length >= 4) continue;
+    if (usedCategories.has(categoryKey) && picked.length < 4) continue;
+    usedCategories.add(categoryKey);
+    picked.push({
+      section: inferSection(entry.item.category, entry.item.name),
+      slug: entry.item.slug,
+      name: entry.item.name,
+      category: entry.item.category,
+      priority: picked.length < 3 ? "Alta" : "Média",
+      reason: buildRecommendationReason(entry.item.category, queryText),
+    });
+  }
+  return picked;
+}
+
+function inferSection(category: string, name: string): string {
+  const value = normalizeForSearch(`${category} ${name}`);
+  if (/hero|headline|intro/.test(value)) return "Hero";
+  if (/scroll|rolagem|reveal|parallax/.test(value)) return "Seções de rolagem";
+  if (/nav|menu|dock/.test(value)) return "Navegação";
+  if (/text|texto|typography|title/.test(value)) return "Títulos e copy";
+  if (/mouse|hover|cursor/.test(value)) return "Interações";
+  if (/pricing|price|preco/.test(value)) return "Pricing";
+  if (/cta|button/.test(value)) return "CTA";
+  return "Experiência visual";
+}
+
+function buildRecommendationReason(category: string, queryText: string): string {
+  const categoryValue = normalizeForSearch(category);
+  const query = normalizeForSearch(queryText);
+  if (categoryValue.includes("hero")) return "Cria impacto imediato na primeira dobra sem depender de texto longo.";
+  if (categoryValue.includes("scroll") || query.includes("rolagem")) {
+    return "Aumenta ritmo de leitura e revela conteúdo no momento certo.";
+  }
+  if (categoryValue.includes("mouse") || categoryValue.includes("hover")) {
+    return "Dá sensação premium nas áreas interativas sem poluir a interface.";
+  }
+  if (categoryValue.includes("text") || categoryValue.includes("texto")) {
+    return "Fortalece hierarquia tipográfica e melhora lembrança da mensagem.";
+  }
+  if (categoryValue.includes("nav") || categoryValue.includes("menu")) {
+    return "Deixa a navegação mais clara e memorável para exploração rápida.";
+  }
+  return "Adiciona movimento com função estratégica, não apenas decoração.";
+}
+
+function findFirstUrl(text: string): string | null {
+  const match = text.match(/https?:\/\/[^\s)]+|(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s)]*)?/i);
+  return match?.[0] ?? null;
+}
+
+async function fetchLocalSiteSummary(text: string): Promise<LocalSiteSummary | null> {
+  const rawUrl = findFirstUrl(text);
+  if (!rawUrl) return null;
+  try {
+    const url = normalizePublicUrl(rawUrl);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(url, {
+      headers: {
+        Accept: "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.8",
+        "User-Agent": "AnimMasterCreativeDirectorLocal/1.0",
+      },
+      redirect: "follow",
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    const html = await response.text();
+    const textContent = textFromHtml(html);
+    const unavailable = detectUnavailableSite(`${html} ${textContent}`, response.status);
+    const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim();
+    const description = html
+      .match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i)?.[1]
+      ?.trim();
+    return {
+      url,
+      ok: response.ok && !unavailable.siteUnavailable,
+      status: response.status,
+      title,
+      description,
+      excerpt: textContent.slice(0, 700),
+      error: unavailable.siteUnavailable ? "A página pública não carregou corretamente ou retornou 404." : undefined,
+    };
+  } catch (error) {
+    return {
+      url: rawUrl,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function buildLocalDirectorReply({
+  messages,
+  index,
+}: {
+  messages: UIMessage[];
+  index: Awaited<ReturnType<typeof buildAnimasterIndex>>;
+}): Promise<string> {
+  const latestText = extractMessageText(messages[messages.length - 1]);
+  const siteSummary = await fetchLocalSiteSummary(latestText);
+  const recommendations = getLocalRecommendations(index, latestText);
+  const categories = Array.from(new Set(index.map((item) => item.category))).sort();
+  const componentRows = recommendations
+    .map(
+      (item) =>
+        `| ${item.section} | [${item.slug}](/animmaster/${item.slug}) | ${item.priority} | ${item.reason} |`,
+    )
+    .join("\n");
+  const selectedRows = recommendations
+    .map(
+      (item) =>
+        `| 🟡 Planejado | ${item.section} | [${item.slug}](/animmaster/${item.slug}) | ${item.priority} | ${item.reason} |`,
+    )
+    .join("\n");
+  const siteBlock = siteSummary
+    ? siteSummary.ok
+      ? `\n## 🔎 Leitura do Site\n\n- **URL:** ${siteSummary.url}\n- **Status:** ${siteSummary.status ?? "ok"}\n- **Título:** ${siteSummary.title || "não identificado"}\n- **Descrição:** ${siteSummary.description || "não identificada"}\n- **Sinal principal:** ${(siteSummary.excerpt || "").slice(0, 220) || "conteúdo curto demais para extrair contexto."}\n`
+      : `\n## ⚠️ Leitura do Site\n\n- **URL:** ${siteSummary.url}\n- **Status:** ${siteSummary.status ?? "indisponível"}\n- **Problema:** ${siteSummary.error || "não foi possível carregar a página."}\n- **Ação:** envie uma URL pública funcionando ou descreva o projeto em 3-5 linhas.\n`
+    : "";
+
+  return `## 📋 Resumo Executivo
+
+Modo local sem consumo de créditos ativado. A análise abaixo usa regras estratégicas + o catálogo AnimMaster salvo no projeto.
+${siteBlock}
+## 🧠 Estratégia
+
+- Priorizar componentes que reforçam a primeira impressão, leitura e conversão.
+- Usar motion como hierarquia visual: entrada → exploração → prova → ação.
+- Evitar efeitos decorativos sem função clara na jornada.
+
+## 🧩 Componentes Recomendados
+
+| Seção | Componente AnimMaster | Prioridade | Motivo |
+|-------|----------------------|------------|--------|
+${componentRows || "| Hero | catálogo indisponível | Alta | Não encontrei componentes locais para recomendar. |"}
+
+## 🗺️ Ordem de Implementação
+
+1. Definir a seção principal onde o efeito entra: Hero, CTA, cards, pricing ou navegação.
+2. Abrir o componente recomendado e copiar o código/documentação completa.
+3. Adaptar tokens, tipografia e espaçamentos ao design system do projeto alvo.
+4. Validar em mobile antes de adicionar efeitos secundários.
+
+## 💡 Recomendações
+
+- Para páginas comerciais, combine **1 efeito forte no Hero** + **microinterações em cards/CTA**.
+- Para portfólios ou SaaS premium, use animações de rolagem com parcimônia para guiar o olhar.
+- Para performance, mantenha vídeos/previews comprimidos e pause efeitos fora da viewport.
+
+## ⚠️ Pontos de Atenção
+
+- Esta resposta não usa IA externa; portanto, ela não consome créditos.
+- A leitura de URL no modo local é simples: se o site depender muito de JavaScript, descreva o projeto manualmente para melhorar a seleção.
+- Categorias disponíveis no catálogo: ${categories.slice(0, 12).join(", ")}${categories.length > 12 ? "…" : ""}.
+
+## 🚀 Próximos Passos
+
+Envie a seção onde quer aplicar o primeiro componente ou peça: “monte um plano para minha landing”.
+
+## 📦 Componentes Selecionados
+
+| Status | Seção | Componente | Prioridade | Motivo |
+|--------|-------|------------|------------|--------|
+${selectedRows || "| 🟡 Planejado | Hero | catálogo indisponível | Alta | Aguardando catálogo local. |"}`;
+}
+
+function createLocalStreamResponse(text: string): Response {
+  const messageId = `local-${Date.now()}`;
+  const textId = `${messageId}-text`;
+  const stream = new ReadableStream<UIMessageChunk>({
+    start(controller) {
+      controller.enqueue({ type: "start", messageId });
+      controller.enqueue({ type: "text-start", id: textId });
+      for (let index = 0; index < text.length; index += 900) {
+        controller.enqueue({ type: "text-delta", id: textId, delta: text.slice(index, index + 900) });
+      }
+      controller.enqueue({ type: "text-end", id: textId });
+      controller.enqueue({ type: "finish", finishReason: "stop" });
+      controller.close();
+    },
+  });
+  return createUIMessageStreamResponse({ stream });
+}
+
 export const Route = createFileRoute("/api/chat-director")({
   server: {
     handlers: {
@@ -207,9 +510,6 @@ export const Route = createFileRoute("/api/chat-director")({
         if (!Array.isArray(messages) || !threadId) {
           return new Response("Missing messages or threadId", { status: 400 });
         }
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
-
         const auth = request.headers.get("authorization") ?? "";
         const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : null;
         if (!token) return new Response("Unauthorized", { status: 401 });
@@ -249,6 +549,32 @@ export const Route = createFileRoute("/api/chat-director")({
         const index = await buildAnimasterIndex();
         const categories = Array.from(new Set(index.map((i) => i.category))).sort();
         const catalogSection = `\n\nCategorias disponíveis (${index.length} componentes no total):\n${categories.map((c) => `- ${c}`).join("\n")}`;
+        const usePaidAi = process.env.ANIMMASTER_AGENT_PAID_AI === "true";
+        if (!usePaidAi) {
+          const localReply = await buildLocalDirectorReply({ messages, index });
+          const userMsg = messages[messages.length - 1];
+          if (userMsg?.role === "user") {
+            await supabase.from("agent_messages").insert({
+              thread_id: threadId,
+              role: "user",
+              parts: userMsg.parts as never,
+            });
+          }
+          await supabase.from("agent_messages").insert({
+            thread_id: threadId,
+            role: "assistant",
+            parts: [{ type: "text", text: localReply }] as never,
+          });
+          await supabase
+            .from("agent_threads")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", threadId);
+
+          return createLocalStreamResponse(localReply);
+        }
+
+        const key = process.env.LOVABLE_API_KEY;
+        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("openai/gpt-5.5");
 
