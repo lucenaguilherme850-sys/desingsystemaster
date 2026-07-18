@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -138,6 +139,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAgent = pathname.startsWith("/agent");
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -156,7 +159,7 @@ function RootComponent() {
         <main className="relative z-10 flex-1">
           <Outlet />
         </main>
-        <SiteFooter />
+        {!isAgent && <SiteFooter />}
       </div>
       <Toaster theme="dark" />
     </QueryClientProvider>
