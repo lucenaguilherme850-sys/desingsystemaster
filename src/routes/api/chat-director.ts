@@ -225,6 +225,17 @@ export const Route = createFileRoute("/api/chat-director")({
         const { data: userData } = await supabase.auth.getUser(token);
         if (!userData.user) return new Response("Unauthorized", { status: 401 });
 
+        // Admin-only: block non-admins from spending AI credits
+        const { data: roleRow } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userData.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        if (!roleRow) {
+          return new Response("Forbidden — admin only", { status: 403 });
+        }
+
         // Verify thread ownership
         const { data: thread } = await supabase
           .from("agent_threads")
