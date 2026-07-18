@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
-import { buildAnimasterIndex, formatIndexForPrompt } from "@/lib/animaster-index.server";
+import { buildAnimasterIndex } from "@/lib/animaster-index.server";
 
 const SYSTEM_BASE = `Você é o AGENTE CREATIVE DIRECTOR da AnimMaster — Direção de Arte + Design System + UX/UI + Motion + CRO condensados em um agente.
 
@@ -76,7 +76,7 @@ Avance naturalmente. Não anuncie fases, não numere etapas na resposta.
 
 Aja como Diretor de Arte sênior revisando o projeto — facilite decisão, não descreva possibilidades.
 
-CATÁLOGO ANIMMASTER (referência):
+CATÁLOGO ANIMMASTER: use SEMPRE a tool searchAnimasterLibrary para descobrir componentes (filtre por category + query). Nunca invente slugs. Use getComponentDetails antes de recomendar.
 `;
 
 type Body = { messages: UIMessage[]; threadId: string };
@@ -165,7 +165,8 @@ export const Route = createFileRoute("/api/chat-director")({
         }
 
         const index = await buildAnimasterIndex();
-        const catalogSection = formatIndexForPrompt(index);
+        const categories = Array.from(new Set(index.map((i) => i.category))).sort();
+        const catalogSection = `\n\nCategorias disponíveis (${index.length} componentes no total):\n${categories.map((c) => `- ${c}`).join("\n")}`;
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("openai/gpt-5.5");
 
