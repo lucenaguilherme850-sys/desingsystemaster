@@ -14,6 +14,115 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_messages: {
+        Row: {
+          created_at: string
+          id: string
+          parts: Json
+          role: string
+          thread_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role: string
+          thread_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "agent_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_reports: {
+        Row: {
+          audience: Json
+          brand: Json
+          business: Json
+          design_system: Json
+          generated_at: string
+          id: string
+          implementation_plan: Json
+          section_map: Json
+          thread_id: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: Json
+          brand?: Json
+          business?: Json
+          design_system?: Json
+          generated_at?: string
+          id?: string
+          implementation_plan?: Json
+          section_map?: Json
+          thread_id: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: Json
+          brand?: Json
+          business?: Json
+          design_system?: Json
+          generated_at?: string
+          id?: string
+          implementation_plan?: Json
+          section_map?: Json
+          thread_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_reports_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: true
+            referencedRelation: "agent_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_threads: {
+        Row: {
+          brief_summary: string
+          created_at: string
+          id: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brief_summary?: string
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brief_summary?: string
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       animmaster_items: {
         Row: {
           category: string
