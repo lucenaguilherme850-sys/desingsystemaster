@@ -128,6 +128,77 @@ function detectUnavailableSite(text: string, status?: number) {
   };
 }
 
+type ErrorLikeRecord = Record<string, unknown>;
+
+function asErrorRecord(value: unknown): ErrorLikeRecord | null {
+  return typeof value === "object" && value !== null ? (value as ErrorLikeRecord) : null;
+}
+
+function readString(value: unknown, key: string): string | undefined {
+  const record = asErrorRecord(value);
+  const result = record?.[key];
+  return typeof result === "string" ? result : undefined;
+}
+
+function readNumber(value: unknown, key: string): number | undefined {
+  const record = asErrorRecord(value);
+  const result = record?.[key];
+  return typeof result === "number" ? result : undefined;
+}
+
+function collectErrorText(error: unknown): string {
+  const cause = asErrorRecord(error)?.cause;
+  const parts = [
+    error instanceof Error ? error.message : undefined,
+    readString(error, "message"),
+    readString(error, "responseBody"),
+    readString(error, "body"),
+    cause instanceof Error ? cause.message : undefined,
+    readString(cause, "message"),
+    readString(cause, "responseBody"),
+  ];
+
+  return parts.filter(Boolean).join("\n");
+}
+
+function collectErrorStatus(error: unknown): number | undefined {
+  const cause = asErrorRecord(error)?.cause;
+  return (
+    readNumber(error, "statusCode") ??
+    readNumber(error, "status") ??
+    readNumber(cause, "statusCode") ??
+    readNumber(cause, "status")
+  );
+}
+
+function getReadableAiError(error: unknown): string {
+  const status = collectErrorStatus(error);
+  const text = collectErrorText(error);
+  const normalized = text.toLowerCase();
+
+  if (status === 402 || /insufficient credits|payment required|billing|credits? exhausted|sem créditos/.test(normalized)) {
+    return "Créditos de IA insuficientes. Adicione créditos em Settings → Plans & credits e envie a mensagem novamente.";
+  }
+
+  if (status === 429 || /rate limit|too many requests|limite de uso/.test(normalized)) {
+    return "Limite temporário de IA atingido. Aguarde alguns instantes e tente enviar novamente.";
+  }
+
+  if (status === 401 || status === 403 || /unauthorized|forbidden|invalid api key/.test(normalized)) {
+    return "A sessão ou a chave de IA não foi autorizada. Recarregue a página, entre novamente e tente outra vez.";
+  }
+
+  if (/abort|timeout|timed out|network|fetch failed/.test(normalized)) {
+    return "A resposta demorou demais ou a conexão caiu. Tente enviar novamente com uma mensagem mais curta.";
+  }
+
+  if (/context_length|maximum context|token limit|too many tokens/.test(normalized)) {
+    return "A mensagem ficou grande demais para o modelo. Envie uma versão mais curta ou divida a análise em partes.";
+  }
+
+  return text.trim() || "Falha ao gerar resposta do agente. Tente novamente.";
+}
+
 export const Route = createFileRoute("/api/chat-director")({
   server: {
     handlers: {
@@ -373,9 +444,10 @@ export const Route = createFileRoute("/api/chat-director")({
             inputSchema: z.object({
               query: z.string().optional(),
               category: z.string().optional(),
-              limit: z.number().min(1).max(30).default(12),
+              limit: z.number().default(12),
             }),
             execute: async ({ query, category, limit }) => {
+              const safeLimit = Math.min(Math.max(Number(limit) || 12, 1), 30);
               let items = index;
               if (category) {
                 const c = category.toLowerCase();
@@ -387,7 +459,7 @@ export const Route = createFileRoute("/api/chat-director")({
                   (i) => i.slug.toLowerCase().includes(q) || i.name.toLowerCase().includes(q),
                 );
               }
-              return items.slice(0, limit);
+              return items.slice(0, safeLimit);
             },
           }),
           getComponentDetails: tool({
@@ -465,6 +537,7 @@ export const Route = createFileRoute("/api/chat-director")({
 
         return result.toUIMessageStreamResponse({
           originalMessages: messages,
+          onError: getReadableAiError,
           onFinish: async ({ messages: finalMessages }) => {
             const last = finalMessages[finalMessages.length - 1];
             if (!last) return;
