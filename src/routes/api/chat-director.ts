@@ -30,11 +30,59 @@ COMPORTAMENTO:
 - Ao final, use OBRIGATORIAMENTE a ferramenta saveReport para persistir o Design System, o Mapa de Seções e o Plano de Implementação estruturados.
 - Cada item do mapa de seções deve conter: seção (ex: "Hero"), componente Animaster (slug), motivo estratégico (2-4 linhas).
 - Quando o usuário compartilhar uma URL (site do concorrente, referência, portfólio, site atual), use SEMPRE a ferramenta fetchUrl para analisar o conteúdo real antes de comentar. Nunca invente o que está na página.
+- Se fetchUrl retornar ok:false, siteUnavailable:true ou publicSiteNotFound:true, NÃO faça auditoria de design/CRO como se tivesse visto o site. Diga claramente que a URL pública não está acessível e peça a URL correta/publicada. Para sites Lovable, explique que "No Lovable project found at this address" significa domínio não publicado, removido ou digitado errado.
 
 CATÁLOGO ANIMMASTER (referência sempre disponível):
 `;
 
 type Body = { messages: UIMessage[]; threadId: string };
+
+type ScrapeFormats = Array<string>;
+
+type FirecrawlScrapeResult = {
+  data?: Record<string, unknown>;
+  markdown?: string;
+  metadata?: Record<string, unknown>;
+  summary?: string;
+  links?: string[];
+  branding?: unknown;
+};
+
+function normalizePublicUrl(input: string) {
+  const trimmed = input.trim();
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const parsed = new URL(withProtocol);
+  return parsed.toString();
+}
+
+function textFromHtml(html: string) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function detectUnavailableSite(text: string, status?: number) {
+  const value = text.toLowerCase();
+  const lovableNotFound = value.includes("no lovable project found at this address");
+  const projectNotFound = value.includes("project not found");
+  const appError =
+    value.includes("esta página não carregou") ||
+    value.includes("algo deu errado") ||
+    value.includes("this page could not be loaded") ||
+    value.includes("application error") ||
+    value.includes("failed to load");
+
+  return {
+    publicSiteNotFound: lovableNotFound || (status === 404 && projectNotFound),
+    appError,
+    siteUnavailable: lovableNotFound || projectNotFound || appError || status === 404,
+  };
+}
 
 export const Route = createFileRoute("/api/chat-director")({
   server: {
