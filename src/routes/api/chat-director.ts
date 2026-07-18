@@ -457,6 +457,9 @@ export const Route = createFileRoute("/api/chat-director")({
           messages: await convertToModelMessages(messages),
           tools,
           stopWhen: stepCountIs(50),
+          providerOptions: {
+            lovable: { service_tier: "priority" },
+          },
         });
 
         return result.toUIMessageStreamResponse({
