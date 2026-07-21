@@ -44,8 +44,23 @@ const TABS = [
   { id: "plan", label: "Implementação" },
 ] as const;
 
-export function ReportPanel({ report }: { report: Report }) {
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("pipeline");
+type TabId = (typeof TABS)[number]["id"];
+
+export function ReportPanel({
+  report,
+  activeTab,
+  onTabChange,
+}: {
+  report: Report;
+  activeTab?: TabId;
+  onTabChange?: (id: TabId) => void;
+}) {
+  const [internalTab, setInternalTab] = useState<TabId>("pipeline");
+  const tab = activeTab ?? internalTab;
+  const setTab = (id: TabId) => {
+    if (onTabChange) onTabChange(id);
+    else setInternalTab(id);
+  };
   const [copied, setCopied] = useState(false);
   const biz = (report?.business ?? null) as
     | (Record<string, unknown> & {
