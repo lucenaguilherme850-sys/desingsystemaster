@@ -46,12 +46,25 @@ export default function ComponentSpec(props: Props) {
   if (!props.files.length) return null;
 
   const ping = async (kind: "spec" | "prompt", text: string) => {
-    const ok = await copyText(text);
-    if (ok) {
-      setCopied(kind);
-      setTimeout(() => setCopied(null), 1600);
+    try {
+      const ok = await copyText(text);
+      if (ok) {
+        setCopied(kind);
+        setTimeout(() => setCopied(null), 1600);
+      }
+    } catch (e) {
+      console.error("copy failed", e);
     }
   };
+
+  // Prompt pode ter vários MB (código-fonte inteiro embutido) — renderizar
+  // o texto completo dentro de <pre> trava o browser. Mostramos só um preview.
+  const PREVIEW_LIMIT = 4000;
+  const promptPreview =
+    spec.prompt.length > PREVIEW_LIMIT
+      ? spec.prompt.slice(0, PREVIEW_LIMIT) +
+        `\n\n… (${(spec.prompt.length - PREVIEW_LIMIT).toLocaleString()} caracteres adicionais — use "copiar prompt" para obter o conteúdo completo)`
+      : spec.prompt;
 
   return (
     <div className="mt-10 space-y-6">
@@ -137,7 +150,7 @@ export default function ComponentSpec(props: Props) {
           WebGL por CSS ou reduzir a experiência premium do componente.
         </p>
         <pre className="mt-3 max-h-96 overflow-auto rounded-lg border border-border/60 bg-black/60 p-3 text-[11px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">
-          <code>{spec.prompt}</code>
+          <code>{promptPreview}</code>
         </pre>
       </div>
     </div>
