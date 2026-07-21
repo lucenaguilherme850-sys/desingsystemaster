@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { unzipSync, strFromU8 } from "fflate";
+import { buildComponentSpec } from "@/lib/component-spec";
 
 const inputSchema = z.object({ slug: z.string().min(1).max(200) });
+const promptInputSchema = z.object({ slug: z.string().min(1).max(200) });
 const GATEWAY = "https://connector-gateway.lovable.dev/google_drive/drive/v3";
 
 const TEXT_EXT = new Set([
@@ -103,4 +105,29 @@ export const getAnimmasterDriveCode = createServerFn({ method: "POST" })
     });
 
     return { files };
+  });
+
+export const getAnimmasterDriveMasterPrompt = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => promptInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("animmaster_items")
+      .select("slug, name, category")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) return { prompt: "" };
+
+    const res = await getAnimmasterDriveCode.handler!({ data: { slug: data.slug } } as never);
+    const files = (res as { files: { path: string; content: string; language: string }[] }).files;
+    if (!files.length) return { prompt: "" };
+
+    const spec = buildComponentSpec({
+      slug: row.slug,
+      name: row.name ?? row.slug,
+      category: row.category,
+      files: files.map((f) => ({ path: f.path, content: f.content, language: f.language })),
+    });
+    return { prompt: spec.prompt };
   });
