@@ -1270,6 +1270,37 @@ export const Route = createFileRoute("/api/chat-director")({
                 parts: userMsg.parts as never,
               });
             }
+            // Always mirror the pre-computed pipeline/collection into the
+            // report so the sidebar keeps the specialists + kit view fresh,
+            // even when the model didn't explicitly call saveReport.
+            const { data: existing } = await supabase
+              .from("agent_reports")
+              .select("business")
+              .eq("thread_id", threadId)
+              .maybeSingle();
+            const business = {
+              ...((existing?.business as Record<string, unknown> | null) ?? {}),
+              ...(preSite
+                ? {
+                    url: preSite.url,
+                    title: preSite.title,
+                    description: preSite.description,
+                    status: preSite.status,
+                    ok: preSite.ok,
+                    excerpt: preSite.excerpt,
+                  }
+                : {}),
+              creative_direction: preDirection,
+              pipeline: prePipeline,
+              collection: preCollection,
+              emotion: prePipeline.emotion,
+            };
+            await supabase
+              .from("agent_reports")
+              .upsert(
+                { thread_id: threadId, business, generated_at: new Date().toISOString() },
+                { onConflict: "thread_id" },
+              );
             await supabase
               .from("agent_threads")
               .update({ updated_at: new Date().toISOString() })
