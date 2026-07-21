@@ -344,7 +344,13 @@ function inferSection(category: string, name: string): string {
   return "Experiência visual";
 }
 
-function buildAdaptationNote(category: string, section: string, site?: LocalSiteSummary | null): string {
+function buildAdaptationNote(
+  category: string,
+  section: string,
+  site: LocalSiteSummary | null | undefined,
+  slug: string = "",
+  position: number = 0,
+): string {
   const c = normalizeForSearch(category);
   const brand = site?.title?.split("|")[0]?.trim() || "o projeto alvo";
   const profile = inferSiteProfile(site);
@@ -352,6 +358,17 @@ function buildAdaptationNote(category: string, section: string, site?: LocalSite
   const accent = profile.accent;
   const feel = profile.feel;
   const speed = profile.speed;
+  const eff = pickEffect(category, slug || section);
+  const placements = [
+    "primeira dobra (hero principal)",
+    "seção logo abaixo do hero (proposta de valor)",
+    "grid de serviços / cases",
+    "seção de prova social / depoimentos",
+    "bloco de pricing ou planos",
+    "CTA final antes do footer",
+    "navegação principal / header",
+  ];
+  const placement = placements[(hashSlug(slug || section) + position) % placements.length];
 
   const perCategory = (() => {
     if (c.includes("hero")) return `**Onde usar:** primeira dobra de ${brand}, sincronizado com o headline principal.\n- Trocar background por **${bg}**.\n- Trocar partículas / glow / mesh por **${accent}**.\n- Ajustar velocidade da entrada para **${speed}** para reforçar sensação de ${feel}.\n- Substituir mídia de demo por foto real do serviço (nada de stock genérico).`;
@@ -366,7 +383,12 @@ function buildAdaptationNote(category: string, section: string, site?: LocalSite
   })();
 
   return [
-    `Encaixe: **${section}** de ${brand}.`,
+    `Encaixe sugerido: **${placement}** de ${brand} (categoria "${section}").`,
+    ``,
+    `**O que faz aqui:** ${eff.what}.`,
+    `**Mudança visível:** ${eff.change}.`,
+    `**Resultado:** ${eff.result}.`,
+    ``,
     perCategory,
     ``,
     `**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação — só cor, tipografia, copy, mídia e ritmo global mudam.`,
