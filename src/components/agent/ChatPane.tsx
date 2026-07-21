@@ -195,6 +195,30 @@ export function ChatPane({
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onPaste={(e) => {
+              const items = e.clipboardData?.items;
+              if (!items) return;
+              const pasted: File[] = [];
+              for (const it of Array.from(items)) {
+                if (it.kind === "file") {
+                  const f = it.getAsFile();
+                  if (f) {
+                    const ext = f.type.split("/")[1] || "png";
+                    const named =
+                      f.name && f.name !== "image.png"
+                        ? f
+                        : new File([f], `colado-${Date.now()}.${ext}`, { type: f.type });
+                    pasted.push(named);
+                  }
+                }
+              }
+              if (pasted.length) {
+                e.preventDefault();
+                const dt = new DataTransfer();
+                pasted.forEach((f) => dt.items.add(f));
+                addFiles(dt.files);
+              }
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
