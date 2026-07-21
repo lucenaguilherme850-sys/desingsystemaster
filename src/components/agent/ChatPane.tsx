@@ -214,11 +214,9 @@ export function ChatPane({
               }
               if (pasted.length) {
                 e.preventDefault();
-                addFiles({
-                  length: pasted.length,
-                  item: (i: number) => pasted[i],
-                  ...pasted,
-                } as unknown as FileList);
+                const dt = new DataTransfer();
+                pasted.forEach((f) => dt.items.add(f));
+                addFiles(dt.files);
               }
             }}
             onKeyDown={(e) => {
