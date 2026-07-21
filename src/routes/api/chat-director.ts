@@ -13,6 +13,12 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildAnimasterIndex } from "@/lib/animaster-index.server";
+import {
+  inferCreativeDirection,
+  scoreComponentFit,
+  renderDirectionMarkdown,
+  type CreativeDirection,
+} from "@/lib/creative-direction";
 
 const SYSTEM_BASE = `Você é o AGENTE CREATIVE DIRECTOR da AnimMaster — Direção de Arte + Design System + UX/UI + Motion + CRO condensados em um agente.
 
@@ -299,6 +305,7 @@ function categoryIntentBoost(category: string, text: string): number {
 function getLocalRecommendations(
   index: Awaited<ReturnType<typeof buildAnimasterIndex>>,
   queryText: string,
+  direction?: CreativeDirection,
 ): LocalRecommendation[] {
   const normalizedQuery = normalizeForSearch(queryText);
   const tokens = tokenize(queryText);
@@ -308,8 +315,10 @@ function getLocalRecommendations(
       const tokenScore = tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 3 : 0), 0);
       const categoryScore = categoryIntentBoost(item.category, normalizedQuery);
       const earlyScore = Math.max(0, 4 - Math.floor(position / 40));
-      return { item, score: tokenScore + categoryScore + earlyScore };
+      const directionScore = direction ? scoreComponentFit(item, direction) : 0;
+      return { item, score: tokenScore + categoryScore + earlyScore + directionScore };
     })
+    .filter((entry) => (direction ? entry.score > -6 : true))
     .sort((a, b) => b.score - a.score);
 
   const picked: LocalRecommendation[] = [];
@@ -649,10 +658,16 @@ async function buildLocalDirectorReply({
 }: {
   messages: UIMessage[];
   index: Awaited<ReturnType<typeof buildAnimasterIndex>>;
-}): Promise<{ text: string; siteSummary: LocalSiteSummary | null; recommendations: LocalRecommendation[] }> {
+}): Promise<{
+  text: string;
+  siteSummary: LocalSiteSummary | null;
+  recommendations: LocalRecommendation[];
+  direction: CreativeDirection;
+}> {
   const latestText = extractMessageText(messages[messages.length - 1]);
   const siteSummary = await fetchLocalSiteSummary(latestText);
-  const recommendations = getLocalRecommendations(index, latestText);
+  const direction = inferCreativeDirection(siteSummary, latestText);
+  const recommendations = getLocalRecommendations(index, latestText, direction);
   const categories = Array.from(new Set(index.map((item) => item.category))).sort();
   const componentRows = recommendations
     .map(
@@ -676,6 +691,7 @@ async function buildLocalDirectorReply({
 
 Modo local sem consumo de créditos ativado. A análise abaixo usa regras estratégicas + o catálogo AnimMaster salvo no projeto.
 ${siteBlock}
+${renderDirectionMarkdown(direction)}
 ## 🧠 Estratégia
 
 - Priorizar componentes que reforçam a primeira impressão, leitura e conversão.
@@ -716,7 +732,7 @@ Envie a seção onde quer aplicar o primeiro componente ou peça: “monte um pl
 | Status | Seção | Componente | Prioridade | Motivo |
 |--------|-------|------------|------------|--------|
 ${selectedRows || "| 🟡 Planejado | Hero | catálogo indisponível | Alta | Aguardando catálogo local. |"}`;
-  return { text, siteSummary, recommendations };
+  return { text, siteSummary, recommendations, direction };
 }
 
 function createLocalStreamResponse(text: string): Response {
@@ -821,8 +837,9 @@ export const Route = createFileRoute("/api/chat-director")({
                 status: local.siteSummary.status,
                 ok: local.siteSummary.ok,
                 excerpt: local.siteSummary.excerpt,
+                creative_direction: local.direction,
               }
-            : {};
+            : { creative_direction: local.direction };
           await supabase.from("agent_reports").upsert(
             {
               thread_id: threadId,
