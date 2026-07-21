@@ -661,7 +661,8 @@ async function buildLocalDirectorReply({
 }): Promise<{ text: string; siteSummary: LocalSiteSummary | null; recommendations: LocalRecommendation[] }> {
   const latestText = extractMessageText(messages[messages.length - 1]);
   const siteSummary = await fetchLocalSiteSummary(latestText);
-  const recommendations = getLocalRecommendations(index, latestText);
+  const direction = inferCreativeDirection(siteSummary, latestText);
+  const recommendations = getLocalRecommendations(index, latestText, direction);
   const categories = Array.from(new Set(index.map((item) => item.category))).sort();
   const componentRows = recommendations
     .map(
@@ -685,6 +686,7 @@ async function buildLocalDirectorReply({
 
 Modo local sem consumo de créditos ativado. A análise abaixo usa regras estratégicas + o catálogo AnimMaster salvo no projeto.
 ${siteBlock}
+${renderDirectionMarkdown(direction)}
 ## 🧠 Estratégia
 
 - Priorizar componentes que reforçam a primeira impressão, leitura e conversão.
@@ -725,7 +727,7 @@ Envie a seção onde quer aplicar o primeiro componente ou peça: “monte um pl
 | Status | Seção | Componente | Prioridade | Motivo |
 |--------|-------|------------|------------|--------|
 ${selectedRows || "| 🟡 Planejado | Hero | catálogo indisponível | Alta | Aguardando catálogo local. |"}`;
-  return { text, siteSummary, recommendations };
+  return { text, siteSummary, recommendations, direction };
 }
 
 function createLocalStreamResponse(text: string): Response {
