@@ -25,6 +25,7 @@ import {
   type PipelineState,
   type CollectionEntry,
 } from "@/lib/creative-direction";
+import { findVisualMatches, decodeAttachmentToBuffer } from "@/lib/image-match.server";
 
 const SYSTEM_BASE = `Você é o AGENTE CREATIVE DIRECTOR da AnimMaster — Direção de Arte + Design System + UX/UI + Motion + CRO condensados em um agente.
 
@@ -264,6 +265,59 @@ function hasFileAttachments(messages: UIMessage[]): boolean {
     Array.isArray(m.parts) &&
     m.parts.some((p) => typeof p === "object" && p !== null && "type" in p && p.type === "file"),
   );
+}
+
+function extractImageAttachments(messages: UIMessage[]): Array<{ url: string; filename: string; mediaType: string }> {
+  const last = messages[messages.length - 1];
+  if (!last || !Array.isArray(last.parts)) return [];
+  const out: Array<{ url: string; filename: string; mediaType: string }> = [];
+  for (const p of last.parts) {
+    if (typeof p !== "object" || p === null || !("type" in p) || p.type !== "file") continue;
+    const part = p as { url?: string; filename?: string; mediaType?: string };
+    const mediaType = part.mediaType || "";
+    if (!mediaType.startsWith("image/")) continue;
+    if (!part.url) continue;
+    out.push({ url: part.url, filename: part.filename || "imagem", mediaType });
+  }
+  return out;
+}
+
+async function buildVisualMatchBlock(
+  images: Array<{ url: string; filename: string; mediaType: string }>,
+): Promise<{ block: string; matched: boolean }> {
+  if (images.length === 0) return { block: "", matched: false };
+  const buffers: Buffer[] = [];
+  for (const img of images) {
+    const buf = await decodeAttachmentToBuffer(img.url);
+    if (buf) buffers.push(buf);
+  }
+  if (buffers.length === 0) return { block: "", matched: false };
+  const matches = await findVisualMatches(buffers, 3);
+  if (matches.length === 0) {
+    return {
+      block: `\n## 🖼️ Análise da Imagem\n\n- Analisei ${images.length} imagem(ns) enviada(s) por comparação visual (perceptual hash) com o catálogo AnimMaster.\n- Nenhum componente do catálogo bateu com essa imagem — tratando como referência conversacional.\n\n`,
+      matched: false,
+    };
+  }
+  // Consider "hit" when top distance is small enough
+  const best = matches[0];
+  const isMatch = best.distance <= 18; // ~72% similarity
+  if (!isMatch) {
+    const rows = matches
+      .map((m) => `| ${m.confidence}% | [${m.slug}](/animmaster/${m.slug}) | ${m.category} |`)
+      .join("\n");
+    return {
+      block: `\n## 🖼️ Análise da Imagem\n\nNão encontrei uma correspondência forte no catálogo. Palpites mais próximos (baixa confiança):\n\n| Similaridade | Componente | Categoria |\n|---|---|---|\n${rows}\n\nSe a imagem não é de um componente AnimMaster, seguimos a conversa normalmente.\n\n`,
+      matched: false,
+    };
+  }
+  const rows = matches
+    .map((m, i) => `| ${i === 0 ? "🎯" : "•"} ${m.confidence}% | [${m.slug}](/animmaster/${m.slug}) | ${m.category} | ${m.name} |`)
+    .join("\n");
+  return {
+    block: `\n## 🖼️ Encontrei no Catálogo\n\nComparei a imagem com os posters de todos os componentes AnimMaster via **perceptual hash** local (sem IA, sem consumo de créditos).\n\n| Similaridade | Slug | Categoria | Nome |\n|---|---|---|---|\n${rows}\n\n👉 Match principal: **[${best.name}](/animmaster/${best.slug})** — abra a página para ver código, prompt e adaptar ao seu projeto.\n\n`,
+    matched: true,
+  };
 }
 
 function normalizeForSearch(value: string): string {
@@ -850,15 +904,21 @@ export const Route = createFileRoute("/api/chat-director")({
         const catalogSection = `\n\nCategorias disponíveis (${index.length} componentes no total):\n${categories.map((c) => `- ${c}`).join("\n")}`;
         const usePaidAi = process.env.ANIMMASTER_AGENT_PAID_AI === "true";
         const attachmentsPresent = hasFileAttachments(messages);
-        const hasLovableKey = !!process.env.LOVABLE_API_KEY;
-        // Attachments (images/PDFs) require multimodal AI to be actually "seen".
-        // Auto-escalate to the paid path when a key is available.
-        const routeToAi = usePaidAi || (attachmentsPresent && hasLovableKey);
+        // Local mode handles images itself via perceptual-hash catalog match.
+        // Only escalate to paid AI when the operator explicitly asked for it.
+        const routeToAi = usePaidAi;
         if (!routeToAi) {
           const local = await buildLocalDirectorReply({ messages, index });
-          const localReply = attachmentsPresent
-            ? `> ⚠️ Recebi os anexos, mas o **modo local** não consegue ler imagens/PDFs. Configure \`ANIMMASTER_AGENT_PAID_AI=true\` para eu analisar visualmente os arquivos.\n\n${local.text}`
-            : local.text;
+          let localReply = local.text;
+          if (attachmentsPresent) {
+            const images = extractImageAttachments(messages);
+            if (images.length > 0) {
+              const { block } = await buildVisualMatchBlock(images);
+              if (block) localReply = `${block}${local.text}`;
+            } else {
+              localReply = `> ℹ️ Recebi anexos não-imagem. O modo local só analisa imagens visualmente; PDFs/arquivos são tratados como referência textual.\n\n${local.text}`;
+            }
+          }
           const userMsg = messages[messages.length - 1];
           if (userMsg?.role === "user") {
             await supabase.from("agent_messages").insert({
