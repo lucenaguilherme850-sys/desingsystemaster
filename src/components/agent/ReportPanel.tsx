@@ -3,7 +3,14 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink, Copy, Check, Loader2, Sparkles } from "lucide-react";
 import { getAnimmasterDriveMasterPrompt } from "@/lib/animmaster-drive-code.functions";
-import type { CreativeDirection, PersonalityAxis } from "@/lib/creative-direction";
+import type {
+  CreativeDirection,
+  PersonalityAxis,
+  PipelineState,
+  CollectionEntry,
+  Emotion,
+  ExpertScore,
+} from "@/lib/creative-direction";
 
 type SectionMapItem = {
   section: string;
@@ -27,6 +34,8 @@ export type Report = {
 } | null;
 
 const TABS = [
+  { id: "pipeline", label: "🧭 Pipeline" },
+  { id: "collection", label: "🧩 Coleção" },
   { id: "direction", label: "🎨 Direção" },
   { id: "brief", label: "Briefing" },
   { id: "ds", label: "Design System" },
@@ -36,10 +45,20 @@ const TABS = [
 ] as const;
 
 export function ReportPanel({ report }: { report: Report }) {
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("direction");
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("pipeline");
   const [copied, setCopied] = useState(false);
-  const direction = (report?.business as { creative_direction?: CreativeDirection } | null | undefined)
-    ?.creative_direction as CreativeDirection | undefined;
+  const biz = (report?.business ?? null) as
+    | (Record<string, unknown> & {
+        creative_direction?: CreativeDirection;
+        pipeline?: PipelineState;
+        collection?: CollectionEntry[];
+        emotion?: Emotion;
+      })
+    | null;
+  const direction = biz?.creative_direction;
+  const pipeline = biz?.pipeline;
+  const collection = biz?.collection ?? [];
+  const emotion = biz?.emotion ?? pipeline?.emotion;
 
   const copyAll = async () => {
     try {
@@ -83,6 +102,10 @@ export function ReportPanel({ report }: { report: Report }) {
             Ainda não há relatório. Comece a conversa — o agente vai preencher automaticamente ao
             longo das 10 fases.
           </p>
+        ) : tab === "pipeline" ? (
+          <PipelineView pipeline={pipeline} emotion={emotion} />
+        ) : tab === "collection" ? (
+          <CollectionView collection={collection} business={report.business ?? null} />
         ) : tab === "brief" ? (
           <div className="space-y-4">
             <Section title="Negócio" data={report.business} />
@@ -375,6 +398,165 @@ function DirectionView({ direction }: { direction: CreativeDirection | undefined
             </li>
           ))}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+function PipelineView({
+  pipeline,
+  emotion,
+}: {
+  pipeline: PipelineState | undefined;
+  emotion: Emotion | undefined;
+}) {
+  if (!pipeline) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        O pipeline aparece após a primeira mensagem — as 7 fases (Objetivo → Marca → Direção → DS → Seleção → Adaptação → Validação) são recalculadas a cada turno.
+      </p>
+    );
+  }
+  const icon = (s: string) => (s === "done" ? "✅" : s === "partial" ? "🟡" : "⚪");
+  return (
+    <div className="space-y-4">
+      {emotion && (
+        <div className="rounded-lg border border-neon/40 bg-neon/5 p-3">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon">Emoção-alvo</div>
+          <div className="mt-1 text-lg font-semibold">
+            {emotion.emoji} {emotion.label}
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Toda a coleção é ranqueada para reforçar essa emoção — não para "ficar bonito".
+          </p>
+        </div>
+      )}
+      <ol className="space-y-2">
+        {pipeline.phases.map((p, i) => (
+          <li key={p.id} className="rounded-lg border border-border/60 bg-background/40 p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-base">{icon(p.status)}</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Fase {i + 1}
+              </span>
+              <span className="text-sm font-semibold">
+                {p.emoji} {p.label}
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-foreground/80">{p.summary}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function CollectionView({
+  collection,
+  business,
+}: {
+  collection: CollectionEntry[];
+  business: Record<string, unknown> | null;
+}) {
+  if (!collection.length) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        A coleção coerente (Navbar → Hero → Feature → Gallery → Social → CTA → Footer) é montada assim que o agente detectar contexto suficiente.
+      </p>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      {collection.map((c) => (
+        <CollectionCard key={c.slot} entry={c} business={business} />
+      ))}
+    </div>
+  );
+}
+
+function ExpertBadges({ experts }: { experts: ExpertScore[] }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-1">
+      {experts.map((e) => (
+        <span
+          key={e.id}
+          className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-foreground/80"
+          title={e.label}
+        >
+          <span>{e.emoji}</span>
+          <span className="tabular-nums">{e.score.toFixed(1)}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function CollectionCard({
+  entry,
+  business,
+}: {
+  entry: CollectionEntry;
+  business: Record<string, unknown> | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const item: SectionMapItem = {
+    section: entry.slotLabel,
+    componentSlug: entry.slug,
+    componentName: entry.name,
+    category: entry.category,
+    position: entry.slotLabel,
+    reason: `Fit ${entry.fit.toFixed(1)} — escolhido pela coerência de vetor com a emoção-alvo do projeto.`,
+  };
+  return (
+    <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon">
+            {entry.slotLabel}
+          </div>
+          <Link
+            to="/animmaster/$slug"
+            params={{ slug: entry.slug }}
+            className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold hover:text-neon"
+          >
+            {entry.name} <ExternalLink className="size-3" />
+          </Link>
+          <div className="font-mono text-[10px] text-muted-foreground">{entry.slug}</div>
+        </div>
+        <div className="shrink-0 rounded-md border border-neon/40 bg-neon/10 px-2 py-1 text-center font-mono text-[10px] text-neon">
+          fit
+          <div className="text-sm font-semibold">{entry.fit.toFixed(1)}</div>
+        </div>
+      </div>
+      <ExpertBadges experts={entry.experts} />
+      {entry.alternatives.length > 0 && (
+        <div className="mt-3">
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          >
+            {open ? "▾" : "▸"} {entry.alternatives.length} alternativa{entry.alternatives.length > 1 ? "s" : ""}
+          </button>
+          {open && (
+            <ul className="mt-2 space-y-1">
+              {entry.alternatives.map((alt) => (
+                <li key={alt.slug} className="flex items-center justify-between text-[11px]">
+                  <Link
+                    to="/animmaster/$slug"
+                    params={{ slug: alt.slug }}
+                    className="truncate hover:text-neon"
+                  >
+                    {alt.name}
+                  </Link>
+                  <span className="font-mono tabular-nums text-muted-foreground">{alt.fit.toFixed(1)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      <div className="mt-3">
+        <SelectedComponentCard item={item} business={business} />
       </div>
     </div>
   );

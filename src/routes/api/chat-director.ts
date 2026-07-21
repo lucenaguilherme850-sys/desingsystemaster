@@ -18,6 +18,12 @@ import {
   scoreComponentFit,
   renderDirectionMarkdown,
   type CreativeDirection,
+  derivePipelineState,
+  buildCollection,
+  renderPipelineMarkdown,
+  renderCollectionMarkdown,
+  type PipelineState,
+  type CollectionEntry,
 } from "@/lib/creative-direction";
 
 const SYSTEM_BASE = `Você é o AGENTE CREATIVE DIRECTOR da AnimMaster — Direção de Arte + Design System + UX/UI + Motion + CRO condensados em um agente.
@@ -676,6 +682,8 @@ async function buildLocalDirectorReply({
   siteSummary: LocalSiteSummary | null;
   recommendations: LocalRecommendation[];
   direction: CreativeDirection;
+  pipeline: PipelineState;
+  collection: CollectionEntry[];
 }> {
   const latestText = extractMessageText(messages[messages.length - 1]);
   // Aggregate the whole conversation so recommendations evolve as we learn more.
@@ -700,6 +708,12 @@ async function buildLocalDirectorReply({
   const siteSummary = await fetchLocalSiteSummary(urlSourceText);
   const direction = inferCreativeDirection(siteSummary, conversationContext);
   const recommendations = getLocalRecommendations(index, conversationContext, direction);
+  const collection = buildCollection(index, direction, /* emotion */ (() => {
+    // Local mode uses the same pipeline derivation to stay consistent.
+    const pre = derivePipelineState(siteSummary, conversationContext, 0);
+    return pre.emotion;
+  })());
+  const pipeline = derivePipelineState(siteSummary, conversationContext, collection.length);
   const categories = Array.from(new Set(index.map((item) => item.category))).sort();
   const componentRows = recommendations
     .map(
@@ -723,7 +737,9 @@ async function buildLocalDirectorReply({
 
 Modo local sem consumo de créditos ativado. A análise abaixo usa regras estratégicas + o catálogo AnimMaster salvo no projeto.
 ${siteBlock}
+${renderPipelineMarkdown(pipeline)}
 ${renderDirectionMarkdown(direction)}
+${renderCollectionMarkdown(collection)}
 ## 🧠 Estratégia
 
 - Priorizar componentes que reforçam a primeira impressão, leitura e conversão.
@@ -764,7 +780,7 @@ Envie a seção onde quer aplicar o primeiro componente ou peça: “monte um pl
 | Status | Seção | Componente | Prioridade | Motivo |
 |--------|-------|------------|------------|--------|
 ${selectedRows || "| 🟡 Planejado | Hero | catálogo indisponível | Alta | Aguardando catálogo local. |"}`;
-  return { text, siteSummary, recommendations, direction };
+  return { text, siteSummary, recommendations, direction, pipeline, collection };
 }
 
 function createLocalStreamResponse(text: string): Response {
@@ -877,8 +893,16 @@ export const Route = createFileRoute("/api/chat-director")({
                 ok: local.siteSummary.ok,
                 excerpt: local.siteSummary.excerpt,
                 creative_direction: local.direction,
+                pipeline: local.pipeline,
+                collection: local.collection,
+                emotion: local.pipeline.emotion,
               }
-            : { creative_direction: local.direction };
+            : {
+                creative_direction: local.direction,
+                pipeline: local.pipeline,
+                collection: local.collection,
+                emotion: local.pipeline.emotion,
+              };
           await supabase.from("agent_reports").upsert(
             {
               thread_id: threadId,
@@ -904,6 +928,33 @@ export const Route = createFileRoute("/api/chat-director")({
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("openai/gpt-5.5");
+
+        // Pre-compute pipeline + collection from the current conversation so the model
+        // sees a fixed decision state instead of jumping straight to recommendations.
+        const preText = messages
+          .filter((m) => m.role === "user")
+          .map(extractMessageText)
+          .join("\n");
+        const preSite = await fetchLocalSiteSummary(preText);
+        const preDirection = inferCreativeDirection(preSite, preText);
+        const preCollection = buildCollection(index, preDirection, derivePipelineState(preSite, preText, 0).emotion);
+        const prePipeline = derivePipelineState(preSite, preText, preCollection.length);
+        const pipelineBriefing = [
+          `\n\n═══ ESTADO ATUAL DO PIPELINE (calculado ANTES desta resposta) ═══`,
+          `Emoção-alvo detectada: ${prePipeline.emotion.emoji} ${prePipeline.emotion.label}`,
+          `Perfil criativo: ${preDirection.profile.emoji} ${preDirection.profile.name}`,
+          `Fases:`,
+          ...prePipeline.phases.map((p) => `- [${p.status}] ${p.emoji} ${p.label}: ${p.summary}`),
+          ``,
+          `COLEÇÃO COERENTE recomendada pelos especialistas internos (use como base — só troque um slot com justificativa):`,
+          ...preCollection.map(
+            (c) =>
+              `- ${c.slotLabel}: ${c.slug} (fit ${c.fit}) — ${c.experts.map((e) => `${e.emoji}${e.score.toFixed(1)}`).join(" ")}`,
+          ),
+          ``,
+          `REGRA: nunca escolha componentes soltos. Trabalhe sempre pensando na coleção acima como um kit unificado (Navbar → Hero → Feature → Gallery → Social → CTA → Footer). Antes de recomendar, avalie internamente pelos 5 especialistas (🎨 Visual, 🎬 Motion, 🏗️ DS, 📈 CRO, 💼 Brand) e cite as notas quando fizer sentido.`,
+          ``,
+        ].join("\n");
 
         const tools = {
           fetchUrl: tool({
@@ -1190,7 +1241,7 @@ export const Route = createFileRoute("/api/chat-director")({
 
         const result = streamText({
           model,
-          system: SYSTEM_BASE + catalogSection,
+          system: SYSTEM_BASE + catalogSection + pipelineBriefing,
           messages: await convertToModelMessages(messages),
           tools,
           stopWhen: stepCountIs(50),
@@ -1219,6 +1270,37 @@ export const Route = createFileRoute("/api/chat-director")({
                 parts: userMsg.parts as never,
               });
             }
+            // Always mirror the pre-computed pipeline/collection into the
+            // report so the sidebar keeps the specialists + kit view fresh,
+            // even when the model didn't explicitly call saveReport.
+            const { data: existing } = await supabase
+              .from("agent_reports")
+              .select("business")
+              .eq("thread_id", threadId)
+              .maybeSingle();
+            const business = {
+              ...((existing?.business as Record<string, unknown> | null) ?? {}),
+              ...(preSite
+                ? {
+                    url: preSite.url,
+                    title: preSite.title,
+                    description: preSite.description,
+                    status: preSite.status,
+                    ok: preSite.ok,
+                    excerpt: preSite.excerpt,
+                  }
+                : {}),
+              creative_direction: preDirection,
+              pipeline: prePipeline,
+              collection: preCollection,
+              emotion: prePipeline.emotion,
+            };
+            await supabase
+              .from("agent_reports")
+              .upsert(
+                { thread_id: threadId, business, generated_at: new Date().toISOString() },
+                { onConflict: "thread_id" },
+              );
             await supabase
               .from("agent_threads")
               .update({ updated_at: new Date().toISOString() })

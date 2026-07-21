@@ -257,3 +257,409 @@ export function renderDirectionMarkdown(direction: CreativeDirection): string {
     ``,
   ].join("\n");
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// v2 · Pipeline + Especialistas + Emoção + Vetor + Coleção
+// ═══════════════════════════════════════════════════════════════════
+
+export type ComponentAxis =
+  | "compat"
+  | "performance"
+  | "elegance"
+  | "corporate"
+  | "luxury"
+  | "creativity"
+  | "conversion"
+  | "motion"
+  | "interactivity";
+
+export type ComponentVector = Record<ComponentAxis, number>; // 0..10
+
+const COMPONENT_AXES: ComponentAxis[] = [
+  "compat",
+  "performance",
+  "elegance",
+  "corporate",
+  "luxury",
+  "creativity",
+  "conversion",
+  "motion",
+  "interactivity",
+];
+
+const zeroVec = (): ComponentVector => ({
+  compat: 5,
+  performance: 5,
+  elegance: 5,
+  corporate: 5,
+  luxury: 5,
+  creativity: 5,
+  conversion: 5,
+  motion: 5,
+  interactivity: 5,
+});
+
+function bumpVec(v: ComponentVector, patch: Partial<ComponentVector>) {
+  for (const [k, delta] of Object.entries(patch) as Array<[ComponentAxis, number]>) {
+    v[k] = clamp(v[k] + delta);
+  }
+}
+
+/** Deterministic multi-axis vector for a catalog item. */
+export function vectorForComponent(item: { slug: string; category: string; name?: string }): ComponentVector {
+  const v = zeroVec();
+  const cat = norm(item.category);
+  const slug = norm(item.slug);
+  const name = norm(item.name ?? "");
+  const blob = `${cat} ${slug} ${name}`;
+
+  // Category baselines
+  if (/hero/.test(cat)) bumpVec(v, { conversion: 2, motion: 1, elegance: 1 });
+  if (/scroll|rolagem|parallax/.test(cat)) bumpVec(v, { motion: 2, elegance: 1, performance: -1 });
+  if (/hover/.test(cat)) bumpVec(v, { interactivity: 2, conversion: 1, performance: 1 });
+  if (/mouse|cursor|particle/.test(cat)) bumpVec(v, { interactivity: 3, creativity: 2, performance: -2, corporate: -2 });
+  if (/text|texto|title|typography/.test(cat)) bumpVec(v, { elegance: 2, motion: 1, conversion: 1 });
+  if (/nav|menu|dock/.test(cat)) bumpVec(v, { compat: 2, conversion: 1, corporate: 1 });
+  if (/grid|card|gallery/.test(cat)) bumpVec(v, { compat: 2, conversion: 2 });
+  if (/slider|carousel/.test(cat)) bumpVec(v, { interactivity: 2, motion: 1 });
+  if (/webgl|shader|3d/.test(cat)) bumpVec(v, { luxury: 3, creativity: 3, motion: 2, performance: -3, corporate: -2 });
+  if (/cta|button|form|pricing/.test(cat)) bumpVec(v, { conversion: 3, compat: 1 });
+  if (/footer/.test(cat)) bumpVec(v, { corporate: 1, compat: 2 });
+
+  // Slug/name signals
+  if (/premium|luxe?|elite|gold|silk|marble|noir/.test(blob)) bumpVec(v, { luxury: 3, elegance: 2 });
+  if (/minimal|clean|swiss|editorial|serif/.test(blob)) bumpVec(v, { elegance: 2, corporate: 1, creativity: -1 });
+  if (/glass|blur|frost|glow|neon|aurora|plasma|liquid|kaleido|caustic|starfield/.test(blob))
+    bumpVec(v, { creativity: 2, luxury: 1, motion: 1 });
+  if (/glitch|vhs|chaos|scatter|explosion|distort|pixel/.test(blob))
+    bumpVec(v, { creativity: 2, corporate: -3, luxury: -2, conversion: -1 });
+  if (/marquee|ticker/.test(blob)) bumpVec(v, { motion: 1, corporate: -1 });
+  if (/magnetic|tilt|3d|physics|drag|inertia/.test(blob)) bumpVec(v, { interactivity: 2, motion: 1 });
+  if (/pricing|cta|form|checkout|contact/.test(blob)) bumpVec(v, { conversion: 3 });
+  if (/nav|navbar|dock|breadcrumb/.test(blob)) bumpVec(v, { compat: 1, corporate: 1 });
+
+  return v;
+}
+
+// ── Emotion presets (weights over ComponentVector, 0..1) ──
+
+export type EmotionId =
+  | "confianca"
+  | "sofisticacao"
+  | "luxo"
+  | "tecnologia"
+  | "inovacao"
+  | "minimalismo"
+  | "elegancia"
+  | "exclusividade"
+  | "energia"
+  | "leveza"
+  | "diversao"
+  | "robustez"
+  | "criatividade";
+
+export type Emotion = {
+  id: EmotionId;
+  emoji: string;
+  label: string;
+  weights: ComponentVector; // 0..10 importance per axis
+};
+
+export const EMOTIONS: Emotion[] = [
+  { id: "confianca", emoji: "🛡️", label: "Confiança", weights: { compat: 9, performance: 8, elegance: 6, corporate: 10, luxury: 5, creativity: 3, conversion: 9, motion: 3, interactivity: 3 } },
+  { id: "sofisticacao", emoji: "🎩", label: "Sofisticação", weights: { compat: 6, performance: 6, elegance: 10, corporate: 6, luxury: 9, creativity: 6, conversion: 6, motion: 5, interactivity: 4 } },
+  { id: "luxo", emoji: "💎", label: "Luxo", weights: { compat: 5, performance: 5, elegance: 9, corporate: 4, luxury: 10, creativity: 7, conversion: 6, motion: 7, interactivity: 6 } },
+  { id: "tecnologia", emoji: "⚡", label: "Tecnologia", weights: { compat: 7, performance: 7, elegance: 5, corporate: 6, luxury: 5, creativity: 7, conversion: 8, motion: 8, interactivity: 9 } },
+  { id: "inovacao", emoji: "🚀", label: "Inovação", weights: { compat: 6, performance: 6, elegance: 5, corporate: 4, luxury: 6, creativity: 9, conversion: 7, motion: 8, interactivity: 9 } },
+  { id: "minimalismo", emoji: "▫️", label: "Minimalismo", weights: { compat: 8, performance: 9, elegance: 10, corporate: 7, luxury: 6, creativity: 3, conversion: 7, motion: 2, interactivity: 3 } },
+  { id: "elegancia", emoji: "🌿", label: "Elegância", weights: { compat: 7, performance: 7, elegance: 10, corporate: 6, luxury: 8, creativity: 5, conversion: 7, motion: 4, interactivity: 4 } },
+  { id: "exclusividade", emoji: "👑", label: "Exclusividade", weights: { compat: 5, performance: 5, elegance: 9, corporate: 4, luxury: 10, creativity: 8, conversion: 5, motion: 7, interactivity: 7 } },
+  { id: "energia", emoji: "🔥", label: "Energia", weights: { compat: 5, performance: 4, elegance: 4, corporate: 3, luxury: 4, creativity: 9, conversion: 8, motion: 10, interactivity: 9 } },
+  { id: "leveza", emoji: "🍃", label: "Leveza", weights: { compat: 7, performance: 8, elegance: 9, corporate: 5, luxury: 6, creativity: 5, conversion: 6, motion: 5, interactivity: 4 } },
+  { id: "diversao", emoji: "🎈", label: "Diversão", weights: { compat: 4, performance: 4, elegance: 4, corporate: 2, luxury: 3, creativity: 10, conversion: 6, motion: 9, interactivity: 10 } },
+  { id: "robustez", emoji: "🏛️", label: "Robustez", weights: { compat: 10, performance: 9, elegance: 6, corporate: 10, luxury: 5, creativity: 3, conversion: 9, motion: 3, interactivity: 3 } },
+  { id: "criatividade", emoji: "🎨", label: "Criatividade", weights: { compat: 4, performance: 4, elegance: 6, corporate: 2, luxury: 6, creativity: 10, conversion: 5, motion: 8, interactivity: 9 } },
+];
+
+const EMOTION_KEYWORDS: Array<{ id: EmotionId; words: RegExp }> = [
+  { id: "luxo", words: /\b(luxo|luxury|premium|elite|high\s*ticket|joalher|boutique|grife|caviar)\b/ },
+  { id: "exclusividade", words: /\b(exclusiv|private|vip|members?\s*only|invitation)\b/ },
+  { id: "sofisticacao", words: /\b(sofisticad|refinad|editorial|elegante|curador)\b/ },
+  { id: "elegancia", words: /\b(elegant|delicad|feminin|beleza)\b/ },
+  { id: "minimalismo", words: /\b(minimal|clean|respiro|swiss|essencial)\b/ },
+  { id: "leveza", words: /\b(leve|leveza|wellness|spa|yoga|zen|tranquil)\b/ },
+  { id: "energia", words: /\b(energia|potencia|forte|fitness|atleta|treino|explos|cross|performance)\b/ },
+  { id: "diversao", words: /\b(divers|fun|game|gamer|joga|kids|infantil|animad)\b/ },
+  { id: "tecnologia", words: /\b(tech|tecnolog|api|saas|dev|software|ai|inteligencia|dados|dashboard)\b/ },
+  { id: "inovacao", words: /\b(inovad|startup|disrupti|revolucion|next\s*gen)\b/ },
+  { id: "criatividade", words: /\b(criativ|estudio|studio|agencia|portfolio|autoral|campanha)\b/ },
+  { id: "robustez", words: /\b(seguranc|industrial|engenharia|construc|logistic|b2b|enterprise)\b/ },
+  { id: "confianca", words: /\b(clinica|clínica|advogad|juridic|contabil|banco|escola|hospital|medic|saude|consultoria)\b/ },
+];
+
+export function inferEmotion(site: SiteSummary | null | undefined, userText: string, profile: CreativeProfile): Emotion {
+  const blob = norm([site?.title, site?.description, site?.excerpt, userText].filter(Boolean).join(" "));
+  for (const rule of EMOTION_KEYWORDS) {
+    if (rule.words.test(blob)) {
+      const hit = EMOTIONS.find((e) => e.id === rule.id);
+      if (hit) return hit;
+    }
+  }
+  // Fallback derived from profile
+  const fallback: Record<CreativeProfileId, EmotionId> = {
+    "elite-luxury": "luxo",
+    "elegant-minimal": "minimalismo",
+    "interactive-experience": "criatividade",
+    "modern-saas": "tecnologia",
+    "corporate-smooth": "confianca",
+  };
+  return EMOTIONS.find((e) => e.id === fallback[profile.id]) ?? EMOTIONS[0];
+}
+
+// ── Expert panel ──
+
+export type ExpertId = "visual" | "motion" | "ds" | "cro" | "brand";
+
+export type ExpertScore = { id: ExpertId; emoji: string; label: string; score: number };
+
+const EXPERT_META: Record<ExpertId, { emoji: string; label: string }> = {
+  visual: { emoji: "🎨", label: "Visual Designer" },
+  motion: { emoji: "🎬", label: "Motion Designer" },
+  ds: { emoji: "🏗️", label: "Design System" },
+  cro: { emoji: "📈", label: "CRO" },
+  brand: { emoji: "💼", label: "Branding" },
+};
+
+function weightedScore(vec: ComponentVector, weights: Partial<Record<ComponentAxis, number>>): number {
+  let total = 0;
+  let denom = 0;
+  for (const [k, w] of Object.entries(weights) as Array<[ComponentAxis, number]>) {
+    total += vec[k] * w;
+    denom += w;
+  }
+  return denom ? total / denom : 5;
+}
+
+export function scoreByExperts(vec: ComponentVector): ExpertScore[] {
+  return [
+    { ...EXPERT_META.visual, id: "visual" as const, score: weightedScore(vec, { elegance: 0.4, creativity: 0.2, luxury: 0.2, compat: 0.2 }) },
+    { ...EXPERT_META.motion, id: "motion" as const, score: weightedScore(vec, { motion: 0.5, interactivity: 0.3, creativity: 0.2 }) },
+    { ...EXPERT_META.ds, id: "ds" as const, score: weightedScore(vec, { compat: 0.5, performance: 0.3, corporate: 0.2 }) },
+    { ...EXPERT_META.cro, id: "cro" as const, score: weightedScore(vec, { conversion: 0.6, compat: 0.2, performance: 0.2 }) },
+    { ...EXPERT_META.brand, id: "brand" as const, score: weightedScore(vec, { luxury: 0.35, elegance: 0.25, creativity: 0.2, corporate: 0.2 }) },
+  ];
+}
+
+/** Emotion-weighted composite fit — the number that drives ranking. */
+export function emotionFit(vec: ComponentVector, emotion: Emotion): number {
+  return weightedScore(vec, emotion.weights);
+}
+
+// ── Canonical collection slots ──
+
+export type SlotId = "navbar" | "hero" | "feature" | "gallery" | "social" | "cta" | "footer";
+
+export type Slot = {
+  id: SlotId;
+  label: string;
+  match: RegExp; // category
+  slugHint?: RegExp;
+};
+
+export const SLOTS: Slot[] = [
+  { id: "navbar", label: "Navbar", match: /nav|menu|dock/ },
+  { id: "hero", label: "Hero", match: /hero/ },
+  { id: "feature", label: "Feature / Cards", match: /grid|card|scroll|feature|bento/ },
+  { id: "gallery", label: "Galeria / Marquee", match: /gallery|slider|carousel|marquee|ticker|3d|webgl|shader/ },
+  { id: "social", label: "Social proof", match: /text|title|counter|logo|marquee/ },
+  { id: "cta", label: "CTA", match: /cta|button|form|pricing|hover/ },
+  { id: "footer", label: "Footer", match: /footer|nav/ },
+];
+
+export type CollectionEntry = {
+  slot: SlotId;
+  slotLabel: string;
+  slug: string;
+  name: string;
+  category: string;
+  fit: number;
+  experts: ExpertScore[];
+  alternatives: Array<{ slug: string; name: string; category: string; fit: number }>;
+};
+
+/**
+ * Build a coherent kit: one component per slot, chosen so their vectors are
+ * close to the emotion profile. Same vector cluster keeps the language unified.
+ */
+export function buildCollection(
+  index: Array<{ slug: string; name: string; category: string }>,
+  direction: CreativeDirection,
+  emotion: Emotion,
+): CollectionEntry[] {
+  const scored = index.map((item) => {
+    const vec = vectorForComponent(item);
+    const fit = emotionFit(vec, emotion);
+    const guard = scoreComponentFit(item, direction); // profile penalties/bonuses
+    return { item, vec, fit: fit + guard * 0.15 };
+  });
+
+  const used = new Set<string>();
+  const collection: CollectionEntry[] = [];
+  for (const slot of SLOTS) {
+    const candidates = scored
+      .filter(({ item }) => slot.match.test(norm(item.category)))
+      .filter(({ item }) => !used.has(item.slug))
+      .sort((a, b) => b.fit - a.fit);
+    if (!candidates.length) continue;
+    const winner = candidates[0];
+    used.add(winner.item.slug);
+    const alternatives = candidates.slice(1, 4).map(({ item, fit }) => ({
+      slug: item.slug,
+      name: item.name,
+      category: item.category,
+      fit: round1(fit),
+    }));
+    collection.push({
+      slot: slot.id,
+      slotLabel: slot.label,
+      slug: winner.item.slug,
+      name: winner.item.name,
+      category: winner.item.category,
+      fit: round1(winner.fit),
+      experts: scoreByExperts(winner.vec).map((e) => ({ ...e, score: round1(e.score) })),
+      alternatives,
+    });
+  }
+  return collection;
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+// ── Pipeline state ──
+
+export type PhaseId =
+  | "objective"
+  | "brand"
+  | "direction"
+  | "design_system"
+  | "selection"
+  | "adaptation"
+  | "validation";
+
+export type PhaseStatus = "missing" | "partial" | "done";
+
+export type Phase = {
+  id: PhaseId;
+  emoji: string;
+  label: string;
+  status: PhaseStatus;
+  summary: string;
+};
+
+export type PipelineState = {
+  phases: Phase[];
+  emotion: Emotion;
+  direction: CreativeDirection;
+};
+
+const PHASE_META: Array<{ id: PhaseId; emoji: string; label: string }> = [
+  { id: "objective", emoji: "🎯", label: "Objetivo" },
+  { id: "brand", emoji: "💼", label: "Marca" },
+  { id: "direction", emoji: "🧭", label: "Direção criativa" },
+  { id: "design_system", emoji: "🏗️", label: "Design System" },
+  { id: "selection", emoji: "🧩", label: "Seleção" },
+  { id: "adaptation", emoji: "🎨", label: "Adaptação" },
+  { id: "validation", emoji: "✅", label: "Validação" },
+];
+
+export function derivePipelineState(
+  site: SiteSummary | null | undefined,
+  userText: string,
+  collectionCount: number,
+): PipelineState {
+  const direction = inferCreativeDirection(site, userText);
+  const emotion = inferEmotion(site, userText, direction.profile);
+  const blob = norm(userText);
+  const hasBrand = !!(site?.title || /marca|brand|empresa|clínica|clinica|estudio|estúdio|agencia|agência|loja/.test(blob));
+  const hasObjective = /converso|conversão|vend|lead|portfol|portfól|apresent|awareness|reserv|agendar|contato|contact/.test(blob) || (site?.description?.length ?? 0) > 20;
+  const hasDS = /paleta|cor|tipograf|fonte|token|design\s*system/.test(blob);
+
+  const status = (ok: boolean, partial: boolean = false): PhaseStatus =>
+    ok ? "done" : partial ? "partial" : "missing";
+
+  const summaryFor = (id: PhaseId): string => {
+    switch (id) {
+      case "objective":
+        return hasObjective
+          ? "Objetivo identificado a partir da conversa/URL."
+          : "Ainda preciso de 1 linha sobre o que o site precisa fazer (converter, apresentar, agendar).";
+      case "brand":
+        return site?.title
+          ? `Marca: **${site.title}**${site.description ? ` — ${site.description.slice(0, 100)}` : ""}`
+          : hasBrand
+            ? "Marca mencionada; falta refinar posicionamento e categoria."
+            : "Sem nome/posicionamento ainda.";
+      case "direction":
+        return `Perfil **${direction.profile.emoji} ${direction.profile.name}** · emoção-alvo **${emotion.emoji} ${emotion.label}**.`;
+      case "design_system":
+        return hasDS
+          ? "Tokens de cor/tipografia mencionados pelo usuário — aplico no prompt de adaptação."
+          : "Sem tokens explícitos; uso a paleta inferida pela vertical + emoção.";
+      case "selection":
+        return collectionCount
+          ? `${collectionCount} slot${collectionCount > 1 ? "s" : ""} da coleção preenchido${collectionCount > 1 ? "s" : ""}.`
+          : "Coleção ainda não montada — envie a mensagem para eu ranquear.";
+      case "adaptation":
+        return collectionCount
+          ? "Cada componente já vem com camada de adaptação (paleta, ritmo, posição)."
+          : "Adaptação é gerada por componente após a seleção.";
+      case "validation":
+        return collectionCount
+          ? "Verifiquei coerência entre os slots (mesmo cluster de vetor)."
+          : "Sem coleção, sem o que validar ainda.";
+    }
+  };
+
+  const phases: Phase[] = PHASE_META.map((m) => {
+    let s: PhaseStatus = "missing";
+    if (m.id === "objective") s = status(hasObjective, !!site);
+    else if (m.id === "brand") s = status(!!site?.title, hasBrand);
+    else if (m.id === "direction") s = "done";
+    else if (m.id === "design_system") s = status(hasDS, true);
+    else if (m.id === "selection") s = status(collectionCount > 0, true);
+    else if (m.id === "adaptation") s = status(collectionCount > 0);
+    else if (m.id === "validation") s = status(collectionCount >= 3, collectionCount > 0);
+    return { id: m.id, emoji: m.emoji, label: m.label, status: s, summary: summaryFor(m.id) };
+  });
+
+  return { phases, emotion, direction };
+}
+
+export function renderPipelineMarkdown(state: PipelineState): string {
+  const icon = (s: PhaseStatus) => (s === "done" ? "✅" : s === "partial" ? "🟡" : "⚪");
+  return [
+    `## 🧭 Pipeline (${state.emotion.emoji} emoção-alvo: ${state.emotion.label})`,
+    ``,
+    ...state.phases.map((p) => `- ${icon(p.status)} **${p.emoji} ${p.label}** — ${p.summary}`),
+    ``,
+  ].join("\n");
+}
+
+export function renderCollectionMarkdown(collection: CollectionEntry[]): string {
+  if (!collection.length) return "";
+  return [
+    `## 🧩 Coleção coerente (kit unificado)`,
+    ``,
+    `| Slot | Componente | Fit | Especialistas |`,
+    `|------|------------|-----|---------------|`,
+    ...collection.map((c) => {
+      const experts = c.experts
+        .map((e) => `${e.emoji}${e.score.toFixed(1)}`)
+        .join(" · ");
+      return `| ${c.slotLabel} | [${c.slug}](/animmaster/${c.slug}) | **${c.fit.toFixed(1)}** | ${experts} |`;
+    }),
+    ``,
+  ].join("\n");
+}
