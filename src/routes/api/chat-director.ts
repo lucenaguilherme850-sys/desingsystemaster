@@ -658,7 +658,12 @@ async function buildLocalDirectorReply({
 }: {
   messages: UIMessage[];
   index: Awaited<ReturnType<typeof buildAnimasterIndex>>;
-}): Promise<{ text: string; siteSummary: LocalSiteSummary | null; recommendations: LocalRecommendation[] }> {
+}): Promise<{
+  text: string;
+  siteSummary: LocalSiteSummary | null;
+  recommendations: LocalRecommendation[];
+  direction: CreativeDirection;
+}> {
   const latestText = extractMessageText(messages[messages.length - 1]);
   const siteSummary = await fetchLocalSiteSummary(latestText);
   const direction = inferCreativeDirection(siteSummary, latestText);
