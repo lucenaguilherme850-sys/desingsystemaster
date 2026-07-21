@@ -326,7 +326,7 @@ function getLocalRecommendations(
       name: entry.item.name,
       category: entry.item.category,
       priority: picked.length < 3 ? "Alta" : "Média",
-      reason: buildRecommendationReason(entry.item.category, queryText),
+      reason: buildRecommendationReason(entry.item.category, entry.item.slug, entry.item.name),
     });
   }
   return picked;
