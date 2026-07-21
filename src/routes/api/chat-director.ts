@@ -904,15 +904,21 @@ export const Route = createFileRoute("/api/chat-director")({
         const catalogSection = `\n\nCategorias disponíveis (${index.length} componentes no total):\n${categories.map((c) => `- ${c}`).join("\n")}`;
         const usePaidAi = process.env.ANIMMASTER_AGENT_PAID_AI === "true";
         const attachmentsPresent = hasFileAttachments(messages);
-        const hasLovableKey = !!process.env.LOVABLE_API_KEY;
-        // Attachments (images/PDFs) require multimodal AI to be actually "seen".
-        // Auto-escalate to the paid path when a key is available.
-        const routeToAi = usePaidAi || (attachmentsPresent && hasLovableKey);
+        // Local mode handles images itself via perceptual-hash catalog match.
+        // Only escalate to paid AI when the operator explicitly asked for it.
+        const routeToAi = usePaidAi;
         if (!routeToAi) {
           const local = await buildLocalDirectorReply({ messages, index });
-          const localReply = attachmentsPresent
-            ? `> ⚠️ Recebi os anexos, mas o **modo local** não consegue ler imagens/PDFs. Configure \`ANIMMASTER_AGENT_PAID_AI=true\` para eu analisar visualmente os arquivos.\n\n${local.text}`
-            : local.text;
+          let localReply = local.text;
+          if (attachmentsPresent) {
+            const images = extractImageAttachments(messages);
+            if (images.length > 0) {
+              const { block } = await buildVisualMatchBlock(images);
+              if (block) localReply = `${block}${local.text}`;
+            } else {
+              localReply = `> ℹ️ Recebi anexos não-imagem. O modo local só analisa imagens visualmente; PDFs/arquivos são tratados como referência textual.\n\n${local.text}`;
+            }
+          }
           const userMsg = messages[messages.length - 1];
           if (userMsg?.role === "user") {
             await supabase.from("agent_messages").insert({
