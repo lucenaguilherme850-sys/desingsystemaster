@@ -267,6 +267,59 @@ function hasFileAttachments(messages: UIMessage[]): boolean {
   );
 }
 
+function extractImageAttachments(messages: UIMessage[]): Array<{ url: string; filename: string; mediaType: string }> {
+  const last = messages[messages.length - 1];
+  if (!last || !Array.isArray(last.parts)) return [];
+  const out: Array<{ url: string; filename: string; mediaType: string }> = [];
+  for (const p of last.parts) {
+    if (typeof p !== "object" || p === null || !("type" in p) || p.type !== "file") continue;
+    const part = p as { url?: string; filename?: string; mediaType?: string };
+    const mediaType = part.mediaType || "";
+    if (!mediaType.startsWith("image/")) continue;
+    if (!part.url) continue;
+    out.push({ url: part.url, filename: part.filename || "imagem", mediaType });
+  }
+  return out;
+}
+
+async function buildVisualMatchBlock(
+  images: Array<{ url: string; filename: string; mediaType: string }>,
+): Promise<{ block: string; matched: boolean }> {
+  if (images.length === 0) return { block: "", matched: false };
+  const buffers: Buffer[] = [];
+  for (const img of images) {
+    const buf = await decodeAttachmentToBuffer(img.url);
+    if (buf) buffers.push(buf);
+  }
+  if (buffers.length === 0) return { block: "", matched: false };
+  const matches = await findVisualMatches(buffers, 3);
+  if (matches.length === 0) {
+    return {
+      block: `\n## 🖼️ Análise da Imagem\n\n- Analisei ${images.length} imagem(ns) enviada(s) por comparação visual (perceptual hash) com o catálogo AnimMaster.\n- Nenhum componente do catálogo bateu com essa imagem — tratando como referência conversacional.\n\n`,
+      matched: false,
+    };
+  }
+  // Consider "hit" when top distance is small enough
+  const best = matches[0];
+  const isMatch = best.distance <= 18; // ~72% similarity
+  if (!isMatch) {
+    const rows = matches
+      .map((m) => `| ${m.confidence}% | [${m.slug}](/animmaster/${m.slug}) | ${m.category} |`)
+      .join("\n");
+    return {
+      block: `\n## 🖼️ Análise da Imagem\n\nNão encontrei uma correspondência forte no catálogo. Palpites mais próximos (baixa confiança):\n\n| Similaridade | Componente | Categoria |\n|---|---|---|\n${rows}\n\nSe a imagem não é de um componente AnimMaster, seguimos a conversa normalmente.\n\n`,
+      matched: false,
+    };
+  }
+  const rows = matches
+    .map((m, i) => `| ${i === 0 ? "🎯" : "•"} ${m.confidence}% | [${m.slug}](/animmaster/${m.slug}) | ${m.category} | ${m.name} |`)
+    .join("\n");
+  return {
+    block: `\n## 🖼️ Encontrei no Catálogo\n\nComparei a imagem com os posters de todos os componentes AnimMaster via **perceptual hash** local (sem IA, sem consumo de créditos).\n\n| Similaridade | Slug | Categoria | Nome |\n|---|---|---|---|\n${rows}\n\n👉 Match principal: **[${best.name}](/animmaster/${best.slug})** — abra a página para ver código, prompt e adaptar ao seu projeto.\n\n`,
+    matched: true,
+  };
+}
+
 function normalizeForSearch(value: string): string {
   return value
     .normalize("NFD")
