@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink, Copy, Check, Loader2, Sparkles } from "lucide-react";
 import { getAnimmasterDriveMasterPrompt } from "@/lib/animmaster-drive-code.functions";
+import type { CreativeDirection, PersonalityAxis } from "@/lib/creative-direction";
 
 type SectionMapItem = {
   section: string;
@@ -26,6 +27,7 @@ export type Report = {
 } | null;
 
 const TABS = [
+  { id: "direction", label: "🎨 Direção" },
   { id: "brief", label: "Briefing" },
   { id: "ds", label: "Design System" },
   { id: "map", label: "Mapa" },
@@ -34,8 +36,10 @@ const TABS = [
 ] as const;
 
 export function ReportPanel({ report }: { report: Report }) {
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("brief");
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("direction");
   const [copied, setCopied] = useState(false);
+  const direction = (report?.business as { creative_direction?: CreativeDirection } | null | undefined)
+    ?.creative_direction as CreativeDirection | undefined;
 
   const copyAll = async () => {
     try {
@@ -85,6 +89,8 @@ export function ReportPanel({ report }: { report: Report }) {
             <Section title="Marca" data={report.brand} />
             <Section title="Público" data={report.audience} />
           </div>
+        ) : tab === "direction" ? (
+          <DirectionView direction={direction} />
         ) : tab === "ds" ? (
           <Section title="Design System" data={report.design_system} />
         ) : tab === "map" ? (
