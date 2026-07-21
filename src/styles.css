@@ -147,3 +147,24 @@
     radial-gradient(ellipse 60% 40% at 50% 80%, oklch(0.5 0.2 240 / 45%), transparent 70%),
     radial-gradient(ellipse 40% 30% at 50% 100%, oklch(0.78 0.16 230 / 25%), transparent 70%);
 }
+
+/* NEXUS-PRO:WATERMARK-HIDE:START */
+/* Overlay do badge oficial ocultado por conflito com UI custom.
+   Bloco idempotente gerenciado pela extensão Nexus Pro.
+   NÃO EDITAR manualmente — para reverter, remova o bloco inteiro. */
+#lovable-badge,
+#lovable-badge-v2,
+[id^="lovable-badge"],
+[data-testid="lovable-badge"],
+a[href*="lovable.dev/?via="],
+a[href*="lovable.dev?via="],
+a[href*="gpteng.co"],
+iframe[src*="lovable.dev/badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+/* NEXUS-PRO:WATERMARK-HIDE:END */
