@@ -13,6 +13,12 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildAnimasterIndex } from "@/lib/animaster-index.server";
+import {
+  inferCreativeDirection,
+  scoreComponentFit,
+  renderDirectionMarkdown,
+  type CreativeDirection,
+} from "@/lib/creative-direction";
 
 const SYSTEM_BASE = `Você é o AGENTE CREATIVE DIRECTOR da AnimMaster — Direção de Arte + Design System + UX/UI + Motion + CRO condensados em um agente.
 
