@@ -929,6 +929,33 @@ export const Route = createFileRoute("/api/chat-director")({
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("openai/gpt-5.5");
 
+        // Pre-compute pipeline + collection from the current conversation so the model
+        // sees a fixed decision state instead of jumping straight to recommendations.
+        const preText = messages
+          .filter((m) => m.role === "user")
+          .map(extractMessageText)
+          .join("\n");
+        const preSite = await fetchLocalSiteSummary(preText);
+        const preDirection = inferCreativeDirection(preSite, preText);
+        const preCollection = buildCollection(index, preDirection, derivePipelineState(preSite, preText, 0).emotion);
+        const prePipeline = derivePipelineState(preSite, preText, preCollection.length);
+        const pipelineBriefing = [
+          `\n\n═══ ESTADO ATUAL DO PIPELINE (calculado ANTES desta resposta) ═══`,
+          `Emoção-alvo detectada: ${prePipeline.emotion.emoji} ${prePipeline.emotion.label}`,
+          `Perfil criativo: ${preDirection.profile.emoji} ${preDirection.profile.name}`,
+          `Fases:`,
+          ...prePipeline.phases.map((p) => `- [${p.status}] ${p.emoji} ${p.label}: ${p.summary}`),
+          ``,
+          `COLEÇÃO COERENTE recomendada pelos especialistas internos (use como base — só troque um slot com justificativa):`,
+          ...preCollection.map(
+            (c) =>
+              `- ${c.slotLabel}: ${c.slug} (fit ${c.fit}) — ${c.experts.map((e) => `${e.emoji}${e.score.toFixed(1)}`).join(" ")}`,
+          ),
+          ``,
+          `REGRA: nunca escolha componentes soltos. Trabalhe sempre pensando na coleção acima como um kit unificado (Navbar → Hero → Feature → Gallery → Social → CTA → Footer). Antes de recomendar, avalie internamente pelos 5 especialistas (🎨 Visual, 🎬 Motion, 🏗️ DS, 📈 CRO, 💼 Brand) e cite as notas quando fizer sentido.`,
+          ``,
+        ].join("\n");
+
         const tools = {
           fetchUrl: tool({
             description:
@@ -1214,7 +1241,7 @@ export const Route = createFileRoute("/api/chat-director")({
 
         const result = streamText({
           model,
-          system: SYSTEM_BASE + catalogSection,
+          system: SYSTEM_BASE + catalogSection + pipelineBriefing,
           messages: await convertToModelMessages(messages),
           tools,
           stopWhen: stepCountIs(50),
