@@ -665,9 +665,28 @@ async function buildLocalDirectorReply({
   direction: CreativeDirection;
 }> {
   const latestText = extractMessageText(messages[messages.length - 1]);
-  const siteSummary = await fetchLocalSiteSummary(latestText);
-  const direction = inferCreativeDirection(siteSummary, latestText);
-  const recommendations = getLocalRecommendations(index, latestText, direction);
+  // Aggregate the whole conversation so recommendations evolve as we learn more.
+  // Recent user messages weigh more; assistant text is included lightly for continuity.
+  const userTurns = messages.filter((m) => m.role === "user");
+  const weightedUser = userTurns
+    .map((m, i) => {
+      const t = extractMessageText(m);
+      const recencyWeight = Math.min(4, userTurns.length - i); // most recent counts up to 4x
+      return Array.from({ length: recencyWeight }, () => t).join("\n");
+    })
+    .join("\n");
+  const assistantTail = messages
+    .filter((m) => m.role === "assistant")
+    .slice(-2)
+    .map(extractMessageText)
+    .join("\n");
+  const conversationContext = `${weightedUser}\n${assistantTail}\n${latestText}`.trim();
+  // Prefer a URL from the most recent user message; fall back to older turns.
+  const urlSourceText =
+    [...userTurns].reverse().map(extractMessageText).find((t) => findFirstUrl(t)) || latestText;
+  const siteSummary = await fetchLocalSiteSummary(urlSourceText);
+  const direction = inferCreativeDirection(siteSummary, conversationContext);
+  const recommendations = getLocalRecommendations(index, conversationContext, direction);
   const categories = Array.from(new Set(index.map((item) => item.category))).sort();
   const componentRows = recommendations
     .map(
