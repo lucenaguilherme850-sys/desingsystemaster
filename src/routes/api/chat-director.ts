@@ -837,8 +837,9 @@ export const Route = createFileRoute("/api/chat-director")({
                 status: local.siteSummary.status,
                 ok: local.siteSummary.ok,
                 excerpt: local.siteSummary.excerpt,
+                creative_direction: local.direction,
               }
-            : {};
+            : { creative_direction: local.direction };
           await supabase.from("agent_reports").upsert(
             {
               thread_id: threadId,
