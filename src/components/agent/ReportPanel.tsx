@@ -3,7 +3,14 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink, Copy, Check, Loader2, Sparkles } from "lucide-react";
 import { getAnimmasterDriveMasterPrompt } from "@/lib/animmaster-drive-code.functions";
-import type { CreativeDirection, PersonalityAxis } from "@/lib/creative-direction";
+import type {
+  CreativeDirection,
+  PersonalityAxis,
+  PipelineState,
+  CollectionEntry,
+  Emotion,
+  ExpertScore,
+} from "@/lib/creative-direction";
 
 type SectionMapItem = {
   section: string;
@@ -27,6 +34,8 @@ export type Report = {
 } | null;
 
 const TABS = [
+  { id: "pipeline", label: "🧭 Pipeline" },
+  { id: "collection", label: "🧩 Coleção" },
   { id: "direction", label: "🎨 Direção" },
   { id: "brief", label: "Briefing" },
   { id: "ds", label: "Design System" },
@@ -36,10 +45,20 @@ const TABS = [
 ] as const;
 
 export function ReportPanel({ report }: { report: Report }) {
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("direction");
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("pipeline");
   const [copied, setCopied] = useState(false);
-  const direction = (report?.business as { creative_direction?: CreativeDirection } | null | undefined)
-    ?.creative_direction as CreativeDirection | undefined;
+  const biz = (report?.business ?? null) as
+    | (Record<string, unknown> & {
+        creative_direction?: CreativeDirection;
+        pipeline?: PipelineState;
+        collection?: CollectionEntry[];
+        emotion?: Emotion;
+      })
+    | null;
+  const direction = biz?.creative_direction;
+  const pipeline = biz?.pipeline;
+  const collection = biz?.collection ?? [];
+  const emotion = biz?.emotion ?? pipeline?.emotion;
 
   const copyAll = async () => {
     try {
@@ -83,6 +102,10 @@ export function ReportPanel({ report }: { report: Report }) {
             Ainda não há relatório. Comece a conversa — o agente vai preencher automaticamente ao
             longo das 10 fases.
           </p>
+        ) : tab === "pipeline" ? (
+          <PipelineView pipeline={pipeline} emotion={emotion} />
+        ) : tab === "collection" ? (
+          <CollectionView collection={collection} business={report.business ?? null} />
         ) : tab === "brief" ? (
           <div className="space-y-4">
             <Section title="Negócio" data={report.business} />
