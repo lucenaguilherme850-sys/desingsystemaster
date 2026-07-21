@@ -12,7 +12,7 @@ import {
 import { ThreadList } from "@/components/agent/ThreadList";
 import { ChatPane } from "@/components/agent/ChatPane";
 import { ReportPanel } from "@/components/agent/ReportPanel";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PanelRightClose, PanelRightOpen, Compass, Puzzle, Palette, FileText, Layers, Map as MapIcon, Boxes, ListChecks } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/agent/$threadId")({
@@ -42,6 +42,49 @@ function AgentThread() {
   });
 
   const [reportOpen, setReportOpen] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [leftW, setLeftW] = useState<number>(() => {
+    if (typeof window === "undefined") return 240;
+    return Number(localStorage.getItem("agent:leftW")) || 240;
+  });
+  const [rightW, setRightW] = useState<number>(() => {
+    if (typeof window === "undefined") return 440;
+    return Number(localStorage.getItem("agent:rightW")) || 440;
+  });
+  useEffect(() => {
+    localStorage.setItem("agent:leftW", String(leftW));
+  }, [leftW]);
+  useEffect(() => {
+    localStorage.setItem("agent:rightW", String(rightW));
+  }, [rightW]);
+
+  const startDrag = useCallback(
+    (side: "left" | "right") => (e: React.PointerEvent) => {
+      e.preventDefault();
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const onMove = (ev: PointerEvent) => {
+        if (side === "left") {
+          const w = Math.min(420, Math.max(180, ev.clientX - rect.left));
+          setLeftW(w);
+        } else {
+          const w = Math.min(720, Math.max(300, rect.right - ev.clientX));
+          setRightW(w);
+        }
+      };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [],
+  );
   const [activeTab, setActiveTab] = useState<
     "pipeline" | "collection" | "direction" | "brief" | "ds" | "map" | "comps" | "plan"
   >("pipeline");
@@ -57,13 +100,12 @@ function AgentThread() {
     { id: "plan" as const, icon: ListChecks, label: "Implementação" },
   ];
 
+  const rightCol = reportOpen ? rightW : 48;
   return (
     <div
-      className={`grid h-[calc(100vh-64px)] gap-0 border-t border-border/40 bg-background transition-[grid-template-columns] duration-300 ${
-        reportOpen
-          ? "grid-cols-[240px_minmax(0,1fr)_440px]"
-          : "grid-cols-[240px_minmax(0,1fr)_48px]"
-      }`}
+      ref={containerRef}
+      className="grid h-[calc(100vh-64px)] gap-0 border-t border-border/40 bg-background"
+      style={{ gridTemplateColumns: `${leftW}px 6px minmax(0,1fr) 6px ${rightCol}px` }}
     >
       <ThreadList
         threads={threadsQ.data ?? []}
@@ -88,6 +130,13 @@ function AgentThread() {
           qc.invalidateQueries({ queryKey: ["agent-threads"] });
         }}
       />
+      <div
+        onPointerDown={startDrag("left")}
+        className="group relative cursor-col-resize bg-border/40 hover:bg-primary/40"
+        title="Arrastar"
+      >
+        <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border/60 group-hover:bg-primary/60" />
+      </div>
       {msgsQ.isLoading || !msgsQ.data ? (
         <div className="flex items-center justify-center text-sm text-muted-foreground">
           Carregando conversa…
@@ -108,6 +157,15 @@ function AgentThread() {
           </div>
         </div>
       )}
+      <div
+        onPointerDown={reportOpen ? startDrag("right") : undefined}
+        className={`group relative bg-border/40 ${
+          reportOpen ? "cursor-col-resize hover:bg-primary/40" : "opacity-0"
+        }`}
+        title={reportOpen ? "Arrastar" : undefined}
+      >
+        <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border/60 group-hover:bg-primary/60" />
+      </div>
       {reportOpen ? (
         <div className="min-h-0 overflow-hidden border-l border-border/40 bg-card/20">
           <div className="flex h-9 items-center justify-between border-b border-border/40 px-2">
