@@ -1,6 +1,12 @@
 import { useMemo, useState } from "react";
 import { Check, Copy, FileText, Sparkles } from "lucide-react";
-import { buildComponentSpec, type SpecFile } from "@/lib/component-spec";
+import {
+  buildComponentMasterPrompt,
+  buildComponentPromptPreview,
+  buildComponentSpecMarkdown,
+  buildComponentSpecSummary,
+  type SpecFile,
+} from "@/lib/component-spec";
 
 type Props = {
   slug: string;
@@ -11,60 +17,64 @@ type Props = {
   files: SpecFile[];
 };
 
-async function copyText(text: string) {
+type CopyResult = "copied" | "downloaded" | "failed";
+
+function safeFilename(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "component";
+}
+
+function downloadText(text: string, filename: string) {
+  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
+async function copyText(text: string, filename: string): Promise<CopyResult> {
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
-      return true;
+      return "copied";
     }
   } catch {
-    /* fall through */
+    /* fall through to download */
   }
   try {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    const ok = document.execCommand("copy");
-    document.body.removeChild(ta);
-    if (ok) return true;
+    downloadText(text, filename);
+    return "downloaded";
   } catch {
-    /* fall through */
+    return "failed";
   }
-  window.prompt("Copie manualmente (Ctrl/Cmd+C):", text);
-  return false;
 }
 
 export default function ComponentSpec(props: Props) {
-  const spec = useMemo(() => buildComponentSpec(props), [props]);
-  const [copied, setCopied] = useState<"spec" | "prompt" | null>(null);
+  const spec = useMemo(() => buildComponentSpecSummary(props), [props]);
+  const promptPreview = useMemo(() => buildComponentPromptPreview(props), [props]);
+  const [copied, setCopied] = useState<"spec" | "prompt" | "downloaded" | null>(null);
 
   if (!props.files.length) return null;
 
-  const ping = async (kind: "spec" | "prompt", text: string) => {
+  const ping = async (kind: "spec" | "prompt") => {
     try {
-      const ok = await copyText(text);
-      if (ok) {
-        setCopied(kind);
+      const text = kind === "spec" ? buildComponentSpecMarkdown(props) : buildComponentMasterPrompt(props);
+      const filename = `${safeFilename(props.slug)}-${kind === "spec" ? "master-spec" : "prompt-mestre"}.md`;
+      const result = await copyText(text, filename);
+      if (result !== "failed") {
+        setCopied(result === "downloaded" ? "downloaded" : kind);
         setTimeout(() => setCopied(null), 1600);
       }
     } catch (e) {
       console.error("copy failed", e);
     }
   };
-
-  // Prompt pode ter vários MB (código-fonte inteiro embutido) — renderizar
-  // o texto completo dentro de <pre> trava o browser. Mostramos só um preview.
-  const PREVIEW_LIMIT = 4000;
-  const promptPreview =
-    spec.prompt.length > PREVIEW_LIMIT
-      ? spec.prompt.slice(0, PREVIEW_LIMIT) +
-        `\n\n… (${(spec.prompt.length - PREVIEW_LIMIT).toLocaleString()} caracteres adicionais — use "copiar prompt" para obter o conteúdo completo)`
-      : spec.prompt;
 
   return (
     <div className="mt-10 space-y-6">
@@ -75,18 +85,18 @@ export default function ComponentSpec(props: Props) {
           </div>
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => ping("spec", spec.markdown)}
+              onClick={() => ping("spec")}
               className="inline-flex items-center gap-1.5 rounded-full border border-neon/50 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neon transition-colors hover:bg-neon hover:text-background"
             >
               {copied === "spec" ? <Check className="size-3" /> : <Copy className="size-3" />}
-              {copied === "spec" ? "copiado" : "copiar spec (md)"}
+              {copied === "spec" ? "copiado" : copied === "downloaded" ? "baixado" : "copiar spec (md)"}
             </button>
             <button
-              onClick={() => ping("prompt", spec.prompt)}
+              onClick={() => ping("prompt")}
               className="inline-flex items-center gap-1.5 rounded-full bg-[#ff00c8] px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-black transition-colors hover:bg-[#ff00c8]/90"
             >
               {copied === "prompt" ? <Check className="size-3" /> : <Sparkles className="size-3" />}
-              {copied === "prompt" ? "copiado" : "copiar prompt mestre"}
+              {copied === "prompt" ? "copiado" : copied === "downloaded" ? "baixado" : "copiar prompt mestre"}
             </button>
           </div>
         </div>
@@ -137,11 +147,11 @@ export default function ComponentSpec(props: Props) {
             <Sparkles className="size-3.5" /> 7 · prompt mestre (pronto para qualquer IA)
           </div>
           <button
-            onClick={() => ping("prompt", spec.prompt)}
+            onClick={() => ping("prompt")}
             className="inline-flex items-center gap-1.5 rounded-full bg-[#ff00c8] px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-black hover:bg-[#ff00c8]/90 transition-colors"
           >
             {copied === "prompt" ? <Check className="size-3" /> : <Copy className="size-3" />}
-            {copied === "prompt" ? "copiado" : "copiar prompt"}
+            {copied === "prompt" ? "copiado" : copied === "downloaded" ? "baixado" : "copiar prompt"}
           </button>
         </div>
         <p className="mt-3 text-sm text-foreground/80">
