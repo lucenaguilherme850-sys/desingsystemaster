@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink, Copy, Check, Loader2, Sparkles } from "lucide-react";
-import { getAnimmasterDriveCode } from "@/lib/animmaster-drive-code.functions";
-import { buildComponentSpec } from "@/lib/component-spec";
+import { getAnimmasterDriveMasterPrompt } from "@/lib/animmaster-drive-code.functions";
 
 type SectionMapItem = {
   section: string;
@@ -150,22 +149,16 @@ function SelectedComponentCard({
   item: SectionMapItem;
   business: Record<string, unknown> | null;
 }) {
-  const fetchCode = useServerFn(getAnimmasterDriveCode);
+  const fetchPrompt = useServerFn(getAnimmasterDriveMasterPrompt);
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   async function copyAdaptedPrompt() {
     if (!item.componentSlug) return;
     setState("loading");
     try {
-      const r = await fetchCode({ data: { slug: item.componentSlug } });
-      const files = r.files.map((f) => ({ path: f.path, content: f.content, language: f.language }));
-      if (!files.length) throw new Error("sem arquivos");
-      const spec = buildComponentSpec({
-        slug: item.componentSlug,
-        name: item.componentName || item.componentSlug,
-        category: item.category,
-        files,
-      });
+      const r = await fetchPrompt({ data: { slug: item.componentSlug } });
+      const masterPrompt = r?.prompt ?? "";
+      if (!masterPrompt) throw new Error("sem prompt");
       const b = business ?? {};
       const url = (b.url as string) || "";
       const title = (b.title as string) || "";
@@ -203,20 +196,27 @@ function SelectedComponentCard({
       ]
         .filter(Boolean)
         .join("\n");
-      const finalPrompt = `${preamble}\n${spec.prompt}`;
+      const finalPrompt = `${preamble}\n${masterPrompt}`;
       try {
         await navigator.clipboard.writeText(finalPrompt);
       } catch {
-        const ta = document.createElement("textarea");
-        ta.value = finalPrompt;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = finalPrompt;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        } catch {
+          /* ignore */
+        }
       }
       setState("done");
       setTimeout(() => setState("idle"), 2000);
-    } catch {
+    } catch (e) {
+      console.error("copyAdaptedPrompt failed", e);
       setState("error");
       setTimeout(() => setState("idle"), 2500);
     }
