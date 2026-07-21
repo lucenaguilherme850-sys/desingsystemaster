@@ -2,7 +2,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, Wrench } from "lucide-react";
+import { Send, Loader2, Wrench, Paperclip, X, FileText, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export function ChatPane({
@@ -15,8 +15,10 @@ export function ChatPane({
   onFinished: () => void;
 }) {
   const [input, setInput] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const transport = useMemo(
     () =>
@@ -65,13 +67,37 @@ export function ChatPane({
 
   const submit = () => {
     const text = input.trim();
-    if (!text || busy) return;
+    if ((!text && files.length === 0) || busy) return;
     setInput("");
-    void sendMessage({ text });
+    const filesToSend = files;
+    setFiles([]);
+    void sendMessage({
+      text: text || "(anexos enviados)",
+      files: filesToSend.length ? filesToSend : undefined,
+    });
+  };
+
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const next: File[] = [];
+    for (const f of Array.from(list)) {
+      if (f.size > 15 * 1024 * 1024) continue; // 15MB cap
+      next.push(f);
+    }
+    setFiles((prev) => [...prev, ...next].slice(0, 6));
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div
+      className="flex h-full flex-col"
+      onDragOver={(e) => {
+        e.preventDefault();
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        addFiles(e.dataTransfer.files);
+      }}
+    >
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
         {messages.length === 0 && (
           <div className="mx-auto max-w-2xl text-center">
@@ -100,7 +126,54 @@ export function ChatPane({
         </div>
       </div>
       <div className="border-t border-border/40 bg-card/30 p-3">
-        <div className="mx-auto flex max-w-3xl items-end gap-2">
+        <div className="mx-auto max-w-3xl">
+          {files.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {files.map((f, i) => (
+                <div
+                  key={i}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background/70 px-2 py-1 text-xs"
+                >
+                  {f.type.startsWith("image/") ? (
+                    <ImageIcon className="size-3" />
+                  ) : (
+                    <FileText className="size-3" />
+                  )}
+                  <span className="max-w-[180px] truncate">{f.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                    className="text-muted-foreground hover:text-foreground"
+                    aria-label="remover"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex items-end gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,application/pdf,.txt,.md,.json,.csv"
+            className="hidden"
+            onChange={(e) => {
+              addFiles(e.target.files);
+              if (fileInputRef.current) fileInputRef.current.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={busy}
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-2 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50"
+            aria-label="Anexar arquivo"
+            title="Anexar imagem ou arquivo"
+          >
+            <Paperclip className="size-4" />
+          </button>
           <textarea
             ref={textareaRef}
             value={input}
@@ -112,16 +185,17 @@ export function ChatPane({
               }
             }}
             rows={2}
-            placeholder="Ex: Preciso de um site para uma clínica odontológica premium em SP, foco em implantes."
+            placeholder="Ex: Preciso de um site premium… (ou arraste imagens/PDFs aqui)"
             className="min-h-[60px] flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <button
             onClick={submit}
-            disabled={busy || !input.trim()}
+            disabled={busy || (!input.trim() && files.length === 0)}
             className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
             <Send className="size-3" /> Enviar
           </button>
+          </div>
         </div>
       </div>
     </div>
