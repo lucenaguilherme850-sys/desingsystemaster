@@ -811,7 +811,7 @@ export const Route = createFileRoute("/api/chat-director")({
             componentName: r.name,
             category: r.category,
             priority: r.priority,
-            adaptation: buildAdaptationNote(r.category, r.section, local.siteSummary),
+            adaptation: buildAdaptationNote(r.category, r.section, local.siteSummary, r.slug, i),
           }));
           const business = local.siteSummary
             ? {
