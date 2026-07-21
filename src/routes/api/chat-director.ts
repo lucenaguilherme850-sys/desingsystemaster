@@ -326,7 +326,7 @@ function getLocalRecommendations(
       name: entry.item.name,
       category: entry.item.category,
       priority: picked.length < 3 ? "Alta" : "Média",
-      reason: buildRecommendationReason(entry.item.category, queryText),
+      reason: buildRecommendationReason(entry.item.category, entry.item.slug, entry.item.name),
     });
   }
   return picked;
@@ -344,7 +344,13 @@ function inferSection(category: string, name: string): string {
   return "Experiência visual";
 }
 
-function buildAdaptationNote(category: string, section: string, site?: LocalSiteSummary | null): string {
+function buildAdaptationNote(
+  category: string,
+  section: string,
+  site: LocalSiteSummary | null | undefined,
+  slug: string = "",
+  position: number = 0,
+): string {
   const c = normalizeForSearch(category);
   const brand = site?.title?.split("|")[0]?.trim() || "o projeto alvo";
   const profile = inferSiteProfile(site);
@@ -352,6 +358,17 @@ function buildAdaptationNote(category: string, section: string, site?: LocalSite
   const accent = profile.accent;
   const feel = profile.feel;
   const speed = profile.speed;
+  const eff = pickEffect(category, slug || section);
+  const placements = [
+    "primeira dobra (hero principal)",
+    "seção logo abaixo do hero (proposta de valor)",
+    "grid de serviços / cases",
+    "seção de prova social / depoimentos",
+    "bloco de pricing ou planos",
+    "CTA final antes do footer",
+    "navegação principal / header",
+  ];
+  const placement = placements[(hashSlug(slug || section) + position) % placements.length];
 
   const perCategory = (() => {
     if (c.includes("hero")) return `**Onde usar:** primeira dobra de ${brand}, sincronizado com o headline principal.\n- Trocar background por **${bg}**.\n- Trocar partículas / glow / mesh por **${accent}**.\n- Ajustar velocidade da entrada para **${speed}** para reforçar sensação de ${feel}.\n- Substituir mídia de demo por foto real do serviço (nada de stock genérico).`;
@@ -366,7 +383,12 @@ function buildAdaptationNote(category: string, section: string, site?: LocalSite
   })();
 
   return [
-    `Encaixe: **${section}** de ${brand}.`,
+    `Encaixe sugerido: **${placement}** de ${brand} (categoria "${section}").`,
+    ``,
+    `**O que faz aqui:** ${eff.what}.`,
+    `**Mudança visível:** ${eff.change}.`,
+    `**Resultado:** ${eff.result}.`,
+    ``,
     perCategory,
     ``,
     `**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação — só cor, tipografia, copy, mídia e ritmo global mudam.`,
@@ -489,23 +511,90 @@ function buildAdaptedPromptPreamble(site: LocalSiteSummary | null, section: stri
   return lines.filter((l) => l !== undefined).join("\n");
 }
 
-function buildRecommendationReason(category: string, queryText: string): string {
-  const categoryValue = normalizeForSearch(category);
-  const query = normalizeForSearch(queryText);
-  if (categoryValue.includes("hero")) return "Cria impacto imediato na primeira dobra sem depender de texto longo.";
-  if (categoryValue.includes("scroll") || query.includes("rolagem")) {
-    return "Aumenta ritmo de leitura e revela conteúdo no momento certo.";
-  }
-  if (categoryValue.includes("mouse") || categoryValue.includes("hover")) {
-    return "Dá sensação premium nas áreas interativas sem poluir a interface.";
-  }
-  if (categoryValue.includes("text") || categoryValue.includes("texto")) {
-    return "Fortalece hierarquia tipográfica e melhora lembrança da mensagem.";
-  }
-  if (categoryValue.includes("nav") || categoryValue.includes("menu")) {
-    return "Deixa a navegação mais clara e memorável para exploração rápida.";
-  }
-  return "Adiciona movimento com função estratégica, não apenas decoração.";
+function hashSlug(slug: string): number {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+type EffectSig = { what: string; change: string; result: string };
+const EFFECT_POOLS: Record<string, EffectSig[]> = {
+  hero: [
+    { what: "revela o headline em split-lines com máscara subindo", change: "cada linha entra de baixo pra cima com stagger de 80ms", result: "prende o olhar no título antes do usuário rolar" },
+    { what: "anima um mesh gradiente animado atrás do headline", change: "camada WebGL de baixa opacidade respirando em loop", result: "dá profundidade sem competir com o texto" },
+    { what: "faz o CTA principal ter magnetismo no cursor", change: "botão puxa levemente em direção ao mouse ao aproximar", result: "aumenta cliques por sensação de resposta física" },
+    { what: "empilha badges flutuando com paralaxe suave", change: "elementos secundários com y-parallax de ±8px no scroll", result: "hero deixa de parecer estático mesmo antes do scroll" },
+    { what: "faz o headline trocar palavras-chave em ciclo", change: "última palavra do H1 gira entre 3 termos com blur", result: "comunica múltiplas propostas de valor sem poluir" },
+    { what: "abre a página com um portal que expande", change: "transição de entrada de 900ms cobrindo → revelando", result: "primeira impressão vira momento memorável" },
+  ],
+  scroll: [
+    { what: "revela seções via IntersectionObserver com fade+rise", change: "cada bloco entra a 120px do viewport com 400ms ease-out", result: "ritmo de leitura fica guiado, nada aparece 'chapado'" },
+    { what: "pina uma seção horizontal no scroll vertical", change: "seção fixa enquanto conteúdo rola lateralmente por 200vh", result: "cases ganham espaço narrativo sem virar carrossel" },
+    { what: "aplica paralaxe multi-camada em fundo + mídia + texto", change: "3 camadas com velocidades diferentes conforme o scroll", result: "profundidade cinematográfica em seções âncora" },
+    { what: "desenha SVG de linha (stroke-dasharray) no viewport", change: "traço se completa conforme o usuário rola a seção", result: "transforma um divisor comum em micro-storytelling" },
+    { what: "conta números (counter) ao entrar no viewport", change: "métricas sobem de 0 até o valor final em 1.2s ease-out", result: "prova social ganha peso visual" },
+  ],
+  hover: [
+    { what: "distorce a imagem do card com skew+scale", change: "img skew(-4deg) scale(1.05) em 350ms", result: "cards viram convites — dá vontade de clicar" },
+    { what: "revela imagem B por máscara circular no cursor", change: "spotlight circular segue o mouse revelando o layer B", result: "vira demonstração 'antes/depois' sem duplicar espaço" },
+    { what: "desenha underline no texto do link", change: "linha inferior anima de 0 → 100% da largura em 300ms", result: "links ficam claramente clicáveis sem visual pesado" },
+    { what: "explode o texto em partículas no hover", change: "letras se separam em px scatter e voltam em 400ms", result: "microinteração premium em CTAs secundários" },
+    { what: "aplica glow ring pulsante na borda do botão", change: "gradiente cônico animado em ::after do botão", result: "eleva a percepção de qualidade do CTA principal" },
+  ],
+  mouse: [
+    { what: "cursor customizado com lerp e escala contextual", change: "bolha segue o cursor com atraso de 0.12 e cresce em áreas clicáveis", result: "sensação de site 'design studio' de alto padrão" },
+    { what: "spotlight radial segue o mouse revelando cor no fundo", change: "radial-gradient de 300px acompanha o cursor sobre a hero", result: "convida à exploração sem exigir scroll" },
+    { what: "trilha de partículas atrás do cursor", change: "8 pontos com fade-out escalonado seguem o movimento", result: "assinatura visual em landing autoral" },
+  ],
+  text: [
+    { what: "quebra o headline em caracteres com stagger", change: "cada letra entra com y=20→0 e opacity 0→1 (stagger 25ms)", result: "hierarquia tipográfica ganha ritmo e leitura mais forte" },
+    { what: "efeito scramble antes de estabilizar", change: "caracteres embaralhados por 600ms antes do texto final", result: "ancora atenção em números ou palavras-chave" },
+    { what: "gradient sweep animado sobre o texto", change: "gradient conic com background-clip:text gira em loop", result: "destaque premium para palavra-chave sem cor chapada" },
+    { what: "typewriter reverso que apaga e reescreve", change: "última palavra do título deleta e digita variações", result: "comunica múltiplas ofertas mantendo a tipografia" },
+    { what: "outline → fill do texto no scroll", change: "texto começa com stroke e preenche ao entrar na view", result: "títulos de seção viram momento visual" },
+  ],
+  nav: [
+    { what: "menu overlay em split-curtain vertical", change: "duas metades da tela deslizam do topo/base em 500ms", result: "abertura de menu vira transição, não pop-up" },
+    { what: "pill que segue o item ativo com spring", change: "background pill anima entre itens (stiffness 200)", result: "navegação principal parece app nativo" },
+    { what: "nav que borra o fundo no scroll (blur+shrink)", change: "backdrop-filter blur(12px) + padding reduz após 40px", result: "nav sempre legível sem cobrir conteúdo" },
+    { what: "dock inferior estilo macOS com magnificação", change: "ícone sob o cursor escala 1.4x, vizinhos 1.15x", result: "navegação lúdica para portfólios / apps criativos" },
+  ],
+  webgl: [
+    { what: "shader de plasma / aurora rodando no fundo", change: "canvas WebGL fullscreen com fragment shader em loop de raf", result: "background vira assinatura visual, impossível em CSS" },
+    { what: "distorção líquida reativa ao mouse", change: "displacement map do shader responde ao cursor", result: "hero sensorial — permanência na página sobe muito" },
+    { what: "campo de partículas 3D com flow field", change: "1500+ partículas seguem noise field em canvas offscreen", result: "profundidade cinematográfica sem custo de vídeo" },
+    { what: "kaleidoscópio / caustics animado", change: "shader com simetria radial + tempo, cor puxada do accent", result: "seção-âncora que fica na memória" },
+  ],
+  grid: [
+    { what: "grid revela cards em stagger diagonal", change: "cada card entra com delay = (row+col)*60ms", result: "portfólio deixa de aparecer 'tudo de uma vez'" },
+    { what: "cards com tilt 3D seguindo o mouse", change: "rotateX/rotateY calculado por posição do cursor no card", result: "grid vira galeria interativa, aumenta cliques" },
+    { what: "grid quebra e reorganiza no filtro (FLIP)", change: "cards animam de posição A→B com 400ms cubic-bezier", result: "filtros de portfólio ganham fluidez de app" },
+  ],
+  slider: [
+    { what: "carrossel com drag inercial e snap", change: "arrasto responde com velocidade + snap no card mais próximo", result: "galeria mobile-first sem parecer nativa do browser" },
+    { what: "empilhamento de cards estilo Tinder", change: "stack com rotação leve, top card arrasta e sai", result: "storytelling de cases um-a-um sem quebrar a página" },
+  ],
+};
+
+function pickEffect(category: string, slug: string): EffectSig {
+  const c = normalizeForSearch(category);
+  let key: keyof typeof EFFECT_POOLS = "hero";
+  if (c.includes("scroll")) key = "scroll";
+  else if (c.includes("hover")) key = "hover";
+  else if (c.includes("mouse") || c.includes("cursor")) key = "mouse";
+  else if (c.includes("text") || c.includes("title") || c.includes("texto")) key = "text";
+  else if (c.includes("nav") || c.includes("menu")) key = "nav";
+  else if (c.includes("webgl") || c.includes("shader") || c.includes("3d")) key = "webgl";
+  else if (c.includes("grid") || c.includes("card") || c.includes("gallery")) key = "grid";
+  else if (c.includes("slider") || c.includes("carousel")) key = "slider";
+  const pool = EFFECT_POOLS[key];
+  return pool[hashSlug(slug) % pool.length];
+}
+
+function buildRecommendationReason(category: string, slug: string, name: string): string {
+  const eff = pickEffect(category, slug);
+  const label = name && name.toLowerCase() !== "pro" ? name : slug;
+  return `**${label}** — ${eff.what}. **Mudança visível:** ${eff.change}. **Resultado:** ${eff.result}.`;
 }
 
 function findFirstUrl(text: string): string | null {
@@ -722,7 +811,7 @@ export const Route = createFileRoute("/api/chat-director")({
             componentName: r.name,
             category: r.category,
             priority: r.priority,
-            adaptation: buildAdaptationNote(r.category, r.section, local.siteSummary),
+            adaptation: buildAdaptationNote(r.category, r.section, local.siteSummary, r.slug, i),
           }));
           const business = local.siteSummary
             ? {
