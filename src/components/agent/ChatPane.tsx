@@ -251,6 +251,32 @@ function MessageBubble({ message }: { message: UIMessage }) {
               </div>
             );
           }
+          if (part.type === "file") {
+            const p = part as { mediaType?: string; filename?: string; url?: string };
+            const url = p.url ?? "";
+            const name = p.filename ?? "arquivo";
+            if (p.mediaType?.startsWith("image/") && url) {
+              return (
+                <img
+                  key={i}
+                  src={url}
+                  alt={name}
+                  className="my-1 max-h-64 rounded-md border border-border/60"
+                />
+              );
+            }
+            return (
+              <a
+                key={i}
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="my-1 inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/50 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                <FileText className="size-3" /> {name}
+              </a>
+            );
+          }
           return null;
         })}
       </div>
