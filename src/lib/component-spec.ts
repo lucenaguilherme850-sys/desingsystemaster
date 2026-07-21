@@ -22,6 +22,13 @@ type Detected = {
   hasShader: boolean;
 };
 
+export type ComponentSpecSummary = {
+  detected: Detected;
+  summary: string;
+  architecture: string[];
+  deps: string[];
+};
+
 const TECH_SIGNATURES: Array<{ label: string; test: RegExp }> = [
   { label: "React", test: /\bfrom\s+["']react["']|\bReact\./ },
   { label: "TypeScript", test: /\.tsx?$/ },
@@ -197,7 +204,7 @@ ${input.files.map(fence).join("")}
 ──────────────── FIM DO CÓDIGO ORIGINAL ────────────────`;
 }
 
-export function buildComponentSpec(input: ComponentSpecInput) {
+export function buildComponentSpecSummary(input: ComponentSpecInput): ComponentSpecSummary {
   const d = detect(input.files);
   const cat = humanCategory(input.category);
   const summary =
@@ -207,7 +214,49 @@ export function buildComponentSpec(input: ComponentSpecInput) {
   const arch = architectureNotes(d, input.files);
   const deps = d.deps.length ? d.deps : ["(nenhuma dependência externa detectada — usa apenas React + APIs nativas)"];
 
-  const markdown = `# ${input.name}
+  return {
+    detected: d,
+    summary,
+    architecture: arch,
+    deps,
+  };
+}
+
+export function buildComponentMasterPrompt(input: ComponentSpecInput): string {
+  return masterPrompt(input, detect(input.files));
+}
+
+export function buildComponentPromptPreview(input: ComponentSpecInput): string {
+  const d = detect(input.files);
+  const url = input.previewUrl || `https://animmaster.lovable.app/animmaster/${input.slug}`;
+  const techList = d.tech.length ? d.tech.join(", ") : "tecnologias detectadas no código";
+  const fileList = input.files
+    .map((file) => `- ${file.path} (${file.content.length.toLocaleString()} chars)`)
+    .join("\n");
+
+  return `# PROMPT MESTRE DE IMPLEMENTAÇÃO — "${input.name}" (${input.slug})
+
+Você é um engenheiro sênior full-stack. Sua tarefa é reimplementar fielmente este componente em um projeto de destino informado pelo usuário.
+
+Referência visual: ${url}
+Tecnologias detectadas: ${techList}
+
+Antes de codar, o agente deve perguntar:
+1. Em qual página/rota do projeto montar o componente?
+2. Qual conteúdo real substituirá a demo?
+3. Deve usar o design system existente ou tokens dedicados?
+4. Há restrições de performance, acessibilidade ou mobile?
+
+Arquivos que serão incluídos integralmente no prompt copiado/baixado:
+${fileList || "- nenhum arquivo disponível"}
+
+O prompt completo inclui o código original como fonte de verdade, preservando animações, timings, interações, shaders, física, camadas e sensação premium sem simplificações.`;
+}
+
+export function buildComponentSpecMarkdown(input: ComponentSpecInput): string {
+  const { detected: d, summary, architecture: arch, deps } = buildComponentSpecSummary(input);
+
+  return `# ${input.name}
 
 > Slug: \`${input.slug}\` · Categoria: \`${input.category ?? "—"}\`
 
@@ -233,13 +282,15 @@ ${input.files.map(fence).join("")}
 ## 7. Prompt Mestre de Implementação
 ${masterPrompt(input, d)}
 `;
+}
+
+export function buildComponentSpec(input: ComponentSpecInput) {
+  const summarySpec = buildComponentSpecSummary(input);
+  const markdown = buildComponentSpecMarkdown(input);
 
   return {
-    detected: d,
-    summary,
-    architecture: arch,
-    deps,
+    ...summarySpec,
     markdown,
-    prompt: masterPrompt(input, d),
+    prompt: buildComponentMasterPrompt(input),
   };
 }
