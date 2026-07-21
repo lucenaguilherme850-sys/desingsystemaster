@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { unzipSync, strFromU8 } from "fflate";
+import { buildComponentSpec } from "@/lib/component-spec";
 
 const inputSchema = z.object({ slug: z.string().min(1).max(200) });
+const promptInputSchema = z.object({ slug: z.string().min(1).max(200) });
 const GATEWAY = "https://connector-gateway.lovable.dev/google_drive/drive/v3";
 
 const TEXT_EXT = new Set([
@@ -37,19 +39,18 @@ async function driveDownload(fileId: string): Promise<ArrayBuffer> {
   return res.arrayBuffer();
 }
 
-export const getAnimmasterDriveCode = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => inputSchema.parse(data))
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: row, error } = await supabaseAdmin
-      .from("animmaster_items")
-      .select("id, slug, drive_zip_id")
-      .eq("slug", data.slug)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!row?.drive_zip_id) return { files: [] as { path: string; content: string; size: number; language: string }[] };
+async function loadFilesForSlug(slug: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: row, error } = await supabaseAdmin
+    .from("animmaster_items")
+    .select("id, slug, name, category, drive_zip_id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!row?.drive_zip_id)
+    return { row: row ?? null, files: [] as { path: string; content: string; size: number; language: string }[] };
 
-    const bucket = supabaseAdmin.storage.from("animmaster-assets");
+  const bucket = supabaseAdmin.storage.from("animmaster-assets");
     const path = `drive-code/${row.slug}.zip`;
 
     // Try to load from bucket first
@@ -102,5 +103,26 @@ export const getAnimmasterDriveCode = createServerFn({ method: "POST" })
       return r !== 0 ? r : a.path.localeCompare(b.path);
     });
 
+  return { row, files };
+}
+
+export const getAnimmasterDriveCode = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { files } = await loadFilesForSlug(data.slug);
     return { files };
+  });
+
+export const getAnimmasterDriveMasterPrompt = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => promptInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { row, files } = await loadFilesForSlug(data.slug);
+    if (!row || !files.length) return { prompt: "" };
+    const spec = buildComponentSpec({
+      slug: row.slug,
+      name: row.name ?? row.slug,
+      category: row.category,
+      files: files.map((f) => ({ path: f.path, content: f.content, language: f.language })),
+    });
+    return { prompt: spec.prompt };
   });
