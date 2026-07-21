@@ -13,7 +13,7 @@ import { ThreadList } from "@/components/agent/ThreadList";
 import { ChatPane } from "@/components/agent/ChatPane";
 import { ReportPanel } from "@/components/agent/ReportPanel";
 import { useState } from "react";
-import { FileText, X } from "lucide-react";
+import { PanelRightClose, PanelRightOpen, Compass, Puzzle, Palette, FileText, Layers, Map as MapIcon, Boxes, ListChecks } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/agent/$threadId")({
   component: AgentThread,
@@ -41,9 +41,30 @@ function AgentThread() {
     refetchInterval: 4000,
   });
 
-  const [reportOpen, setReportOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<
+    "pipeline" | "collection" | "direction" | "brief" | "ds" | "map" | "comps" | "plan"
+  >("pipeline");
+
+  const railTabs = [
+    { id: "pipeline" as const, icon: Compass, label: "Pipeline" },
+    { id: "collection" as const, icon: Puzzle, label: "Coleção" },
+    { id: "direction" as const, icon: Palette, label: "Direção" },
+    { id: "brief" as const, icon: FileText, label: "Briefing" },
+    { id: "ds" as const, icon: Layers, label: "Design System" },
+    { id: "map" as const, icon: MapIcon, label: "Mapa" },
+    { id: "comps" as const, icon: Boxes, label: "Componentes" },
+    { id: "plan" as const, icon: ListChecks, label: "Implementação" },
+  ];
+
   return (
-    <div className="relative grid h-[calc(100vh-64px)] grid-cols-[260px_1fr] gap-0 border-t border-border/40 bg-background">
+    <div
+      className={`grid h-[calc(100vh-64px)] gap-0 border-t border-border/40 bg-background transition-[grid-template-columns] duration-300 ${
+        reportOpen
+          ? "grid-cols-[240px_minmax(0,1fr)_440px]"
+          : "grid-cols-[240px_minmax(0,1fr)_48px]"
+      }`}
+    >
       <ThreadList
         threads={threadsQ.data ?? []}
         activeId={threadId}
@@ -72,36 +93,72 @@ function AgentThread() {
           Carregando conversa…
         </div>
       ) : (
-        <div className="relative flex min-h-0 flex-col">
-          <ChatPane
-          key={threadId}
-          threadId={threadId}
-          initialMessages={msgsQ.data}
-          onFinished={() => {
-            qc.invalidateQueries({ queryKey: ["agent-messages", threadId] });
-            qc.invalidateQueries({ queryKey: ["agent-report", threadId] });
-            qc.invalidateQueries({ queryKey: ["agent-threads"] });
-          }}
-          />
-          <button
-            onClick={() => setReportOpen((v) => !v)}
-            className="absolute right-4 top-3 z-20 inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-card/70 px-2.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur hover:bg-accent hover:text-foreground"
-          >
-            <FileText className="size-3.5" />
-            {reportOpen ? "Fechar documento" : "Ver documento"}
-          </button>
+        <div className="flex min-h-0 flex-col overflow-hidden">
+          <div className="mx-auto flex min-h-0 w-full max-w-[900px] flex-1 flex-col">
+            <ChatPane
+              key={threadId}
+              threadId={threadId}
+              initialMessages={msgsQ.data}
+              onFinished={() => {
+                qc.invalidateQueries({ queryKey: ["agent-messages", threadId] });
+                qc.invalidateQueries({ queryKey: ["agent-report", threadId] });
+                qc.invalidateQueries({ queryKey: ["agent-threads"] });
+              }}
+            />
+          </div>
         </div>
       )}
-      {reportOpen && (
-        <div className="absolute inset-y-0 right-0 z-30 w-[420px] max-w-full border-l border-border/40 bg-background shadow-2xl">
+      {reportOpen ? (
+        <div className="min-h-0 overflow-hidden border-l border-border/40 bg-card/20">
+          <div className="flex h-9 items-center justify-between border-b border-border/40 px-2">
+            <span className="pl-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Documento
+            </span>
+            <button
+              onClick={() => setReportOpen(false)}
+              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+              aria-label="Recolher painel"
+              title="Recolher painel"
+            >
+              <PanelRightClose className="size-4" />
+            </button>
+          </div>
+          <div className="h-[calc(100%-2.25rem)]">
+            <ReportPanel
+              report={(reportQ.data ?? null) as never}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-col items-center gap-1 border-l border-border/40 bg-card/20 py-2">
           <button
-            onClick={() => setReportOpen(false)}
-            className="absolute right-2 top-2 z-40 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Fechar"
+            onClick={() => setReportOpen(true)}
+            className="mb-1 rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            aria-label="Expandir painel"
+            title="Expandir painel"
           >
-            <X className="size-4" />
+            <PanelRightOpen className="size-4" />
           </button>
-          <ReportPanel report={(reportQ.data ?? null) as never} />
+          {railTabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => {
+                setActiveTab(t.id);
+                setReportOpen(true);
+              }}
+              className={`rounded-md p-1.5 transition ${
+                activeTab === t.id
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+              aria-label={t.label}
+              title={t.label}
+            >
+              <t.icon className="size-4" />
+            </button>
+          ))}
         </div>
       )}
     </div>
