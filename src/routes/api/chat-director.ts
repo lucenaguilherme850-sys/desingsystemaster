@@ -18,6 +18,12 @@ import {
   scoreComponentFit,
   renderDirectionMarkdown,
   type CreativeDirection,
+  derivePipelineState,
+  buildCollection,
+  renderPipelineMarkdown,
+  renderCollectionMarkdown,
+  type PipelineState,
+  type CollectionEntry,
 } from "@/lib/creative-direction";
 
 const SYSTEM_BASE = `Você é o AGENTE CREATIVE DIRECTOR da AnimMaster — Direção de Arte + Design System + UX/UI + Motion + CRO condensados em um agente.
@@ -676,6 +682,8 @@ async function buildLocalDirectorReply({
   siteSummary: LocalSiteSummary | null;
   recommendations: LocalRecommendation[];
   direction: CreativeDirection;
+  pipeline: PipelineState;
+  collection: CollectionEntry[];
 }> {
   const latestText = extractMessageText(messages[messages.length - 1]);
   // Aggregate the whole conversation so recommendations evolve as we learn more.
@@ -700,6 +708,12 @@ async function buildLocalDirectorReply({
   const siteSummary = await fetchLocalSiteSummary(urlSourceText);
   const direction = inferCreativeDirection(siteSummary, conversationContext);
   const recommendations = getLocalRecommendations(index, conversationContext, direction);
+  const collection = buildCollection(index, direction, /* emotion */ (() => {
+    // Local mode uses the same pipeline derivation to stay consistent.
+    const pre = derivePipelineState(siteSummary, conversationContext, 0);
+    return pre.emotion;
+  })());
+  const pipeline = derivePipelineState(siteSummary, conversationContext, collection.length);
   const categories = Array.from(new Set(index.map((item) => item.category))).sort();
   const componentRows = recommendations
     .map(
@@ -723,7 +737,9 @@ async function buildLocalDirectorReply({
 
 Modo local sem consumo de créditos ativado. A análise abaixo usa regras estratégicas + o catálogo AnimMaster salvo no projeto.
 ${siteBlock}
+${renderPipelineMarkdown(pipeline)}
 ${renderDirectionMarkdown(direction)}
+${renderCollectionMarkdown(collection)}
 ## 🧠 Estratégia
 
 - Priorizar componentes que reforçam a primeira impressão, leitura e conversão.
@@ -764,7 +780,7 @@ Envie a seção onde quer aplicar o primeiro componente ou peça: “monte um pl
 | Status | Seção | Componente | Prioridade | Motivo |
 |--------|-------|------------|------------|--------|
 ${selectedRows || "| 🟡 Planejado | Hero | catálogo indisponível | Alta | Aguardando catálogo local. |"}`;
-  return { text, siteSummary, recommendations, direction };
+  return { text, siteSummary, recommendations, direction, pipeline, collection };
 }
 
 function createLocalStreamResponse(text: string): Response {
