@@ -18,6 +18,7 @@ type Props = {
 };
 
 type CopyResult = "copied" | "downloaded" | "failed";
+const LARGE_CLIPBOARD_LIMIT = 750_000;
 
 function safeFilename(value: string) {
   return value
@@ -39,6 +40,11 @@ function downloadText(text: string, filename: string) {
 }
 
 async function copyText(text: string, filename: string): Promise<CopyResult> {
+  if (text.length > LARGE_CLIPBOARD_LIMIT) {
+    downloadText(text, filename);
+    return "downloaded";
+  }
+
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
@@ -56,15 +62,26 @@ async function copyText(text: string, filename: string): Promise<CopyResult> {
 }
 
 export default function ComponentSpec(props: Props) {
-  const spec = useMemo(() => buildComponentSpecSummary(props), [props]);
-  const promptPreview = useMemo(() => buildComponentPromptPreview(props), [props]);
+  const specInput = useMemo(
+    () => ({
+      slug: props.slug,
+      name: props.name,
+      category: props.category,
+      summary: props.summary,
+      previewUrl: props.previewUrl,
+      files: props.files,
+    }),
+    [props.slug, props.name, props.category, props.summary, props.previewUrl, props.files],
+  );
+  const spec = useMemo(() => buildComponentSpecSummary(specInput), [specInput]);
+  const promptPreview = useMemo(() => buildComponentPromptPreview(specInput), [specInput]);
   const [copied, setCopied] = useState<"spec" | "prompt" | "downloaded" | null>(null);
 
   if (!props.files.length) return null;
 
   const ping = async (kind: "spec" | "prompt") => {
     try {
-      const text = kind === "spec" ? buildComponentSpecMarkdown(props) : buildComponentMasterPrompt(props);
+      const text = kind === "spec" ? buildComponentSpecMarkdown(specInput) : buildComponentMasterPrompt(specInput);
       const filename = `${safeFilename(props.slug)}-${kind === "spec" ? "master-spec" : "prompt-mestre"}.md`;
       const result = await copyText(text, filename);
       if (result !== "failed") {
