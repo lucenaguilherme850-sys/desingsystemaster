@@ -305,6 +305,7 @@ function categoryIntentBoost(category: string, text: string): number {
 function getLocalRecommendations(
   index: Awaited<ReturnType<typeof buildAnimasterIndex>>,
   queryText: string,
+  direction?: CreativeDirection,
 ): LocalRecommendation[] {
   const normalizedQuery = normalizeForSearch(queryText);
   const tokens = tokenize(queryText);
@@ -314,8 +315,10 @@ function getLocalRecommendations(
       const tokenScore = tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 3 : 0), 0);
       const categoryScore = categoryIntentBoost(item.category, normalizedQuery);
       const earlyScore = Math.max(0, 4 - Math.floor(position / 40));
-      return { item, score: tokenScore + categoryScore + earlyScore };
+      const directionScore = direction ? scoreComponentFit(item, direction) : 0;
+      return { item, score: tokenScore + categoryScore + earlyScore + directionScore };
     })
+    .filter((entry) => (direction ? entry.score > -6 : true))
     .sort((a, b) => b.score - a.score);
 
   const picked: LocalRecommendation[] = [];
