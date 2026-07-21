@@ -241,10 +241,23 @@ function extractMessageText(message: UIMessage | undefined): string {
         const text = (part as { text?: unknown }).text;
         return typeof text === "string" ? text : "";
       }
+      if (typeof part === "object" && part !== null && "type" in part && part.type === "file") {
+        const p = part as { filename?: string; mediaType?: string };
+        const name = p.filename || "arquivo";
+        const type = p.mediaType || "";
+        return `[anexo: ${name}${type ? ` (${type})` : ""}]`;
+      }
       return "";
     })
     .join("\n")
     .trim();
+}
+
+function hasFileAttachments(messages: UIMessage[]): boolean {
+  return messages.some((m) =>
+    Array.isArray(m.parts) &&
+    m.parts.some((p) => typeof p === "object" && p !== null && "type" in p && p.type === "file"),
+  );
 }
 
 function normalizeForSearch(value: string): string {
