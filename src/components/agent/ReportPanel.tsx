@@ -302,3 +302,80 @@ function Section({ title, data }: { title: string; data: unknown }) {
     </div>
   );
 }
+
+function DirectionView({ direction }: { direction: CreativeDirection | undefined }) {
+  if (!direction) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        A direção criativa aparece aqui assim que você enviar a primeira mensagem descrevendo o projeto (ou colar a URL).
+      </p>
+    );
+  }
+  const axes: Array<[PersonalityAxis, string]> = [
+    ["elegance", "Elegância"],
+    ["minimalism", "Minimalismo"],
+    ["technology", "Tecnologia"],
+    ["luxury", "Luxo"],
+    ["motion", "Movimento"],
+    ["interactivity", "Interatividade"],
+    ["creativity", "Criatividade"],
+    ["corporate", "Corporate"],
+    ["premium", "Premium"],
+    ["conversion", "Conversão"],
+  ];
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-neon/40 bg-neon/5 p-3">
+        <div className="font-mono text-[10px] uppercase tracking-widest text-neon">Perfil escolhido</div>
+        <div className="mt-1 text-lg font-semibold">
+          {direction.profile.emoji} {direction.profile.name}
+        </div>
+        <p className="mt-1 text-xs text-foreground/80">{direction.profile.tagline}</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">{direction.profile.description}</p>
+        <div className="mt-2 text-[11px]">
+          <span className="font-semibold">Ideal para:</span>{" "}
+          <span className="text-muted-foreground">{direction.profile.idealFor.join(" · ")}</span>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          Matriz de personalidade
+        </div>
+        <div className="mt-2 space-y-1.5">
+          {axes.map(([k, label]) => {
+            const v = direction.matrix[k];
+            return (
+              <div key={k} className="flex items-center gap-2 text-[11px]">
+                <div className="w-24 shrink-0 text-foreground/80">{label}</div>
+                <div className="flex-1 h-2 rounded bg-border/40 overflow-hidden">
+                  <div
+                    className="h-full bg-neon"
+                    style={{ width: `${v * 10}%` }}
+                  />
+                </div>
+                <div className="w-10 shrink-0 text-right font-mono tabular-nums text-muted-foreground">
+                  {v}/10
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          Regras que todo componente precisa passar
+        </div>
+        <ul className="mt-2 space-y-1 text-[11px] text-foreground/85">
+          {direction.guardrails.map((g, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="text-neon">✓</span>
+              <span>{g}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
