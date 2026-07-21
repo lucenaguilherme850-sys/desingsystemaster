@@ -25,6 +25,7 @@ import {
   type PipelineState,
   type CollectionEntry,
 } from "@/lib/creative-direction";
+import { findVisualMatches, decodeAttachmentToBuffer } from "@/lib/image-match.server";
 
 const SYSTEM_BASE = `Você é o AGENTE CREATIVE DIRECTOR da AnimMaster — Direção de Arte + Design System + UX/UI + Motion + CRO condensados em um agente.
 
