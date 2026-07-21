@@ -65,15 +65,32 @@ export function ChatPane({
 
   const busy = status === "submitted" || status === "streaming";
 
-  const submit = () => {
+  const submit = async () => {
     const text = input.trim();
     if ((!text && files.length === 0) || busy) return;
     setInput("");
     const filesToSend = files;
     setFiles([]);
+    const fileParts = await Promise.all(
+      filesToSend.map(
+        (f) =>
+          new Promise<{ type: "file"; mediaType: string; filename: string; url: string }>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () =>
+              resolve({
+                type: "file",
+                mediaType: f.type || "application/octet-stream",
+                filename: f.name,
+                url: String(reader.result),
+              });
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(f);
+          }),
+      ),
+    );
     void sendMessage({
       text: text || "(anexos enviados)",
-      files: filesToSend.length ? filesToSend : undefined,
+      files: fileParts.length ? fileParts : undefined,
     });
   };
 
