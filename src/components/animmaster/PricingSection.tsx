@@ -1,65 +1,71 @@
+import { Check, MessageCircle } from "lucide-react";
+
+const WHATSAPP = "https://wa.me/5564999611088";
+
+function waLink(plan: string, price: string) {
+  const msg = encodeURIComponent(
+    `Olá! Quero assinar o plano ${plan} (${price}) do Design Master.`,
+  );
+  return `${WHATSAPP}?text=${msg}`;
+}
+
 const plans = [
   {
-    name: "Junior",
-    price: "$3",
-    strike: null as string | null,
-    save: null as string | null,
+    name: "Free",
+    price: "$0",
+    cadence: "para sempre",
     highlight: false,
-    tagline: "Comece a estudar",
+    tagline: "Explore o catálogo",
+    delivers: "Você vê as prévias em vídeo de todos os 300+ componentes, navega pelas categorias e conhece cada demo. O código, o prompt mestre e os arquivos ficam bloqueados.",
     features: [
-      "Animmaster Roadmap",
-      "63 Figma Website Mockups",
-      "Best courses collection",
+      "300+ prévias em vídeo",
+      "Filtros por categoria",
+      "Preview em tela cheia",
+      "Sem código-fonte",
+      "Sem prompt mestre",
     ],
-    cta: "Get Junior Pack",
+    cta: null as null | { label: string; href: string },
   },
   {
     name: "PRO",
-    price: "$4.99",
-    strike: "$10",
-    save: "Save 50%",
+    price: "$36,99",
+    cadence: "único · acesso vitalício",
     highlight: true,
-    tagline: "💎 300 PRO-Level Components",
+    badge: "Mais popular",
+    tagline: "💎 Toda a biblioteca desbloqueada",
+    delivers:
+      "Você recebe o código-fonte completo de cada componente, o Prompt Mestre pronto para colar no Lovable/Cursor/ChatGPT (a IA vai perguntar em qual página do seu app usar), os arquivos do Drive e o download do .zip original.",
     features: [
-      "63 Scroll Animations",
-      "26 Hero Animations",
-      "23 Sliders",
-      "22 3D Animations",
-      "21 Navigation Menus",
-      "20 Hover Effects",
-      "20 Mouse Effects",
-      "18 WebGL Shaders",
-      "17 Page Transitions",
-      "14 Text Animations",
-      "11 SVG Animations",
-      "10 Background Animations",
-      "10 Grid Animations",
-      "10 Physics Effects",
-      "Junior Pack incluído",
+      "300+ componentes PRO",
+      "Código-fonte completo",
+      "Prompt Mestre para IA",
+      "Download dos arquivos .zip",
+      "Instruções do autor",
       "Acesso vitalício",
+      "Atualizações futuras",
     ],
-    cta: "Unlock PRO",
+    cta: { label: "Pagar via WhatsApp", href: waLink("PRO", "$36,99 único") },
   },
   {
-    name: "Premium",
-    price: "$8",
-    strike: "$20",
-    save: "Save 70%",
+    name: "Agent Plus",
+    price: "$69,99",
+    cadence: "por mês",
     highlight: false,
-    tagline: "💎 Animmaster Premium Pack",
+    accent: true,
+    tagline: "🧠 Creative Director AI",
+    delivers:
+      "Tudo do PRO + o Agente Creative Director: ele conversa com você, analisa referências (aceita fotos e arquivos), define a direção visual completa (paleta, tipografia, motion, layout) e monta automaticamente uma coleção coerente de componentes para o seu projeto, gerando o Prompt Mestre adaptado.",
     features: [
-      "300 PRO Components",
-      "New Private Components",
-      "Animmaster Vite Template",
-      "Awwwards Portfolio Website",
-      "Senior-level VScode config",
-      "63 PRO Figma Web Mockups",
-      "45 best VScode extensions",
-      "100+ frontend interview questions",
-      "Premium community access",
-      "Lifetime access + future updates",
+      "Tudo do PRO incluído",
+      "Agente Creative Director",
+      "Pipeline de 7 fases",
+      "Análise de imagens & arquivos",
+      "Direção visual auto-gerada",
+      "Coleções coerentes de UI",
+      "Prompts adaptados ao projeto",
+      "Painel de threads privadas",
     ],
-    cta: "Get Premium",
+    cta: { label: "Assinar via WhatsApp", href: waLink("Agent Plus", "$69,99/mês") },
   },
 ];
 
@@ -72,68 +78,99 @@ export function PricingSection() {
             pricing
           </div>
           <h2 className="mt-3 text-4xl md:text-5xl font-extrabold uppercase leading-[0.95]">
-            Simple pricing — powerful results
+            O que o <span className="text-neon-purple">Design Master</span> entrega
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Poupe <span className="text-foreground font-semibold">10.000+ horas</span> de
-            desenvolvimento com 300 componentes PRO. 2.400+ devs · 4.9★ · 300+ projetos.
+            Uma biblioteca curada de <strong className="text-foreground">300+ componentes</strong> premium (heroes, sliders, shaders WebGL, scroll animations,
+            menus, transições, texto animado) — cada um com código, prompt mestre e arquivo baixável.
+            O plano <strong className="text-foreground">Agent Plus</strong> adiciona um AI Creative Director que monta a direção
+            visual do seu projeto do zero.
           </p>
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {plans.map((p) => (
-            <article
-              key={p.name}
-              className={
-                "relative rounded-2xl border p-6 " +
-                (p.highlight
-                  ? "border-neon bg-card shadow-[0_0_60px_oklch(0.82_0.17_225/20%)]"
-                  : "border-border bg-card/60")
-              }
-            >
-              {p.highlight && (
-                <div className="absolute -top-3 left-6 rounded-full bg-neon px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-background">
-                  Most Popular
-                </div>
-              )}
-              <h3 className="text-xl font-bold">{p.name}</h3>
-              <div className="mt-3 flex items-baseline gap-3">
-                <span className="text-4xl font-extrabold">{p.price}</span>
-                {p.strike && (
-                  <span className="text-lg text-muted-foreground line-through">
-                    {p.strike}
-                  </span>
-                )}
-                {p.save && (
-                  <span className="rounded-full border border-neon/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-neon">
-                    {p.save}
-                  </span>
-                )}
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">{p.tagline}</p>
-              <ul className="mt-6 space-y-2 text-sm">
-                {p.features.map((f) => (
-                  <li key={f} className="flex gap-2 text-foreground/80">
-                    <span className="mt-1 size-1.5 shrink-0 rounded-full bg-neon" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="https://www.animmasterlib.dev/payment.html"
-                target="_blank"
-                rel="noreferrer"
+          {plans.map((p) => {
+            const highlight = p.highlight;
+            const accent = "accent" in p && p.accent;
+            return (
+              <article
+                key={p.name}
                 className={
-                  "mt-6 block rounded-full py-3 text-center text-sm font-semibold transition-transform hover:scale-[1.02] " +
-                  (p.highlight
-                    ? "bg-neon text-background"
-                    : "border border-border text-foreground hover:border-neon")
+                  "relative flex flex-col rounded-2xl border p-6 " +
+                  (highlight
+                    ? "border-neon bg-card shadow-[0_0_60px_oklch(0.86_0.28_140/25%)]"
+                    : accent
+                      ? "border-neon-purple bg-card shadow-[0_0_60px_oklch(0.6_0.25_300/25%)]"
+                      : "border-border bg-card/60")
                 }
               >
-                {p.cta}
-              </a>
-            </article>
-          ))}
+                {highlight && (
+                  <div className="absolute -top-3 left-6 rounded-full bg-neon px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-background">
+                    {"badge" in p ? p.badge : "Mais popular"}
+                  </div>
+                )}
+                {accent && (
+                  <div className="absolute -top-3 left-6 rounded-full bg-neon-purple px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-white">
+                    AI Creative Director
+                  </div>
+                )}
+                <h3 className="text-xl font-bold uppercase">{p.name}</h3>
+                <div className="mt-3 flex items-baseline gap-3">
+                  <span className="text-4xl font-extrabold">{p.price}</span>
+                </div>
+                <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {p.cadence}
+                </div>
+                <p className="mt-4 text-sm font-semibold text-foreground">{p.tagline}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{p.delivers}</p>
+
+                <ul className="mt-5 space-y-2 text-sm">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex gap-2 text-foreground/85">
+                      <Check className="mt-0.5 size-4 shrink-0 text-neon" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-6">
+                  {p.cta ? (
+                    <a
+                      href={p.cta.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={
+                        "flex items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold transition-transform hover:scale-[1.02] " +
+                        (highlight
+                          ? "bg-neon text-background"
+                          : accent
+                            ? "bg-neon-purple text-white"
+                            : "border border-border text-foreground hover:border-neon")
+                      }
+                    >
+                      <MessageCircle className="size-4" /> {p.cta.label}
+                    </a>
+                  ) : (
+                    <div className="rounded-full border border-border py-3 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                      já ativo ao criar a conta
+                    </div>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 rounded-2xl border border-neon/30 bg-card/40 p-6 text-sm text-muted-foreground">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon">
+            como funciona o pagamento
+          </div>
+          <p className="mt-2">
+            Clique em <strong className="text-foreground">Pagar via WhatsApp</strong> — você é enviado direto
+            para o número <strong className="text-foreground">+55 64 99961-1088</strong> com uma mensagem já pronta
+            identificando o plano escolhido. Após a confirmação, sua conta é liberada
+            manualmente pelo administrador (você recebe uma resposta no mesmo chat).
+          </p>
         </div>
       </div>
     </section>

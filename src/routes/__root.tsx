@@ -17,6 +17,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { CursorGlow } from "@/components/fx/CursorGlow";
 import { SiteFooter } from "@/components/SiteFooter";
+import { useAuth } from "@/hooks/use-auth";
+import { useNavigate } from "@tanstack/react-router";
 
 function NotFoundComponent() {
   return (
@@ -141,6 +143,15 @@ function RootComponent() {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAgent = pathname.startsWith("/agent");
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const PUBLIC = ["/auth", "/pricing"];
+  const isPublic = PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/"));
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user && !isPublic) navigate({ to: "/auth" });
+  }, [user, loading, isPublic, navigate]);
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -157,7 +168,13 @@ function RootComponent() {
         <CursorGlow />
         <SiteHeader />
         <main className="relative z-10 flex-1">
-          <Outlet />
+          {!loading && !user && !isPublic ? (
+            <div className="grid min-h-[60vh] place-items-center text-sm text-muted-foreground">
+              redirecionando para o login…
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </main>
         {!isAgent && <SiteFooter />}
       </div>

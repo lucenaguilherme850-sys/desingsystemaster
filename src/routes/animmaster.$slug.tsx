@@ -12,6 +12,7 @@ import DriveCodeBrowser from "@/components/animmaster/DriveCodeBrowser";
 import ComponentSpec from "@/components/animmaster/ComponentSpec";
 import ComponentSpecDrive from "@/components/animmaster/ComponentSpecDrive";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
+import { LockedGate } from "@/components/LockedGate";
 
 type Item = {
   id: string;
@@ -298,33 +299,35 @@ function AnimmasterDetail() {
             no Lovable — ele vai perguntar em qual página do seu app você quer
             montar antes de instalar.
           </p>
-          {item.drive_zip_id ? (
-            <DriveCodeBrowser slug={item.slug} />
-          ) : (
-            <FxSourceViewer slug={item.slug} name={heading} />
-          )}
+          <LockedGate requires="pro" label="Código + prompt mestre bloqueados">
+            {item.drive_zip_id ? (
+              <DriveCodeBrowser slug={item.slug} />
+            ) : (
+              <FxSourceViewer slug={item.slug} name={heading} />
+            )}
 
-          {item.drive_zip_id ? (
-            <ComponentSpecDrive
-              slug={item.slug}
-              name={heading}
-              category={item.category}
-              summary={item.instruction_text}
-            />
-          ) : (
-            (() => {
-              const info = getFxSourceForSlug(item.slug);
-              if (!info) return null;
-              return (
-                <ComponentSpec
-                  slug={item.slug}
-                  name={heading}
-                  category={item.category}
-                  files={info.files.map((f) => ({ path: f.path, content: f.content }))}
-                />
-              );
-            })()
-          )}
+            {item.drive_zip_id ? (
+              <ComponentSpecDrive
+                slug={item.slug}
+                name={heading}
+                category={item.category}
+                summary={item.instruction_text}
+              />
+            ) : (
+              (() => {
+                const info = getFxSourceForSlug(item.slug);
+                if (!info) return null;
+                return (
+                  <ComponentSpec
+                    slug={item.slug}
+                    name={heading}
+                    category={item.category}
+                    files={info.files.map((f) => ({ path: f.path, content: f.content }))}
+                  />
+                );
+              })()
+            )}
+          </LockedGate>
         </section>
       </div>
     </div>
