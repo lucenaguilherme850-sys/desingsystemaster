@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { isAdmin } from "@/lib/admin.functions";
+import logo from "@/assets/dm-logo.png.asset.json";
 
 export function SiteHeader() {
   const check = useServerFn(isAdmin);
@@ -16,11 +16,9 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/60 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-8">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <span className="grid size-8 place-items-center rounded-md border border-border bg-card">
-            <Library className="size-4 text-neon" />
-          </span>
-          <span className="text-[15px] font-semibold tracking-tight">
-            Motion<span className="text-neon">Lib</span>
+          <img src={logo.url} alt="Design Master" className="size-9 rounded-md object-contain" />
+          <span className="text-[15px] font-semibold tracking-tight uppercase">
+            Design<span className="text-neon-purple"> Master</span>
           </span>
         </Link>
 

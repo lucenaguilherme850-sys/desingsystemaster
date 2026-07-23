@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Library } from "lucide-react";
+import logo from "@/assets/dm-logo.png.asset.json";
 
 export function SiteFooter() {
   return (
@@ -8,11 +8,9 @@ export function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <Link to="/" className="flex items-center gap-2.5">
-              <span className="grid size-8 place-items-center rounded-md border border-border bg-card">
-                <Library className="size-4 text-neon" />
-              </span>
-              <span className="text-[15px] font-semibold">
-                Motion<span className="text-neon">Lib</span>
+              <img src={logo.url} alt="Design Master" className="size-9 rounded-md object-contain" />
+              <span className="text-[15px] font-semibold uppercase">
+                Design<span className="text-neon-purple"> Master</span>
               </span>
             </Link>
             <p className="mt-4 max-w-md text-sm text-muted-foreground">
@@ -63,7 +61,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground md:flex-row md:items-center">
-          <span>© {new Date().getFullYear()} MotionLib · todos direitos reservados</span>
+          <span>© {new Date().getFullYear()} Design Master · todos direitos reservados</span>
           <span>built with tanstack start · lovable cloud</span>
         </div>
       </div>
