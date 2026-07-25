@@ -54,7 +54,7 @@ const plans = [
     accent: true,
     tagline: "🧠 Creative Director AI",
     delivers:
-      "Tudo do PRO + o Agente Creative Director: ele conversa com você, analisa referências (aceita fotos e arquivos), define a direção visual completa (paleta, tipografia, motion, layout) e monta automaticamente uma coleção coerente de componentes para o seu projeto, gerando o Prompt Mestre adaptado.",
+      "Tudo do PRO + o Agente Creative Director: ele consegue ver sites, analisar referências (aceita fotos e arquivos), define a direção visual completa (paleta, tipografia, motion, layout) e personaliza componentes especificamente para esse site, gerando o Prompt Mestre adaptado.",
     features: [
       "Tudo do PRO incluído",
       "Agente Creative Director",
