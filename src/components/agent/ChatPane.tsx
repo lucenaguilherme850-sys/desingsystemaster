@@ -120,9 +120,7 @@ export function ChatPane({
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-semibold">Agente Creative Director</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Descreva o projeto ou cole a URL de um site existente. O agente vai conduzir as 10
-              fases (negócio → marca → público → objetivo → DS → hierarquia → UX → animação →
-              seleção AnimMaster → plano) antes de recomendar componentes.
+              tem algum que um de monor de 18 pode usar
             </p>
           </div>
         )}
