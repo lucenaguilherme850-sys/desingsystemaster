@@ -1,6 +1,6 @@
 import { Check, MessageCircle } from "lucide-react";
 
-const WHATSAPP = "https://wa.me/5564999611088";
+const WHATSAPP = "https://wa.me/5564076035684";
 
 function waLink(plan: string, price: string) {
   const msg = encodeURIComponent(
@@ -167,7 +167,7 @@ export function PricingSection() {
           </div>
           <p className="mt-2">
             Clique em <strong className="text-foreground">Pagar via WhatsApp</strong> — você é enviado direto
-            para o número <strong className="text-foreground">+55 64 99961-1088</strong> com uma mensagem já pronta
+            para o número <strong className="text-foreground">+55 64 07603-5684</strong> com uma mensagem já pronta
             identificando o plano escolhido. Após a confirmação, sua conta é liberada
             manualmente pelo administrador (você recebe uma resposta no mesmo chat).
           </p>
