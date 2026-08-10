@@ -4,7 +4,7 @@ const WHATSAPP = "https://wa.me/5564999611088";
 
 function waLink(plan: string, price: string) {
   const msg = encodeURIComponent(
-    `Olá! Quero assinar o plano ${plan} (${price}) do Design Master.`,
+    `Olá! Quero assinar o plano ${plan} (${price}) do Design Master.`,`,
   );
   return `${WHATSAPP}?text=${msg}`;
 }
