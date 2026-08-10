@@ -36,7 +36,7 @@ export const Route = createFileRoute("/animmaster/$slug")({
   component: AnimmasterDetail,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} — Animmaster Mirror` },
+      { title: `${params.slug} — Design Master Mirror` },
       {
         name: "description",
         content: `Preview em tela cheia do componente animado ${params.slug}.`,
@@ -255,7 +255,7 @@ function AnimmasterDetail() {
                   instruções do autor
                 </div>
                 <pre className="mt-2 whitespace-pre-wrap font-mono text-xs text-foreground">
-                  {drive.instruction}
+                  {drive.instruction?.replace(/Animmaster/g, 'Design Master')}
                 </pre>
               </div>
             )}

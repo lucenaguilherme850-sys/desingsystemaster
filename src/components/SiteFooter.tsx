@@ -15,7 +15,7 @@ export function SiteFooter() {
             </Link>
             <p className="mt-4 max-w-md text-sm text-muted-foreground">
               Coleção open-source de efeitos e componentes animados de alto nível —
-              inspirada em animmasterlib.dev e reactbits.dev.
+              inspirada em designmaster.com.br e reactbits.dev.
             </p>
           </div>
 
@@ -25,7 +25,7 @@ export function SiteFooter() {
             </div>
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link to="/" className="hover:text-neon">Effects</Link></li>
-              <li><Link to="/animmaster" className="hover:text-neon">Animmaster 280</Link></li>
+              <li><Link to="/animmaster" className="hover:text-neon">Design Master 280</Link></li>
               <li><a href="#pricing" className="hover:text-neon">Pricing</a></li>
               <li><a href="#faq" className="hover:text-neon">FAQ</a></li>
             </ul>
@@ -38,12 +38,12 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-2 text-sm">
               <li>
                 <a
-                  href="https://animmasterlib.dev"
+                  href="https://designmaster.com.br"
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-neon"
                 >
-                  animmasterlib.dev
+                  designmaster.com.br
                 </a>
               </li>
               <li>

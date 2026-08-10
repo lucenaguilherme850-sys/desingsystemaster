@@ -32,11 +32,11 @@ export const Route = createFileRoute("/animmaster/")({
   component: AnimmasterMirror,
   head: () => ({
     meta: [
-      { title: "Animmaster Mirror — 300 componentes animados" },
+      { title: "Design Master Mirror — 300 componentes animados" },
       {
         name: "description",
         content:
-          "Espelho da biblioteca Animmaster: 280 componentes animados PRO — rolagem, WebGL, sliders, hero, menus e mais.",
+          "Espelho da biblioteca Design Master: 280 componentes animados PRO — rolagem, WebGL, sliders, hero, menus e mais.",
       },
     ],
   }),
@@ -86,13 +86,13 @@ function AnimmasterMirror() {
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-[1400px] px-6 py-16 md:py-24">
           <div className="font-mono text-[11px] uppercase tracking-widest text-neon">
-            animmaster mirror · 280 components
+            design master mirror · 280 components
           </div>
           <h1 className="mt-3 text-4xl md:text-6xl font-extrabold uppercase tracking-tight leading-[0.95]">
             300 PRO-Level Animated Components
           </h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
-            Biblioteca completa espelhada de animmasterlib.dev — passe o cursor
+            Biblioteca completa espelhada de designmaster.com.br — passe o cursor
             em qualquer card para ver o efeito em movimento.
           </p>
         </div>

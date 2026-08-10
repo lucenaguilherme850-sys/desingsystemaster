@@ -3,8 +3,8 @@ import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
-  const previewUrl = `https://animmaster.lovable.app/animmaster/${slug}`;
-  const header = `# Recriar efeito Animmaster — "${name}" (${slug})
+  const previewUrl = `https://designmaster.com.br/animmaster/${slug}`;
+  const header = `# Recriar efeito Design Master — "${name}" (${slug})
 
 ## OBJETIVO
 Recrie no MEU projeto o **mesmo efeito visual e de interação** demonstrado nesta prévia:
@@ -50,7 +50,7 @@ imagens e estrutura ao design system e ao conteúdo do meu projeto atual.
 
 ## REFERÊNCIA TÉCNICA (apenas inspiração, NÃO copie 1:1)
 Abaixo vai o código-fonte do componente exatamente como ele existe no projeto
-Animmaster. Use como **referência de mecânica** (que libs, que hooks, que
+Design Master. Use como **referência de mecânica** (que libs, que hooks, que
 matemática de animação, que estrutura de camadas). Reescreva adaptado ao meu
 projeto — não cole verbatim, não mantenha a cópia/paleta/imagens da demo.
 

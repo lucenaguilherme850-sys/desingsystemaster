@@ -35,7 +35,7 @@ export function SiteHeader() {
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <Link to="/" className="hover:text-foreground transition-colors">Effects</Link>
           <Link to="/animmaster" className="hover:text-foreground transition-colors">
-            Animmaster <span className="text-neon">280</span>
+            Design Master <span className="text-neon">280</span>
           </Link>
           <Link to="/pricing" className="hover:text-foreground transition-colors">
             Planos

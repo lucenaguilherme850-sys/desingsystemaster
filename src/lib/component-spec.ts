@@ -132,7 +132,7 @@ function fence(file: SpecFile): string {
 }
 
 function masterPrompt(input: ComponentSpecInput, d: Detected): string {
-  const url = input.previewUrl || `https://animmaster.lovable.app/animmaster/${input.slug}`;
+  const url = input.previewUrl || `https://designmaster.com.br/animmaster/${input.slug}`;
   const techList = d.tech.length ? d.tech.join(", ") : "as tecnologias detectadas no código";
   return `# PROMPT MESTRE DE IMPLEMENTAÇÃO — "${input.name}" (${input.slug})
 
@@ -209,7 +209,7 @@ export function buildComponentSpecSummary(input: ComponentSpecInput): ComponentS
   const cat = humanCategory(input.category);
   const summary =
     input.summary?.trim() ||
-    `Componente da categoria "${cat}" chamado "${input.name}". Prévia oficial em ${input.previewUrl ?? `https://animmaster.lovable.app/animmaster/${input.slug}`}. Preserva-se aqui a implementação original completa para reuso premium.`;
+    `Componente da categoria "${cat}" chamado "${input.name}". Prévia oficial em ${input.previewUrl ?? `https://designmaster.com.br/animmaster/${input.slug}`}. Preserva-se aqui a implementação original completa para reuso premium.`;
 
   const arch = architectureNotes(d, input.files);
   const deps = d.deps.length ? d.deps : ["(nenhuma dependência externa detectada — usa apenas React + APIs nativas)"];
@@ -228,7 +228,7 @@ export function buildComponentMasterPrompt(input: ComponentSpecInput): string {
 
 export function buildComponentPromptPreview(input: ComponentSpecInput): string {
   const d = detect(input.files);
-  const url = input.previewUrl || `https://animmaster.lovable.app/animmaster/${input.slug}`;
+  const url = input.previewUrl || `https://designmaster.com.br/animmaster/${input.slug}`;
   const techList = d.tech.length ? d.tech.join(", ") : "tecnologias detectadas no código";
   const fileList = input.files
     .map((file) => `- ${file.path} (${file.content.length.toLocaleString()} chars)`)

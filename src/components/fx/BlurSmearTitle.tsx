@@ -3,7 +3,7 @@ import { createElement, useEffect, useRef } from "react";
 /**
  * BlurSmearTitle
  * -------------------------------------------------------
- * Assinatura visual do animmasterlib.dev: as letras do título
+ * Assinatura visual do designmaster.com.br: as letras do título
  * entram desfocadas e deslocadas, um "smear" horizontal
  * decrescente por caractere. Ao terminar, ficam sutilmente
  * respirando (blur 0 → 1.5px → 0) para lembrar o efeito ao vivo.

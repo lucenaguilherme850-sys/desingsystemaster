@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
  * -------------------------------------------------------
  * Halo cyan radial de baixa opacidade que segue o cursor com
  * lerp. Fixado no viewport, atrás de todo o conteúdo. Recria
- * a "névoa" azulada que o animmasterlib.dev tem ao mover o mouse.
+ * a "névoa" azulada que o designmaster.com.br tem ao mover o mouse.
  * Desativa em prefers-reduced-motion e em toque.
  */
 export function CursorGlow() {
