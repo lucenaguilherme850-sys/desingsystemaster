@@ -50,7 +50,7 @@ imagens e estrutura ao design system e ao conteúdo do meu projeto atual.
 
 ## REFERÊNCIA TÉCNICA (apenas inspiração, NÃO copie 1:1)
 Abaixo vai o código-fonte do componente exatamente como ele existe no projeto
-Animmaster. Use como **referência de mecânica** (que libs, que hooks, que
+Design Master. Use como **referência de mecânica** (que libs, que hooks, que
 matemática de animação, que estrutura de camadas). Reescreva adaptado ao meu
 projeto — não cole verbatim, não mantenha a cópia/paleta/imagens da demo.
 
