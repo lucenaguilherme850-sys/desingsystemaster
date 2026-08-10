@@ -3,8 +3,8 @@ import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
-  const previewUrl = `https://animmaster.lovable.app/animmaster/${slug}`;
-  const header = `# Recriar efeito Animmaster — "${name}" (${slug})
+  const previewUrl = `https://designmaster.com.br/animmaster/${slug}`;
+  const header = `# Recriar efeito Design Master — "${name}" (${slug})
 
 ## OBJETIVO
 Recrie no MEU projeto o **mesmo efeito visual e de interação** demonstrado nesta prévia:
