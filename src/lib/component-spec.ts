@@ -168,11 +168,11 @@ Encaixe sugerido: **grid de serviços / cases** de Design Master — Interactive
 3) Quais tokens de cor/tipografia usar (ou criar tokens dedicados)?
 4) Restrições de mobile / prefers-reduced-motion?
 
-A seguir vem o PROMPT MESTRE original completo, com o código-fonte de referência — obedeça-o na íntegra e aplique a camada de adaptação acima em cima dele.
+  A seguir vem o PROMPT MESTRE original completo, com o código-fonte de referência — obedeça-o na íntegra e aplique a camada de adaptação acima em cima dele.
 ────────────────────────────────────────
 # 🚀 PROMPT MESTRE DE IMPLEMENTAÇÃO: ${input.name}
 > ID Referência: \`${input.slug}\`
-> Link Referência: ${url}`;
+> Link Referência: ${url}
 
 ## 🎯 OBJETIVO
 Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua missão é **transplantar** este componente para o projeto do usuário, mantendo 100% da fidelidade visual e interativa, adaptando apenas o conteúdo e o design system (cores/fontes).
