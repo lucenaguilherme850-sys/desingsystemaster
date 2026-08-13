@@ -10,12 +10,16 @@ export default function ScrollParallax() {
     let isVisible = false;
 
     const layers = el.querySelectorAll<HTMLElement>("[data-depth]");
+    
     const onScroll = () => {
       if (!isVisible) return;
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const rect = el.getBoundingClientRect();
-        const progress = -rect.top / (el.offsetHeight - window.innerHeight || 1);
+        const viewportHeight = window.innerHeight;
+        // Calcular progresso relativo ao viewport para evitar saltos
+        const progress = -rect.top / (el.offsetHeight || 1);
+        
         layers.forEach((l) => {
           const d = Number(l.dataset.depth ?? 0);
           l.style.transform = `translate3d(0, ${progress * d * 220}px, 0)`;
@@ -23,19 +27,27 @@ export default function ScrollParallax() {
       });
     };
 
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-
+    // Usar IntersectionObserver para ligar/desligar listeners
     observer = new IntersectionObserver((entries) => {
-      isVisible = entries[0].isIntersecting;
-      if (isVisible) onScroll();
-    }, { threshold: 0.01 });
+      const entry = entries[0];
+      isVisible = entry.isIntersecting;
+      
+      if (isVisible) {
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+      } else {
+        window.removeEventListener("scroll", onScroll);
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }, { threshold: 0.01, rootMargin: "100px" });
+
     observer.observe(el);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       if (observer) observer.disconnect();
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
   return (
