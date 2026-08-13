@@ -286,15 +286,17 @@ function AnimmasterDetail() {
                   key={r.id}
                   to="/animmaster/$slug"
                   params={{ slug: r.slug }}
-                  className="group overflow-hidden rounded-lg border border-border bg-card/60"
+                  className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-black"
                 >
-                  <div className="aspect-[4/3] overflow-hidden bg-black">
-                    <img
-                      src={r.poster_local ?? r.poster_url}
-                      alt={r.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                  <img
+                    src={r.poster_local ?? r.poster_url ?? (r.drive_video_id ? `https://drive.google.com/thumbnail?id=${r.drive_video_id}&sz=w600` : '')}
+                    alt={r.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="absolute bottom-2 left-2 right-2 truncate font-mono text-[9px] uppercase tracking-tighter text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {r.type_name || r.name}
                   </div>
                 </Link>
               ))}
