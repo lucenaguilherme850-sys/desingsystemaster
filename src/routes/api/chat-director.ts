@@ -71,16 +71,16 @@ O que fazer agora.
 
 Sempre que recomendar/substituir/remover um componente, RE-EMITA no final da resposta a tabela atualizada:
 
-## 📦 Componentes Selecionados
+## 📦 Componentes Selecionados (Coleção Coerente)
 
-| Status | Seção | Componente | Prioridade | Motivo |
-|--------|-------|------------|------------|--------|
+| Status | Seção | Componente | Prioridade | Motivo Estratégico |
+|--------|-------|------------|------------|-------------------|
 | ✅ Selecionado | Hero | slug | Alta | ... |
 | 🟡 Planejado | CTA | slug | Média | ... |
 | ❌ Removido | ... | ... | ... | substituído por X |
 
-Status possíveis: 🟡 Planejado · ✅ Selecionado · 🚧 Implementado · ❌ Removido.
-Mantenha a lista consistente com turnos anteriores — não perca itens já aprovados.
+Status: 🟡 Planejado · ✅ Selecionado · 🚧 Implementado · ❌ Removido.
+Esta tabela alimenta automaticamente o dashboard e a aba "Coleção" do relatório.
 
 ═══ MEMÓRIA DE PROJETO ═══
 
