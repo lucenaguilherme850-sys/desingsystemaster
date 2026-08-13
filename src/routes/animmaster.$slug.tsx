@@ -13,6 +13,7 @@ import ComponentSpec from "@/components/animmaster/ComponentSpec";
 import ComponentSpecDrive from "@/components/animmaster/ComponentSpecDrive";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 import { LockedGate } from "@/components/LockedGate";
+import { usePreviewQuality } from "@/hooks/use-preview-quality";
 
 type Item = {
   id: string;
@@ -61,6 +62,7 @@ function AnimmasterDetail() {
   const router = useRouter();
   const mirror = useServerFn(mirrorAnimmasterAsset);
   const mirrorDrive = useServerFn(mirrorAnimmasterDrive);
+  const { config } = usePreviewQuality();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mirrorState, setMirrorState] = useState<
     { poster: string; video: string } | null
@@ -99,6 +101,13 @@ function AnimmasterDetail() {
   // Trigger mirroring on mount
   useEffect(() => {
     if (!item) return;
+    
+    // In low quality (Eco Mode), don't trigger mirror automatically on detail page
+    // unless it's already mirrored.
+    if (config.preload === "none" && !item.mirrored && !item.drive_video_id) {
+       return;
+    }
+
     if (item.drive_video_id || item.drive_zip_id) {
       setMirroring(true);
       mirrorDrive({ data: { slug: item.slug } })
@@ -192,9 +201,9 @@ function AnimmasterDetail() {
                 key={videoSrc}
                 src={videoSrc}
                 poster={posterSrc}
-                autoPlay
+                autoPlay={config.autoplay}
                 muted
-                loop
+                loop={config.autoplay}
                 playsInline
                 controls
                 className="absolute inset-0 h-full w-full object-contain"
