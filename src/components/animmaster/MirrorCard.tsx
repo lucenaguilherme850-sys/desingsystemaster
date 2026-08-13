@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { usePreviewQuality } from "@/hooks/use-preview-quality";
+import { GoogleDriveImage } from "./GoogleDriveImage";
 
 export type MirrorItem = {
   id: string;
@@ -139,14 +140,10 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-black">
         {poster ? (
-          <img
+          <GoogleDriveImage
             src={poster}
             alt={item.name}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
+            className="absolute inset-0 h-full w-full"
           />
         ) : null}
         {visible && videoUrl && (
