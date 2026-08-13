@@ -542,6 +542,12 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
+function hashSlug(slug: string): number {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  return h;
+}
+
 // ── Pipeline state ──
 
 export type PhaseId =
