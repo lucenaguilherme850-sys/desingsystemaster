@@ -511,13 +511,15 @@ function CollectionCard({
   business: Record<string, unknown> | null;
 }) {
   const [open, setOpen] = useState(false);
+  const [showJustification, setShowJustification] = useState(false);
+
   const item: SectionMapItem = {
     section: entry.slotLabel,
     componentSlug: entry.slug,
     componentName: entry.name,
     category: entry.category,
     position: entry.slotLabel,
-    reason: `Fit ${entry.fit.toFixed(1)} — escolhido pela coerência de vetor com a emoção-alvo do projeto.`,
+    reason: entry.justification || `Fit ${entry.fit.toFixed(1)} — escolhido pela coerência de vetor com a emoção-alvo do projeto.`,
   };
   return (
     <div className="rounded-lg border border-border/60 bg-background/40 p-3">
@@ -540,7 +542,25 @@ function CollectionCard({
           <div className="text-sm font-semibold">{entry.fit.toFixed(1)}</div>
         </div>
       </div>
-      <ExpertBadges experts={entry.experts} />
+      <div className="mt-2 flex items-center justify-between">
+        <ExpertBadges experts={entry.experts} />
+        <button
+          onClick={() => setShowJustification(!showJustification)}
+          className="rounded bg-neon/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-neon hover:bg-neon/20 transition-colors"
+        >
+          {showJustification ? "Ocultar Porquê" : "Justificativa"}
+        </button>
+      </div>
+
+      {showJustification && (
+        <div className="mt-3 rounded-md border border-neon/20 bg-neon/5 p-2 text-[11px] leading-relaxed text-foreground/90 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="flex items-center gap-1.5 mb-1 font-mono text-[9px] uppercase tracking-widest text-neon">
+            <Target className="size-3" /> Análise de Fit Técnico
+          </div>
+          {entry.justification || item.reason}
+        </div>
+      )}
+
       {entry.alternatives.length > 0 && (
         <div className="mt-3">
           <button
