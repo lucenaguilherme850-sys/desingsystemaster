@@ -767,9 +767,15 @@ function DashboardView({
       </button>
 
       {/* Project Briefing Health */}
-      <div className="rounded-xl border border-border/40 bg-card/40 p-4">
-        <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-          <Briefcase className="size-3" /> Briefing Health
+      <button 
+        onClick={() => onJump("brief")}
+        className="group block w-full text-left rounded-xl border border-border/40 bg-card/40 p-4 transition-all hover:border-border hover:bg-card/60"
+      >
+        <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+          <span className="flex items-center gap-2">
+            <Briefcase className="size-3" /> Briefing Health
+          </span>
+          <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -794,7 +800,7 @@ function DashboardView({
             <span className="text-[10px] text-muted-foreground">{report?.design_system ? "Conectado" : "Genérico"}</span>
           </div>
         </div>
-      </div>
+      </button>
     </div>
   );
 }
