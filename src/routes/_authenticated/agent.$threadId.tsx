@@ -13,7 +13,7 @@ import { ThreadList } from "@/components/agent/ThreadList";
 import { ChatPane } from "@/components/agent/ChatPane";
 import { ReportPanel } from "@/components/agent/ReportPanel";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PanelRightClose, PanelRightOpen, Compass, Puzzle, Palette, FileText, Layers, Map as MapIcon, Boxes, ListChecks } from "lucide-react";
+import { PanelRightClose, PanelRightOpen, Compass, Puzzle, Palette, FileText, Layers, Map as MapIcon, Boxes, ListChecks, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/agent/$threadId")({
   component: AgentThread,
@@ -86,10 +86,11 @@ function AgentThread() {
     [],
   );
   const [activeTab, setActiveTab] = useState<
-    "pipeline" | "collection" | "direction" | "brief" | "ds" | "map" | "comps" | "plan"
-  >("pipeline");
+    "dashboard" | "pipeline" | "collection" | "direction" | "brief" | "ds" | "map" | "comps" | "plan"
+  >("dashboard");
 
   const railTabs = [
+    { id: "dashboard" as const, icon: Layers, label: "Dashboard" },
     { id: "pipeline" as const, icon: Compass, label: "Pipeline" },
     { id: "collection" as const, icon: Puzzle, label: "Coleção" },
     { id: "direction" as const, icon: Palette, label: "Direção" },
@@ -143,6 +144,45 @@ function AgentThread() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-col overflow-hidden">
+          {/* Agent Header */}
+          <div className="border-b border-border/40 bg-card/10 px-6 py-2.5 backdrop-blur-md">
+            <div className="mx-auto flex max-w-[900px] items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex size-8 items-center justify-center rounded-lg bg-neon/10 text-neon shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+                  <Zap className="size-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold tracking-tight text-foreground">Creative Director AI</h2>
+                  <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                    <span className="flex size-1.5 items-center justify-center rounded-full bg-neon animate-pulse" />
+                    Agente Ativo
+                  </div>
+                </div>
+              </div>
+              
+              {reportQ.data?.business?.creative_direction && (
+                <div className="flex items-center gap-4 border-l border-border/40 pl-4">
+                  <div className="text-right">
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Estratégia</div>
+                    <div className="flex items-center justify-end gap-1 text-xs font-semibold text-foreground">
+                      <span>{(reportQ.data.business.creative_direction as any).profile.emoji}</span>
+                      <span>{(reportQ.data.business.creative_direction as any).profile.name}</span>
+                    </div>
+                  </div>
+                  {reportQ.data?.business?.emotion && (
+                    <div className="text-right">
+                      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Emoção</div>
+                      <div className="flex items-center justify-end gap-1 text-xs font-semibold text-foreground">
+                        <span>{(reportQ.data.business.emotion as any).emoji}</span>
+                        <span>{(reportQ.data.business.emotion as any).label}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="mx-auto flex min-h-0 w-full max-w-[900px] flex-1 flex-col">
             <ChatPane
               key={threadId}
