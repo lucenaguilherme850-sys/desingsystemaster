@@ -32,19 +32,50 @@ const phrases = ["ANIMATED", "COMPONENTS", "SHIP FAST", "MOTION LIB"];
 
 export default function TextScramble() {
   const [html, setHtml] = useState(phrases[0]);
+  const rootRef = useRef<HTMLDivElement>(null);
   const iRef = useRef(0);
+
   useEffect(() => {
-    let stop = false;
+    let stop = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let observer: IntersectionObserver | null = null;
+
     const cycle = () => {
       if (stop) return;
       iRef.current = (iRef.current + 1) % phrases.length;
-      scramble(phrases[iRef.current], setHtml, () => setTimeout(cycle, 1500));
+      scramble(phrases[iRef.current], setHtml, () => {
+        if (!stop) timer = setTimeout(cycle, 1500);
+      });
     };
-    const t = setTimeout(cycle, 800);
-    return () => { stop = true; clearTimeout(t); };
+
+    const start = () => {
+      if (!stop) return;
+      stop = false;
+      timer = setTimeout(cycle, 800);
+    };
+
+    const pause = () => {
+      stop = true;
+      if (timer) clearTimeout(timer);
+    };
+
+    if (rootRef.current) {
+      observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) start();
+        else pause();
+      }, { threshold: 0.01 });
+      observer.observe(rootRef.current);
+    }
+
+    return () => {
+      stop = true;
+      if (timer) clearTimeout(timer);
+      if (observer) observer.disconnect();
+    };
   }, []);
+
   return (
-    <div className="grid h-[60vh] place-items-center bg-[#07090f]">
+    <div ref={rootRef} className="grid h-[60vh] place-items-center bg-[#07090f]">
       <div className="text-center">
         <div className="font-mono text-xs uppercase tracking-[0.4em] text-neon">text scramble</div>
         <div
