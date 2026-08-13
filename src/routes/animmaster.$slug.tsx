@@ -298,7 +298,7 @@ function AnimmasterDetail() {
                   className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-black"
                 >
                   <img
-                    src={r.poster_local ?? r.poster_url ?? (r.drive_video_id ? `https://drive.google.com/thumbnail?id=${r.drive_video_id}&sz=w600` : '')}
+                    src={r.poster_local ?? (r.drive_video_id ? `https://drive.google.com/thumbnail?id=${r.drive_video_id}&sz=w600` : r.poster_url)}
                     alt={r.name}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
