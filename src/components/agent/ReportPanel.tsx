@@ -643,7 +643,7 @@ function DashboardView({
               return (
                 <div key={phase.id} className="flex flex-1 items-center">
                   <button
-                    onClick={() => onJump("pipeline")}
+                    onClick={() => onJump("dashboard")}
                     className={`relative flex size-6 shrink-0 items-center justify-center rounded-full border transition-all hover:scale-110 ${
                       isDone
                         ? "border-neon bg-neon text-background"
@@ -697,7 +697,7 @@ function DashboardView({
 
         {/* Target Emotion Widget */}
         <button 
-          onClick={() => onJump("pipeline")}
+          onClick={() => onJump("direction")}
           className="group text-left rounded-xl border border-border/40 bg-card/40 p-3 transition-all hover:border-[#ff00c8]/40 hover:bg-[#ff00c8]/5"
         >
           <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
