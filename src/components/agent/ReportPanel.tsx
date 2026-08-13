@@ -483,13 +483,14 @@ function CollectionView({
   const toggleCompare = (slug: string) => {
     setComparing((prev) => {
       if (prev.includes(slug)) return prev.filter((s) => s !== slug);
-      if (prev.length >= 2) return [prev[1], slug];
+      if (prev.length >= 3) return [prev[1], prev[2], slug];
       return [...prev, slug];
     });
   };
 
   const compA = collection.find((c) => c.slug === comparing[0]);
   const compB = collection.find((c) => c.slug === comparing[1]);
+  const compC = collection.find((c) => c.slug === comparing[2]);
 
   return (
     <div className="space-y-3 relative">
