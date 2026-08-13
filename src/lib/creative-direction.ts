@@ -500,7 +500,12 @@ export function buildCollection(
     const vec = vectorForComponent(item);
     const fit = emotionFit(vec, emotion);
     const guard = scoreComponentFit(item, direction); // profile penalties/bonuses
-    return { item, vec, fit: fit + guard * 0.15 };
+    
+    // Add a small deterministic jitter based on slug to avoid exact same ranking 
+    // for identical scores, but keep it stable for the same component
+    const jitter = (hashSlug(item.slug) % 100) / 1000; 
+
+    return { item, vec, fit: fit + guard * 0.2 + jitter };
   });
 
   const used = new Set<string>();
