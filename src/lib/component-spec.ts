@@ -134,74 +134,56 @@ function fence(file: SpecFile): string {
 function masterPrompt(input: ComponentSpecInput, d: Detected): string {
   const url = input.previewUrl || `https://designmaster.com.br/animmaster/${input.slug}`;
   const techList = d.tech.length ? d.tech.join(", ") : "as tecnologias detectadas no código";
-  return `# PROMPT MESTRE DE IMPLEMENTAÇÃO — "${input.name}" (${input.slug})
+  return `# 🚀 PROMPT MESTRE DE IMPLEMENTAÇÃO: ${input.name}
+> ID Referência: \`${input.slug}\`
+> Link Referência: ${url}
 
-Você é um engenheiro sênior full-stack. Sua tarefa é **reimplementar fielmente** o componente descrito abaixo em UM projeto de destino informado pelo usuário. O código-fonte original é a fonte de verdade e está anexo ao final deste prompt.
+## 🎯 OBJETIVO
+Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua missão é **transplantar** este componente para o projeto do usuário, mantendo 100% da fidelidade visual e interativa, adaptando apenas o conteúdo e o design system (cores/fontes).
 
-## PRÉ-REQUISITOS
-- Estude o código anexo **na íntegra** antes de escrever qualquer linha.
-- Compreenda a arquitetura, hooks, refs, ciclo de animação, eventos, matemática, timings, easings, física, shaders e composição visual.
-- Identifique todas as dependências (${techList}) e instale-as no projeto do usuário na versão compatível — nunca substitua por libs "equivalentes mais leves".
-- Referência visual em produção: ${url}
+## 🛠️ STACK TÉCNICA
+As seguintes tecnologias foram detectadas e devem ser garantidas no projeto de destino:
+${d.tech.map((t) => `- ${t}`).join("\n")}
 
-## PERGUNTAS OBRIGATÓRIAS ANTES DE CODAR
-1. Em qual página/rota do meu projeto devo montar o componente?
-2. Qual conteúdo real (títulos, textos, imagens, mídia) usar no lugar da demo?
-3. Devo usar os tokens/paleta/fontes atuais do meu design system ou criar tokens dedicados a esta seção?
-4. Alguma restrição de performance, acessibilidade (\`prefers-reduced-motion\`) ou mobile?
+## 📋 PROTOCOLO DE IMPLEMENTAÇÃO (PASSO A PASSO)
 
-Só comece a implementação depois que eu responder.
+### Passo 1: Preparação do Ambiente
+Instale as dependências listadas acima. Não tente substituir bibliotecas de animação (ex: GSAP por CSS Transitions) pois isso destruirá a fluidez do componente.
 
-## O QUE VOCÊ DEVE PRESERVAR (INEGOCIÁVEL)
-- Toda a **lógica** do componente, sem simplificações.
-- Todas as **animações**, com timings, easings, delays, staggers e curvas idênticos.
-- Toda a **física**, interpolações, lerps, spring configs, damping e stiffness.
-- Todas as **interações** (mouse, teclado, scroll, touch, hover, drag) com a mesma resposta.
-- Toda a **composição visual**: profundidade, paralaxe, iluminação, sombras, partículas, shaders, blur, glow, camadas.
-- A **sensação premium** do componente: fluidez a 60fps, suavização, sincronização áudio-visual quando houver.
-- A **complexidade técnica**: se o original usa WebGL, você entrega WebGL; se usa Three.js, você entrega Three.js; se usa GSAP, você entrega GSAP.
+### Passo 2: Alinhamento Estratégico
+**PARE AGORA e faça estas 4 perguntas ao usuário:**
+1. Em qual página ou seção específica do seu projeto devo implementar este componente?
+2. Quais são os textos, títulos e imagens reais que devem substituir o conteúdo da demo?
+3. Devo seguir estritamente o seu design system atual (cores, fontes, espaçamentos) ou manter a estética original da demo?
+4. Existe alguma restrição de performance ou requisito de acessibilidade que eu deva considerar?
 
-## O QUE VOCÊ PODE ADAPTAR (E SÓ ISSO)
-- Cores, textos, fontes e espaçamentos, para alinhar ao design system do projeto de destino.
-- Nome do arquivo/componente e organização de pastas conforme convenções do projeto.
-- Integração com o roteador, providers e state management existentes.
-- Ajustes mínimos de compatibilidade entre libs (versões, tipagens) — sem trocar a lib.
+### Passo 3: Transplante de Código
+Com base nas respostas, crie o componente no diretório apropriado (ex: \`src/components/...\`). Use o código original fornecido abaixo como a **Fonte Única da Verdade**.
 
-Essas adaptações **jamais** podem alterar o efeito principal, a identidade visual, a fluidez ou a complexidade técnica.
+## 💎 DIRETRIZES DE QUALIDADE PREMIUM
+- **Física e Timings:** Mantenha curvas de animação, easings, damping e stiffness idênticos ao original.
+- **Interação:** O feedback tátil ao mouse, scroll e toque deve ser preservado com a mesma sensibilidade.
+- **Shaders/WebGL:** Se o código usa shaders, não tente "simplificá-los". Eles são o coração da estética premium.
+- **Eco Mode:** Se o projeto de destino tiver um modo econômico, implemente um fallback leve, mas nunca remova a animação por completo.
 
-## PROIBIÇÕES ABSOLUTAS
-- ❌ Substituir WebGL/Three.js/Shaders por CSS, SVG ou HTML.
-- ❌ Substituir GSAP/Framer Motion/Lenis por \`transition\` CSS ou \`scroll-behavior: smooth\`.
-- ❌ Remover partículas, luzes, câmera, paralaxe, física, blur, glow, ruído, distorção, pós-processamento.
-- ❌ Reduzir FPS, simplificar loops \`requestAnimationFrame\`, cortar iterações de shader.
-- ❌ Simplificar algoritmos (noise, curvas, splines, colisão, easing custom) para versões "básicas".
-- ❌ Substituir canvas por \`<div>\` animada.
-- ❌ Reescrever "para ficar mais limpo" removendo qualquer comportamento.
+## 🚫 RESTRIÇÕES ABSOLUTAS
+- ❌ Não remova loops de \`requestAnimationFrame\`.
+- ❌ Não simplifique a estrutura de camadas DOM/SVG.
+- ❌ Não reescreva o código para "limpá-lo" se isso resultar na perda de qualquer detalhe visual.
 
-## PROCEDIMENTO DE IMPLEMENTAÇÃO
-1. Fazer as 4 perguntas acima e aguardar respostas.
-2. Instalar todas as dependências necessárias.
-3. Recriar os arquivos anexos no projeto de destino, mantendo a mesma estrutura interna (hooks, refs, effects, loops).
-4. Adaptar apenas cores/textos/fontes/espaçamentos ao design system do usuário.
-5. Integrar o componente na rota/página escolhida pelo usuário.
-6. Respeitar \`prefers-reduced-motion\` **somente** com um fallback que ainda represente o efeito (fade curto), nunca "sem animação".
+## 📂 CÓDIGO FONTE ORIGINAL (FONTE DA VERDADE)
+Abaixo estão os arquivos originais. Estude-os profundamente antes de iniciar.
 
-## VALIDAÇÃO FINAL (OBRIGATÓRIA)
-Ao terminar, compare lado a lado a sua implementação com a referência (${url}) e confirme:
-- [ ] Mesmo comportamento em hover / scroll / mouse / touch.
-- [ ] Mesma duração e curva de cada animação.
-- [ ] Mesma profundidade, paralaxe, iluminação, partículas, shaders.
-- [ ] Mesma fluidez percebida (60fps sustentado em desktop moderno).
-- [ ] Nenhum efeito removido ou simplificado.
-- [ ] Resultado visualmente **indistinguível** do original, alterando apenas cor/tipografia/cópia.
-
-Se em algum ponto houver incompatibilidade técnica no projeto de destino, procure outra solução que **mantenha o mesmo comportamento** — nunca simplifique.
-
-A preservação da experiência premium é o requisito mais importante desta biblioteca. Nenhuma otimização, refatoração ou adaptação pode reduzir a qualidade visual ou técnica do componente.
-
-──────────────── CÓDIGO ORIGINAL (fonte de verdade — NÃO ALTERAR) ────────────────
 ${input.files.map(fence).join("")}
-──────────────── FIM DO CÓDIGO ORIGINAL ────────────────`;
+
+## ✅ CHECKLIST DE VALIDAÇÃO FINAL
+Após a implementação, valide:
+- [ ] O componente está rodando a 60FPS estáveis?
+- [ ] O comportamento ao interagir é indistinguível da referência (${url})?
+- [ ] O design system do usuário foi respeitado sem quebrar a estética do efeito?
+
+---
+*Este prompt foi gerado pelo Design Master para garantir a excelência técnica na replicação de componentes premium.*`;
 }
 
 export function buildComponentSpecSummary(input: ComponentSpecInput): ComponentSpecSummary {
