@@ -6,8 +6,12 @@ export default function ScrollParallax() {
     const el = ref.current;
     if (!el) return;
     let raf = 0;
+    let observer: IntersectionObserver | null = null;
+    let isVisible = false;
+
     const layers = el.querySelectorAll<HTMLElement>("[data-depth]");
     const onScroll = () => {
+      if (!isVisible) return;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const rect = el.getBoundingClientRect();
@@ -18,9 +22,21 @@ export default function ScrollParallax() {
         });
       });
     };
+
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    observer = new IntersectionObserver((entries) => {
+      isVisible = entries[0].isIntersecting;
+      if (isVisible) onScroll();
+    }, { threshold: 0.01 });
+    observer.observe(el);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (observer) observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, []);
   return (
     <div ref={ref} className="relative h-[220vh] w-full overflow-hidden bg-gradient-to-b from-[#0a0e1a] via-[#101828] to-[#0a0e1a]">
