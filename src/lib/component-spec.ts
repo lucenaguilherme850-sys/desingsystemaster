@@ -137,31 +137,27 @@ function masterPrompt(input: ComponentSpecInput, d: Detected): string {
 - URL: https://animemaster.lovable.app/
 - Marca / título: Design Master — Interactive UI Asset Catalog
 - Descrição: A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
-- Posição na seleção: Componente 02
-- Seção onde encaixar: **Hero**
-
+- Posição na seleção: Componente 01
+- Seção onde encaixar: **Seções de rolagem**
 # CAMADA DE ADAPTAÇÃO ESPECÍFICA PARA ESTE PROJETO
 (esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)
-Encaixe sugerido: **grid de serviços / cases** de Design Master — Interactive UI Asset Catalog (categoria "Hero").
+Encaixe sugerido: **seção logo abaixo do hero (proposta de valor)** de Design Master — Interactive UI Asset Catalog (categoria "Seções de rolagem").
 
-**O que faz aqui:** anima um mesh gradiente animado atrás do headline.
-**Mudança visível:** camada WebGL de baixa opacidade respirando em loop.
-**Resultado:** dá profundidade sem competir com o texto.
+**O que faz aqui:** aplica paralaxe multi-camada em fundo + mídia + texto.
+**Mudança visível:** 3 camadas com velocidades diferentes conforme o scroll.
+**Resultado:** profundidade cinematográfica em seções âncora.
 
-**Onde usar:** primeira dobra de Design Master — Interactive UI Asset Catalog, sincronizado com o headline principal.
-- Trocar background por **branco (#FFFFFF)**.
-- Trocar partículas / glow / mesh por **azul institucional (#2A5BD7)**.
-- Ajustar velocidade da entrada para **10% mais lento para leitura confortável** para reforçar sensação de credibilidade e clareza.
-- Substituir mídia de demo por foto real do serviço (nada de stock genérico).
+**Onde usar:** seções de prova social, resultados ou serviços de Design Master — Interactive UI Asset Catalog, revelando enquanto o usuário rola.
+- Fundo da seção em **branco (#FFFFFF)**; destaques em **azul institucional (#2A5BD7)**.
+- Ajustar duração dos reveals para **10% mais lento para leitura confortável** — precisa parecer credibilidade e clareza, não agressivo.
+- Preservar 100% a curva de easing e o trigger de scroll original.
 
 **Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação — só cor, tipografia, copy, mídia e ritmo global mudam.
-
 ## Preservar inegociavelmente
 - Arquitetura da animação (hooks, refs, loops de raf, observers).
 - Shaders / WebGL / Canvas — nunca trocar por CSS ou SVG.
 - Easings, timings relativos, staggers, spring configs, física.
 - Comportamento de interação (mouse, scroll, hover, touch, teclado).
-
 ## Perguntar ao usuário antes de codar
 1) Em qual página/rota deste projeto o componente entra?
 2) Qual conteúdo real (títulos, textos, mídia) usar no lugar da demo?
