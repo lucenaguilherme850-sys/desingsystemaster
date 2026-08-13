@@ -133,8 +133,41 @@ function fence(file: SpecFile): string {
 
 function masterPrompt(input: ComponentSpecInput, d: Detected): string {
   const url = input.previewUrl || `https://designmaster.com.br/animmaster/${input.slug}`;
-  const techList = d.tech.length ? d.tech.join(", ") : "as tecnologias detectadas no código";
-  return `# 🚀 PROMPT MESTRE DE IMPLEMENTAÇÃO: ${input.name}
+  return `# CONTEXTO DO PROJETO ALVO
+- URL: https://animemaster.lovable.app/
+- Marca / título: Design Master — Interactive UI Asset Catalog
+- Descrição: A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
+- Posição na seleção: Componente 01
+- Seção onde encaixar: **Design Master Showcase**
+
+# CAMADA DE ADAPTAÇÃO ESPECÍFICA PARA ESTE PROJETO
+(esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)
+Encaixe sugerido: **seção de destaque** de Design Master (categoria "${input.category || "Componentes Premium"}").
+
+**O que faz aqui:** Integração direta do efeito visual "${input.name}" no ecossistema do catálogo.
+**Mudança visível:** Adaptação de cores para o tema Neon (Green/Purple) e fontes institucionais.
+**Resultado:** Fluidez absoluta e performance otimizada para o usuário final.
+
+**Onde usar:** Em qualquer página onde se deseje elevar o nível de interatividade e impacto visual.
+- Preservar 100% a curva de easing e o trigger original.
+
+**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação.
+
+## Preservar inegociavelmente
+- Arquitetura da animação (hooks, refs, loops de raf, observers).
+- Shaders / WebGL / Canvas — nunca trocar por CSS ou SVG.
+- Easings, timings relativos, staggers, spring configs, física.
+- Comportamento de interação (mouse, scroll, hover, touch, teclado).
+
+## Perguntar ao usuário antes de codar
+1) Em qual página/rota deste projeto o componente entra?
+2) Qual conteúdo real (títulos, textos, mídia) usar no lugar da demo?
+3) Quais tokens de cor/tipografia usar (ou criar tokens dedicados)?
+4) Restrições de mobile / prefers-reduced-motion?
+
+A seguir vem o PROMPT MESTRE original completo, com o código-fonte de referência — obedeça-o na íntegra e aplique a camada de adaptação acima em cima dele.
+────────────────────────────────────────
+# 🚀 PROMPT MESTRE DE IMPLEMENTAÇÃO: ${input.name}
 > ID Referência: \`${input.slug}\`
 > Link Referência: ${url}
 
