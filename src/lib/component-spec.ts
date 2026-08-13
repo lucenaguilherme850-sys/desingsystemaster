@@ -137,20 +137,20 @@ function masterPrompt(input: ComponentSpecInput, d: Detected): string {
 - URL: https://animemaster.lovable.app/
 - Marca / título: Design Master — Interactive UI Asset Catalog
 - Descrição: A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
-- Posição na seleção: Componente 01
-- Seção onde encaixar: **Seções de rolagem**
+- Posição na seleção: Componente 05
+- Seção onde encaixar: **Interações**
 # CAMADA DE ADAPTAÇÃO ESPECÍFICA PARA ESTE PROJETO
 (esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)
-Encaixe sugerido: **seção logo abaixo do hero (proposta de valor)** de Design Master — Interactive UI Asset Catalog (categoria "Seções de rolagem").
+Encaixe sugerido: **seção logo abaixo do hero (proposta de valor)** de Design Master — Interactive UI Asset Catalog (categoria "Interações").
 
 **O que faz aqui:** aplica paralaxe multi-camada em fundo + mídia + texto.
 **Mudança visível:** 3 camadas com velocidades diferentes conforme o scroll.
 **Resultado:** profundidade cinematográfica em seções âncora.
 
-**Onde usar:** seções de prova social, resultados ou serviços de Design Master — Interactive UI Asset Catalog, revelando enquanto o usuário rola.
-- Fundo da seção em **branco (#FFFFFF)**; destaques em **azul institucional (#2A5BD7)**.
-- Ajustar duração dos reveals para **10% mais lento para leitura confortável** — precisa parecer credibilidade e clareza, não agressivo.
-- Preservar 100% a curva de easing e o trigger de scroll original.
+**Onde usar:** cards de serviço / CTA de Design Master — Interactive UI Asset Catalog.
+- Highlight/glow do hover em **azul institucional (#2A5BD7)** sobre fundo **branco (#FFFFFF)**.
+- Manter a intensidade do efeito, mas ajustar duração para **10% mais lento para leitura confortável** (credibilidade e clareza).
+- Preservar a física do cursor / lerp / spring do original.
 
 **Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação — só cor, tipografia, copy, mídia e ritmo global mudam.
 ## Preservar inegociavelmente
