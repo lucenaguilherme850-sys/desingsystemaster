@@ -8,21 +8,24 @@ function buildLovablePrompt(slug: string, name: string, files: Array<{ path: str
 - URL: https://animemaster.lovable.app/
 - Marca / título: Design Master — Interactive UI Asset Catalog
 - Descrição: A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
-- Posição na seleção: Componente 01
-- Seção onde encaixar: **Design Master Showcase**
+- Posição na seleção: Componente 02
+- Seção onde encaixar: **Hero**
 
 # CAMADA DE ADAPTAÇÃO ESPECÍFICA PARA ESTE PROJETO
 (esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)
-Encaixe sugerido: **seção de destaque** de Design Master (categoria "Componentes Premium").
+Encaixe sugerido: **grid de serviços / cases** de Design Master — Interactive UI Asset Catalog (categoria "Hero").
 
-**O que faz aqui:** Integração direta do efeito visual ${name} no ecossistema do catálogo.
-**Mudança visível:** Adaptação de cores para o tema Neon (Green/Purple) e fontes institucionais.
-**Resultado:** Fluidez absoluta e performance otimizada para o usuário final.
+**O que faz aqui:** anima um mesh gradiente animado atrás do headline.
+**Mudança visível:** camada WebGL de baixa opacidade respirando em loop.
+**Resultado:** dá profundidade sem competir com o texto.
 
-**Onde usar:** Em qualquer página onde se deseje elevar o nível de interatividade e impacto visual.
-- Preservar 100% a curva de easing e o trigger original.
+**Onde usar:** primeira dobra de Design Master — Interactive UI Asset Catalog, sincronizado com o headline principal.
+- Trocar background por **branco (#FFFFFF)**.
+- Trocar partículas / glow / mesh por **azul institucional (#2A5BD7)**.
+- Ajustar velocidade da entrada para **10% mais lento para leitura confortável** para reforçar sensação de credibilidade e clareza.
+- Substituir mídia de demo por foto real do serviço (nada de stock genérico).
 
-**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação.
+**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação — só cor, tipografia, copy, mídia e ritmo global mudam.
 
 ## Preservar inegociavelmente
 - Arquitetura da animação (hooks, refs, loops de raf, observers).
