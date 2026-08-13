@@ -160,21 +160,21 @@ function AgentThread() {
                 </div>
               </div>
               
-              {reportQ.data?.business?.creative_direction && (
+              {reportQ.data?.business && typeof reportQ.data.business === 'object' && !Array.isArray(reportQ.data.business) && (reportQ.data.business as any).creative_direction && (
                 <div className="flex items-center gap-4 border-l border-border/40 pl-4">
                   <div className="text-right">
                     <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Estratégia</div>
                     <div className="flex items-center justify-end gap-1 text-xs font-semibold text-foreground">
-                      <span>{(reportQ.data.business.creative_direction as any).profile.emoji}</span>
-                      <span>{(reportQ.data.business.creative_direction as any).profile.name}</span>
+                      <span>{((reportQ.data.business as any).creative_direction as any).profile.emoji}</span>
+                      <span>{((reportQ.data.business as any).creative_direction as any).profile.name}</span>
                     </div>
                   </div>
-                  {reportQ.data?.business?.emotion && (
+                  {(reportQ.data.business as any).emotion && (
                     <div className="text-right">
                       <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Emoção</div>
                       <div className="flex items-center justify-end gap-1 text-xs font-semibold text-foreground">
-                        <span>{(reportQ.data.business.emotion as any).emoji}</span>
-                        <span>{(reportQ.data.business.emotion as any).label}</span>
+                        <span>{((reportQ.data.business as any).emotion as any).emoji}</span>
+                        <span>{((reportQ.data.business as any).emotion as any).label}</span>
                       </div>
                     </div>
                   )}
