@@ -82,7 +82,7 @@ function LibraryIndex() {
             as="h1"
             className="mx-auto max-w-5xl text-balance text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95]"
           >
-            {"300 PRO COMPONENTS"}
+            {"DESIGN MASTER"}
           </BlurSmearTitle>
           <BlurSmearTitle
             as="span"
@@ -90,11 +90,10 @@ function LibraryIndex() {
             stagger={45}
             className="mt-3 block max-w-5xl mx-auto text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95] drop-shadow-[0_0_40px_oklch(0.82_0.17_225/45%)]"
           >
-            {"FROM AWWWARDS WEBSITES"}
+            {"PREMIUM ASSET CATALOG"}
           </BlurSmearTitle>
           <p className="mx-auto mt-8 max-w-xl text-base text-muted-foreground">
-            The world's most stunning frontend components rebuilt with clean code from top-tier studios,
-            ready to power your next masterpiece project.
+            A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
           </p>
           <div className="mt-10 flex items-center justify-center gap-3">
             <a
