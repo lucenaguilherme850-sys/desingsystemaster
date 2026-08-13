@@ -86,19 +86,15 @@ function AgentThread() {
     [],
   );
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "pipeline" | "collection" | "direction" | "brief" | "ds" | "map" | "comps" | "plan"
+    "dashboard" | "direction" | "collection" | "brief" | "plan"
   >("dashboard");
 
   const railTabs = [
     { id: "dashboard" as const, icon: Layers, label: "Dashboard" },
-    { id: "pipeline" as const, icon: Compass, label: "Pipeline" },
-    { id: "collection" as const, icon: Puzzle, label: "Coleção" },
     { id: "direction" as const, icon: Palette, label: "Direção" },
+    { id: "collection" as const, icon: Puzzle, label: "Coleção" },
     { id: "brief" as const, icon: FileText, label: "Briefing" },
-    { id: "ds" as const, icon: Layers, label: "Design System" },
-    { id: "map" as const, icon: MapIcon, label: "Mapa" },
-    { id: "comps" as const, icon: Boxes, label: "Componentes" },
-    { id: "plan" as const, icon: ListChecks, label: "Implementação" },
+    { id: "plan" as const, icon: ListChecks, label: "Plano" },
   ];
 
   const rightCol = reportOpen ? rightW : 48;

@@ -35,14 +35,10 @@ export type Report = {
 
 const TABS = [
   { id: "dashboard", label: "📊 Dashboard" },
-  { id: "pipeline", label: "🧭 Pipeline" },
-  { id: "collection", label: "🧩 Coleção" },
   { id: "direction", label: "🎨 Direção" },
-  { id: "brief", label: "Briefing" },
-  { id: "ds", label: "Design System" },
-  { id: "map", label: "Mapa" },
-  { id: "comps", label: "Componentes" },
-  { id: "plan", label: "Implementação" },
+  { id: "collection", label: "🧩 Coleção" },
+  { id: "brief", label: "📝 Briefing" },
+  { id: "plan", label: "🚀 Plano" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -119,61 +115,30 @@ export function ReportPanel({
             longo das 10 fases.
           </p>
         ) : tab === "dashboard" ? (
-          <DashboardView
-            report={report}
-            pipeline={pipeline}
-            direction={direction}
-            emotion={emotion}
-            collection={collection}
-            onTabChange={setTab}
-          />
-        ) : tab === "pipeline" ? (
-          <PipelineView pipeline={pipeline} emotion={emotion} />
+          <div className="space-y-6">
+            <DashboardView
+              report={report}
+              pipeline={pipeline}
+              direction={direction}
+              emotion={emotion}
+              collection={collection}
+              onTabChange={setTab}
+            />
+            <div className="pt-4 border-t border-border/40">
+              <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-4">Pipeline de Execução</h4>
+              <PipelineView pipeline={pipeline} emotion={emotion} />
+            </div>
+          </div>
+        ) : tab === "direction" ? (
+          <DirectionView direction={direction} emotion={emotion} />
         ) : tab === "collection" ? (
           <CollectionView collection={collection} business={report.business ?? null} />
         ) : tab === "brief" ? (
-          <div className="space-y-4">
-            <Section title="Negócio" data={report.business} />
-            <Section title="Marca" data={report.brand} />
-            <Section title="Público" data={report.audience} />
-          </div>
-        ) : tab === "direction" ? (
-          <DirectionView direction={direction} />
-        ) : tab === "ds" ? (
-          <Section title="Design System" data={report.design_system} />
-        ) : tab === "map" ? (
-          <div className="space-y-3">
-            {(report.section_map ?? []).length === 0 && (
-              <p className="text-xs text-muted-foreground">Sem seções definidas ainda.</p>
-            )}
-            {(report.section_map ?? []).map((s, i) => (
-              <div key={i} className="rounded-lg border border-border/60 bg-background/40 p-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold">{s.section}</h4>
-                  {s.componentSlug && (
-                    <Link
-                      to="/animmaster/$slug"
-                      params={{ slug: s.componentSlug }}
-                      className="inline-flex items-center gap-1 text-xs text-neon hover:underline"
-                    >
-                      {s.componentSlug} <ExternalLink className="size-3" />
-                    </Link>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{s.reason}</p>
-              </div>
-            ))}
-          </div>
-        ) : tab === "comps" ? (
-          <div className="space-y-3">
-            {(report.section_map ?? []).length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                Nenhum componente selecionado ainda. Envie uma mensagem descrevendo seu projeto (ou cole a URL do site) para o agente montar a seleção.
-              </p>
-            )}
-            {(report.section_map ?? []).map((s, i) => (
-              <SelectedComponentCard key={i} item={s} business={report.business ?? null} />
-            ))}
+          <div className="space-y-6">
+            <Section title="Estratégia de Negócio" data={report.business} />
+            <Section title="Identidade da Marca" data={report.brand} />
+            <Section title="Público-Alvo" data={report.audience} />
+            <Section title="Design System" data={report.design_system} />
           </div>
         ) : (
           <ol className="space-y-2">
@@ -350,11 +315,17 @@ function Section({ title, data }: { title: string; data: unknown }) {
   );
 }
 
-function DirectionView({ direction }: { direction: CreativeDirection | undefined }) {
+function DirectionView({
+  direction,
+  emotion,
+}: {
+  direction: CreativeDirection | undefined;
+  emotion: Emotion | undefined;
+}) {
   if (!direction) {
     return (
       <p className="text-xs text-muted-foreground">
-        A direção criativa aparece aqui assim que você enviar a primeira mensagem descrevendo o projeto (ou colar a URL).
+        A direção criativa e emoção-alvo aparecem aqui assim que você enviar a primeira mensagem.
       </p>
     );
   }
@@ -372,6 +343,20 @@ function DirectionView({ direction }: { direction: CreativeDirection | undefined
   ];
   return (
     <div className="space-y-4">
+      {emotion && (
+        <div className="rounded-lg border border-[#ff00c8]/40 bg-[#ff00c8]/5 p-3">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-[#ff00c8]">
+            Emoção-alvo
+          </div>
+          <div className="mt-1 text-lg font-semibold">
+            {emotion.emoji} {emotion.label}
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+            Esta emoção guia a curadoria dos componentes para garantir que o projeto não seja apenas
+            "bonito", mas atinja o objetivo sensorial certo.
+          </p>
+        </div>
+      )}
       <div className="rounded-lg border border-neon/40 bg-neon/5 p-3">
         <div className="font-mono text-[10px] uppercase tracking-widest text-neon">Perfil escolhido</div>
         <div className="mt-1 text-lg font-semibold">
@@ -612,7 +597,17 @@ function DashboardView({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold tracking-tight text-foreground">Relatório Estratégico</h2>
+        <button
+          onClick={() => onJump("collection")}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/30 transition-colors"
+        >
+          <Sparkles className="size-3" /> Gerar Prompt Mestre
+        </button>
+      </div>
+
       {/* Welcome Card & Pipeline Trail */}
       <div className="rounded-xl border border-neon/20 bg-neon/5 p-4 shadow-[0_0_20px_rgba(34,211,238,0.05)]">
         <div className="flex items-center justify-between">
