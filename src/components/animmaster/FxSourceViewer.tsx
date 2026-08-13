@@ -4,67 +4,39 @@ import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
   const previewUrl = `https://designmaster.com.br/animmaster/${slug}`;
-  const header = `# Recriar efeito Design Master — "${name}" (${slug})
+  return `# ⚡ SOLICITAÇÃO DE ADAPTAÇÃO: ${name}
+> Componente Premium: \`${slug}\`
+> Link de Visualização: ${previewUrl}
 
-## OBJETIVO
-Recrie no MEU projeto o **mesmo efeito visual e de interação** demonstrado nesta prévia:
-${previewUrl}
+## 📝 RESUMO DA TAREFA
+Olá Lovable, eu escolhi este componente da biblioteca **Design Master**. Sua tarefa é integrá-lo ao meu projeto atual com precisão técnica absoluta.
 
-O que importa é o EFEITO (o tipo de animação, a mecânica, o timing, a "sensação"),
-não o conteúdo específico da demo. Você vai adaptar cores, tipografia, cópia,
-imagens e estrutura ao design system e ao conteúdo do meu projeto atual.
+## ⚙️ INSTRUÇÕES DE EXECUÇÃO
+1. **Analise a Mecânica:** Veja como o componente se comporta no link acima (animação, física, interações).
+2. **Respeite o Código:** O código de referência abaixo é a implementação exata. Use-o como base para a lógica, hooks e animações.
+3. **Adaptação Necessária:**
+   - Use meus tokens de cores (ex: \`bg-background\`, \`text-foreground\`, \`bg-primary\`).
+   - Use meus textos e imagens reais em vez da demo.
+   - Componentize de forma organizada no meu diretório de componentes.
 
-## COMO VOCÊ DEVE AGIR
-1. Abra a URL acima e observe o efeito com atenção: tipo (3D, scroll, hover, texto,
-   webgl, menu, transição, física, etc.), mecânica (o que dispara, o que se move,
-   easing, duração), camadas envolvidas (canvas/DOM/SVG), dependências prováveis
-   (framer-motion, three.js, gsap, lenis, etc.).
-2. Antes de escrever qualquer código, me faça 2 a 4 **perguntas estratégicas** para
-   adaptar o efeito ao meu projeto. Exemplos do que perguntar:
-   - Em qual página/rota você quer aplicar? (nova rota ou dentro de uma existente?)
-   - Que conteúdo real deve entrar (títulos, textos, imagens, produtos, seções)?
-   - Deve usar os tokens de cor / fonte / spacing atuais do meu projeto (recomendado)
-     ou uma paleta separada só para essa seção?
-   - Preferência de intensidade (sutil / médio / intenso)?
-   - Precisa ser responsivo mobile também, ou desktop-only?
-   - Alguma restrição de performance / acessibilidade (prefers-reduced-motion, etc.)?
-3. Depois que eu responder, implemente o efeito **de forma nativa ao meu projeto**:
-   - Use meus tokens semânticos (bg-background, text-foreground, bg-primary…) — nunca
-     hard-code cores da demo original.
-   - Use minha tipografia e meu conteúdo real, não a cópia da demo (nada de
-     "NATURAL GARMENTS…", "Lorem ipsum", ou textos da prévia).
-   - Instale as libs necessárias (framer-motion, three, gsap etc.) se ainda não
-     estiverem no projeto.
-   - Componentize dentro da minha estrutura (src/components/... ou onde fizer sentido).
-   - Respeite prefers-reduced-motion e mobile.
-4. Entregue o efeito rodando na página que eu indicar, revisando que o
-   COMPORTAMENTO bate com o da prévia (${previewUrl}) mesmo que o visual/cores/copy
-   sejam diferentes.
+## 🚦 PERGUNTAS DE ALINHAMENTO
+Antes de começar, me faça 3 perguntas rápidas:
+1. Em qual página você quer que eu instale este componente?
+2. Qual conteúdo (texto/imagens) deve entrar no lugar da demo?
+3. Devo seguir o design system atual do projeto ou quer que eu mantenha as cores Neon originais?
 
-## O QUE NÃO FAZER
-- ❌ Copiar textos, imagens, cores, classes ou paleta da demo original.
-- ❌ Recriar o layout exato da prévia — o que interessa é o efeito, não a página demo.
-- ❌ Começar a codar antes de me fazer as perguntas estratégicas.
-- ❌ Devolver só uma descrição escrita do efeito. Precisa entregar código funcionando.
-- ❌ Ignorar meu design system e injetar cores/fontes novas sem me perguntar.
+---
 
-## REFERÊNCIA TÉCNICA (apenas inspiração, NÃO copie 1:1)
-Abaixo vai o código-fonte do componente exatamente como ele existe no projeto
-Design Master. Use como **referência de mecânica** (que libs, que hooks, que
-matemática de animação, que estrutura de camadas). Reescreva adaptado ao meu
-projeto — não cole verbatim, não mantenha a cópia/paleta/imagens da demo.
+## 🏗️ CÓDIGO DE REFERÊNCIA (NÃO ALTERAR A LÓGICA)
+${files
+  .map(
+    (f) =>
+      `\n\n### Arquivo: \`src/${f.path}\`\n\`\`\`tsx\n${f.content}\n\`\`\``,
+  )
+  .join("")}
 
-──────────────── REFERÊNCIA (não copiar literalmente) ────────────────`;
-  const body = files
-    .map(
-      (f) =>
-        `\n\n// ----- ref: src/${f.path} -----\n\`\`\`tsx\n${f.content}\n\`\`\``,
-    )
-    .join("");
-  const footer = `\n\n──────────────── FIM DA REFERÊNCIA ────────────────
-Lembrete: entregue o MESMO EFEITO da prévia (${previewUrl}) adaptado ao meu design
-system e conteúdo. Faça as perguntas estratégicas primeiro, depois implemente.`;
-  return header + body + footer;
+---
+*Lembre-se: O objetivo é manter o efeito premium mas adaptado à identidade do meu projeto.*`;
 }
 
 export default function FxSourceViewer({ slug, name }: { slug: string; name: string }) {
