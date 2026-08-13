@@ -110,8 +110,9 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
     const v = videoRef.current;
     if (!v) return;
     const shouldPlay =
+      visible &&
       videoUrl != null &&
-      (config.hoverOnly ? hovered : config.autoplay && visible);
+      (config.hoverOnly ? hovered : config.autoplay);
     if (shouldPlay) {
       void v.play().catch(() => undefined);
     } else {
