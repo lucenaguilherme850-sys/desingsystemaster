@@ -764,7 +764,7 @@ function DashboardView({
             </div>
           )}
         </div>
-      </div>
+      </button>
 
       {/* Project Briefing Health */}
       <div className="rounded-xl border border-border/40 bg-card/40 p-4">
