@@ -93,8 +93,7 @@ function LibraryIndex() {
             {"PREMIUM ASSET CATALOG"}
           </BlurSmearTitle>
           <p className="mx-auto mt-8 max-w-xl text-base text-muted-foreground">
-            The world's most stunning frontend components rebuilt with clean code from top-tier studios,
-            ready to power your next masterpiece project.
+            A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
           </p>
           <div className="mt-10 flex items-center justify-center gap-3">
             <a
