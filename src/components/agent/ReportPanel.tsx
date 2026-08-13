@@ -38,6 +38,7 @@ const TABS = [
   { id: "direction", label: "🎨 Direção" },
   { id: "collection", label: "🧩 Coleção" },
   { id: "brief", label: "📝 Briefing" },
+  { id: "competencies", label: "🧠 Competências" },
   { id: "plan", label: "🚀 Plano" },
 ] as const;
 
@@ -140,6 +141,8 @@ export function ReportPanel({
             <Section title="Público-Alvo" data={report.audience} />
             <Section title="Design System" data={report.design_system} />
           </div>
+        ) : tab === "competencies" ? (
+          <CompetencyView />
         ) : (
           <ol className="space-y-2">
             {(report.implementation_plan ?? []).length === 0 && (
