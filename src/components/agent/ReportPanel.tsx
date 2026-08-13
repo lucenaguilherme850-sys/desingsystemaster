@@ -125,6 +125,7 @@ export function ReportPanel({
             direction={direction}
             emotion={emotion}
             collection={collection}
+            onTabChange={setTab}
           />
         ) : tab === "pipeline" ? (
           <PipelineView pipeline={pipeline} emotion={emotion} />
@@ -591,12 +592,14 @@ function DashboardView({
   direction,
   emotion,
   collection,
+  onTabChange,
 }: {
   report: Report;
   pipeline: PipelineState | undefined;
   direction: CreativeDirection | undefined;
   emotion: Emotion | undefined;
   collection: CollectionEntry[];
+  onTabChange?: (id: TabId) => void;
 }) {
   const completionPercentage = useMemo(() => {
     if (!pipeline) return 0;
@@ -604,9 +607,13 @@ function DashboardView({
     return Math.round((done / pipeline.phases.length) * 100);
   }, [pipeline]);
 
+  const onJump = (tabId: TabId) => {
+    if (onTabChange) onTabChange(tabId);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Welcome Card */}
+      {/* Welcome Card & Pipeline Trail */}
       <div className="rounded-xl border border-neon/20 bg-neon/5 p-4 shadow-[0_0_20px_rgba(34,211,238,0.05)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -629,13 +636,54 @@ function DashboardView({
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
+
+        {/* Pipeline Trail */}
+        {pipeline && (
+          <div className="mt-6 flex items-center justify-between px-1">
+            {pipeline.phases.map((phase, i) => {
+              const isDone = phase.status === "done";
+              const isPartial = phase.status === "partial";
+              const isLast = i === pipeline.phases.length - 1;
+              
+              return (
+                <div key={phase.id} className="flex flex-1 items-center">
+                  <button
+                    onClick={() => onJump("pipeline")}
+                    className={`relative flex size-6 shrink-0 items-center justify-center rounded-full border transition-all hover:scale-110 ${
+                      isDone
+                        ? "border-neon bg-neon text-background"
+                        : isPartial
+                        ? "border-neon/60 bg-neon/20 text-neon shadow-[0_0_10px_rgba(34,211,238,0.3)]"
+                        : "border-border/60 bg-background text-muted-foreground"
+                    }`}
+                    title={phase.label}
+                  >
+                    <span className="text-[10px] font-bold">{i + 1}</span>
+                    {isPartial && (
+                      <span className="absolute -inset-1 animate-pulse rounded-full border border-neon/30" />
+                    )}
+                  </button>
+                  {!isLast && (
+                    <div className={`h-px flex-1 ${isDone ? "bg-neon" : "bg-border/40"}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         {/* Creative Profile Widget */}
-        <div className="rounded-xl border border-border/40 bg-card/40 p-3">
-          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-            <Compass className="size-3 text-neon" /> Direção
+        <button 
+          onClick={() => onJump("direction")}
+          className="group text-left rounded-xl border border-border/40 bg-card/40 p-3 transition-all hover:border-neon/40 hover:bg-neon/5"
+        >
+          <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Compass className="size-3 text-neon" /> Direção
+            </span>
+            <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           {direction ? (
             <div className="mt-2">
@@ -650,12 +698,18 @@ function DashboardView({
           ) : (
             <div className="mt-2 text-[10px] italic text-muted-foreground/50">Aguardando análise...</div>
           )}
-        </div>
+        </button>
 
         {/* Target Emotion Widget */}
-        <div className="rounded-xl border border-border/40 bg-card/40 p-3">
-          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-            <Heart className="size-3 text-[#ff00c8]" /> Emoção
+        <button 
+          onClick={() => onJump("pipeline")}
+          className="group text-left rounded-xl border border-border/40 bg-card/40 p-3 transition-all hover:border-[#ff00c8]/40 hover:bg-[#ff00c8]/5"
+        >
+          <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Heart className="size-3 text-[#ff00c8]" /> Emoção
+            </span>
+            <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           {emotion ? (
             <div className="mt-2">
@@ -668,18 +722,24 @@ function DashboardView({
           ) : (
             <div className="mt-2 text-[10px] italic text-muted-foreground/50">Aguardando análise...</div>
           )}
-        </div>
+        </button>
       </div>
 
       {/* Collection Quick View */}
-      <div className="rounded-xl border border-border/40 bg-card/40 p-4">
+      <button 
+        onClick={() => onJump("collection")}
+        className="group block w-full text-left rounded-xl border border-border/40 bg-card/40 p-4 transition-all hover:border-neon-purple/40 hover:bg-neon-purple/5"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
             <Boxes className="size-3 text-neon-purple" /> Coleção Proposta
           </div>
-          <span className="rounded-md bg-neon-purple/10 px-1.5 py-0.5 font-mono text-[10px] text-neon-purple">
-            {collection.length} Itens
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-md bg-neon-purple/10 px-1.5 py-0.5 font-mono text-[10px] text-neon-purple">
+              {collection.length} Itens
+            </span>
+            <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
         </div>
         <div className="mt-4 space-y-2">
           {collection.length > 0 ? (
@@ -704,12 +764,18 @@ function DashboardView({
             </div>
           )}
         </div>
-      </div>
+      </button>
 
       {/* Project Briefing Health */}
-      <div className="rounded-xl border border-border/40 bg-card/40 p-4">
-        <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-          <Briefcase className="size-3" /> Briefing Health
+      <button 
+        onClick={() => onJump("brief")}
+        className="group block w-full text-left rounded-xl border border-border/40 bg-card/40 p-4 transition-all hover:border-border hover:bg-card/60"
+      >
+        <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+          <span className="flex items-center gap-2">
+            <Briefcase className="size-3" /> Briefing Health
+          </span>
+          <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -734,7 +800,7 @@ function DashboardView({
             <span className="text-[10px] text-muted-foreground">{report?.design_system ? "Conectado" : "Genérico"}</span>
           </div>
         </div>
-      </div>
+      </button>
     </div>
   );
 }
