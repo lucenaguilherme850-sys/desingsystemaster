@@ -20,7 +20,11 @@ function useScrollProgress(ref: React.RefObject<HTMLElement | null>, cb: (p: num
     const el = ref.current;
     if (!el) return;
     let raf = 0;
+    let isVisible = false;
+    let observer: IntersectionObserver | null = null;
+
     const on = () => {
+      if (!isVisible) return;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const r = el.getBoundingClientRect();
@@ -28,9 +32,21 @@ function useScrollProgress(ref: React.RefObject<HTMLElement | null>, cb: (p: num
         cb(Math.min(1, Math.max(0, -r.top / (total || 1))));
       });
     };
+
     on();
     window.addEventListener("scroll", on, { passive: true });
-    return () => { window.removeEventListener("scroll", on); cancelAnimationFrame(raf); };
+
+    observer = new IntersectionObserver((entries) => {
+      isVisible = entries[0].isIntersecting;
+      if (isVisible) on();
+    }, { threshold: 0.01 });
+    observer.observe(el);
+
+    return () => {
+      window.removeEventListener("scroll", on);
+      if (observer) observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, [ref, cb]);
 }
 
