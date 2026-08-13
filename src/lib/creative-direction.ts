@@ -275,6 +275,18 @@ export type ComponentAxis =
 
 export type ComponentVector = Record<ComponentAxis, number>; // 0..10
 
+export type CollectionEntry = {
+  slot: string;
+  slotLabel: string;
+  slug: string;
+  name: string;
+  category: string;
+  fit: number;
+  experts: ExpertScore[];
+  alternatives: Array<{ slug: string; name: string; fit: number }>;
+  justification?: string;
+};
+
 const COMPONENT_AXES: ComponentAxis[] = [
   "compat",
   "performance",
