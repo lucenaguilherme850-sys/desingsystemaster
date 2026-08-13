@@ -275,18 +275,6 @@ export type ComponentAxis =
 
 export type ComponentVector = Record<ComponentAxis, number>; // 0..10
 
-export type CollectionEntry = {
-  slot: string;
-  slotLabel: string;
-  slug: string;
-  name: string;
-  category: string;
-  fit: number;
-  experts: ExpertScore[];
-  alternatives: Array<{ slug: string; name: string; fit: number }>;
-  justification?: string;
-};
-
 const COMPONENT_AXES: ComponentAxis[] = [
   "compat",
   "performance",
@@ -497,6 +485,7 @@ export type CollectionEntry = {
   fit: number;
   experts: ExpertScore[];
   alternatives: Array<{ slug: string; name: string; category: string; fit: number }>;
+  justification?: string;
 };
 
 /**
@@ -530,6 +519,12 @@ export function buildCollection(
     if (!candidates.length) continue;
     const winner = candidates[0];
     used.add(winner.item.slug);
+    
+    // Generate technical justification based on fit and vector
+    const experts = scoreByExperts(winner.vec);
+    const topExpert = [...experts].sort((a, b) => b.score - a.score)[0];
+    const justification = `O componente "${winner.item.name}" foi selecionado para ${slot.label} por sua forte adesão à emoção ${emotion.label} (${winner.fit.toFixed(1)} fit). A arquitetura técnica foi validada pelo especialista de ${topExpert.label} (${topExpert.score.toFixed(1)}/10), garantindo que o comportamento de ${winner.item.category} atenda aos guardrails do perfil ${direction.profile.name}.`;
+
     const alternatives = candidates.slice(1, 4).map(({ item, fit }) => ({
       slug: item.slug,
       name: item.name,
@@ -543,7 +538,8 @@ export function buildCollection(
       name: winner.item.name,
       category: winner.item.category,
       fit: round1(winner.fit),
-      experts: scoreByExperts(winner.vec).map((e) => ({ ...e, score: round1(e.score) })),
+      experts: experts.map((e) => ({ ...e, score: round1(e.score) })),
+      justification,
       alternatives,
     });
   }
