@@ -152,7 +152,7 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
         {videoUrl && (
           <video
             ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover will-change-transform"
             muted
             loop
             playsInline
