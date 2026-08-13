@@ -32,14 +32,17 @@ export function usePerformanceMonitor() {
 
     rafId = requestAnimationFrame(calculateFps);
 
-    // Measure initial page load
-    const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
-    if (navEntry) {
-      setMetrics(prev => ({ ...prev, loadingTime: Math.round(navEntry.duration) }));
-    }
+    // Measure initial page load after a small delay to ensure navigation timing is stable
+    const timer = setTimeout(() => {
+      const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+      if (navEntry) {
+        setMetrics(prev => ({ ...prev, loadingTime: Math.round(navEntry.duration) }));
+      }
+    }, 100);
 
     return () => {
       cancelAnimationFrame(rafId);
+      clearTimeout(timer);
     };
   }, []);
 

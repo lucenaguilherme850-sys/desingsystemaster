@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 export type PreviewQuality = "auto" | "low" | "medium" | "high";
 
@@ -74,18 +74,20 @@ export function usePreviewQuality(): {
   config: PreviewQualityConfig;
   setQuality: (q: PreviewQuality) => void;
 } {
-  const [, force] = useState(0);
-  useEffect(() => {
-    const l = () => force((n) => n + 1);
-    listeners.add(l);
-    return () => {
-      listeners.delete(l);
-    };
-  }, []);
+  const quality = useSyncExternalStore(
+    (l) => {
+      listeners.add(l);
+      return () => listeners.delete(l);
+    },
+    () => current,
+    () => "high" as PreviewQuality // Default high during SSR
+  );
+
   const resolved: Exclude<PreviewQuality, "auto"> =
-    current === "auto" ? detectAuto() : current;
+    quality === "auto" ? detectAuto() : quality;
+
   return {
-    quality: current,
+    quality,
     config: PRESETS[resolved],
     setQuality: setPreviewQuality,
   };
