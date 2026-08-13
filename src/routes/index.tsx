@@ -31,7 +31,10 @@ export const Route = createFileRoute("/")({
   component: LibraryIndex,
 });
 
+import { useEcoMode } from "@/hooks/use-eco-mode";
+
 function LibraryIndex() {
+  useEcoMode(); // Ativa o modo Eco automaticamente se necessário
   const [cat, setCat] = useState<string>("all");
   const [onlyLive, setOnlyLive] = useState(false);
 
