@@ -400,35 +400,65 @@ function getLocalRecommendations(
 ): LocalRecommendation[] {
   const normalizedQuery = normalizeForSearch(queryText);
   const tokens = tokenize(queryText);
+  
+  // 1. Calculate base score for every item
   const scored = index
     .map((item, position) => {
       const haystack = normalizeForSearch(`${item.slug} ${item.name} ${item.category}`);
-      const tokenScore = tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 3 : 0), 0);
+      
+      // Relevance score: higher if tokens match slug/name/category
+      const tokenScore = tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 5 : 0), 0);
+      
+      // Intent score: match user intent (e.g., "hero") with category
       const categoryScore = categoryIntentBoost(item.category, normalizedQuery);
-      const earlyScore = Math.max(0, 4 - Math.floor(position / 40));
+      
+      // Direction score: crucial for "precision" based on visual profile
       const directionScore = direction ? scoreComponentFit(item, direction) : 0;
-      return { item, score: tokenScore + categoryScore + earlyScore + directionScore };
+      
+      // Position penalty: slight decay to avoid always picking the first items in DB
+      // unless they are perfect matches
+      const positionDecay = Math.max(-10, -Math.floor(position / 50));
+      
+      // Total score
+      const totalScore = tokenScore + categoryScore + directionScore + positionDecay;
+      
+      return { item, score: totalScore };
     })
-    .filter((entry) => (direction ? entry.score > -6 : true))
+    // Filter out items that are strictly incompatible with the creative direction
+    .filter((entry) => (direction ? entry.score > -15 : true))
     .sort((a, b) => b.score - a.score);
 
   const picked: LocalRecommendation[] = [];
+  const usedSlugs = new Set<string>();
   const usedCategories = new Set<string>();
+
+  // 2. Select top items ensuring variety and strict adherence to scoring
   for (const entry of scored) {
     if (picked.length >= 7) break;
+    
     const categoryKey = normalizeForSearch(entry.item.category);
-    if (entry.score <= 0 && picked.length >= 4) continue;
-    if (usedCategories.has(categoryKey) && picked.length < 4) continue;
-    usedCategories.add(categoryKey);
-    picked.push({
-      section: inferSection(entry.item.category, entry.item.name),
-      slug: entry.item.slug,
-      name: entry.item.name,
-      category: entry.item.category,
-      priority: picked.length < 3 ? "Alta" : "Média",
-      reason: buildRecommendationReason(entry.item.category, entry.item.slug, entry.item.name),
-    });
+    
+    // Diversity rule: try to get different categories for the first 5 picks
+    // unless the score is exceptionally high (direct match)
+    if (picked.length < 5 && usedCategories.has(categoryKey) && entry.score < 20) {
+      continue;
+    }
+
+    if (!usedSlugs.has(entry.item.slug)) {
+      usedSlugs.add(entry.item.slug);
+      usedCategories.add(categoryKey);
+      
+      picked.push({
+        section: inferSection(entry.item.category, entry.item.name),
+        slug: entry.item.slug,
+        name: entry.item.name,
+        category: entry.item.category,
+        priority: picked.length < 3 ? "Alta" : "Média",
+        reason: buildRecommendationReason(entry.item.category, entry.item.slug, entry.item.name),
+      });
+    }
   }
+
   return picked;
 }
 
