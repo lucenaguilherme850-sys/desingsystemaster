@@ -125,6 +125,7 @@ export function ReportPanel({
             direction={direction}
             emotion={emotion}
             collection={collection}
+            onTabChange={setTab}
           />
         ) : tab === "pipeline" ? (
           <PipelineView pipeline={pipeline} emotion={emotion} />
