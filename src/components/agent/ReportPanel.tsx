@@ -604,9 +604,13 @@ function DashboardView({
     return Math.round((done / pipeline.phases.length) * 100);
   }, [pipeline]);
 
+  const onJump = (tabId: TabId) => {
+    if (onTabChange) onTabChange(tabId);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Welcome Card */}
+      {/* Welcome Card & Pipeline Trail */}
       <div className="rounded-xl border border-neon/20 bg-neon/5 p-4 shadow-[0_0_20px_rgba(34,211,238,0.05)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -629,6 +633,41 @@ function DashboardView({
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
+
+        {/* Pipeline Trail */}
+        {pipeline && (
+          <div className="mt-6 flex items-center justify-between px-1">
+            {pipeline.phases.map((phase, i) => {
+              const isDone = phase.status === "done";
+              const isPartial = phase.status === "partial";
+              const isLast = i === pipeline.phases.length - 1;
+              
+              return (
+                <div key={phase.id} className="flex flex-1 items-center">
+                  <button
+                    onClick={() => onJump("pipeline")}
+                    className={`relative flex size-6 shrink-0 items-center justify-center rounded-full border transition-all hover:scale-110 ${
+                      isDone
+                        ? "border-neon bg-neon text-background"
+                        : isPartial
+                        ? "border-neon/60 bg-neon/20 text-neon shadow-[0_0_10px_rgba(34,211,238,0.3)]"
+                        : "border-border/60 bg-background text-muted-foreground"
+                    }`}
+                    title={phase.label}
+                  >
+                    <span className="text-[10px] font-bold">{i + 1}</span>
+                    {isPartial && (
+                      <span className="absolute -inset-1 animate-pulse rounded-full border border-neon/30" />
+                    )}
+                  </button>
+                  {!isLast && (
+                    <div className={`h-px flex-1 ${isDone ? "bg-neon" : "bg-border/40"}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
