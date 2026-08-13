@@ -13,6 +13,7 @@ import ComponentSpec from "@/components/animmaster/ComponentSpec";
 import ComponentSpecDrive from "@/components/animmaster/ComponentSpecDrive";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 import { LockedGate } from "@/components/LockedGate";
+import { usePreviewQuality } from "@/hooks/use-preview-quality";
 
 type Item = {
   id: string;
@@ -61,6 +62,7 @@ function AnimmasterDetail() {
   const router = useRouter();
   const mirror = useServerFn(mirrorAnimmasterAsset);
   const mirrorDrive = useServerFn(mirrorAnimmasterDrive);
+  const { config } = usePreviewQuality();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mirrorState, setMirrorState] = useState<
     { poster: string; video: string } | null
@@ -99,6 +101,13 @@ function AnimmasterDetail() {
   // Trigger mirroring on mount
   useEffect(() => {
     if (!item) return;
+    
+    // In low quality (Eco Mode), don't trigger mirror automatically on detail page
+    // unless it's already mirrored.
+    if (config.preload === "none" && !item.mirrored && !item.drive_video_id) {
+       return;
+    }
+
     if (item.drive_video_id || item.drive_zip_id) {
       setMirroring(true);
       mirrorDrive({ data: { slug: item.slug } })
@@ -192,9 +201,9 @@ function AnimmasterDetail() {
                 key={videoSrc}
                 src={videoSrc}
                 poster={posterSrc}
-                autoPlay
+                autoPlay={config.autoplay}
                 muted
-                loop
+                loop={config.autoplay}
                 playsInline
                 controls
                 className="absolute inset-0 h-full w-full object-contain"
@@ -286,15 +295,17 @@ function AnimmasterDetail() {
                   key={r.id}
                   to="/animmaster/$slug"
                   params={{ slug: r.slug }}
-                  className="group overflow-hidden rounded-lg border border-border bg-card/60"
+                  className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-black"
                 >
-                  <div className="aspect-[4/3] overflow-hidden bg-black">
-                    <img
-                      src={r.poster_local ?? r.poster_url}
-                      alt={r.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                  <img
+                    src={r.poster_local ?? r.poster_url ?? (r.drive_video_id ? `https://drive.google.com/thumbnail?id=${r.drive_video_id}&sz=w600` : '')}
+                    alt={r.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="absolute bottom-2 left-2 right-2 truncate font-mono text-[9px] uppercase tracking-tighter text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {r.type_name || r.name}
                   </div>
                 </Link>
               ))}
