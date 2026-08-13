@@ -61,7 +61,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 font-mono text-[11px] uppercase tracking-widest text-muted-foreground md:flex-row md:items-center">
-          <span>© {new Date().getFullYear()} Design Master · todos direitos reservados</span>
+          <span>© Design Master · todos direitos reservados</span>
           <span>built with tanstack start · lovable cloud</span>
         </div>
       </div>

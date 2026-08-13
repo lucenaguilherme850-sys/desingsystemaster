@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, Copy, Check, Loader2, Sparkles } from "lucide-react";
+import { ExternalLink, Copy, Check, Loader2, Sparkles, Target, Briefcase, Compass, Layers, Map as MapIcon, Boxes, ListChecks, Zap, Heart, Search } from "lucide-react";
 import { getAnimmasterDriveMasterPrompt } from "@/lib/animmaster-drive-code.functions";
 import type {
   CreativeDirection,
@@ -34,6 +34,7 @@ export type Report = {
 } | null;
 
 const TABS = [
+  { id: "dashboard", label: "📊 Dashboard" },
   { id: "pipeline", label: "🧭 Pipeline" },
   { id: "collection", label: "🧩 Coleção" },
   { id: "direction", label: "🎨 Direção" },
@@ -55,7 +56,7 @@ export function ReportPanel({
   activeTab?: TabId;
   onTabChange?: (id: TabId) => void;
 }) {
-  const [internalTab, setInternalTab] = useState<TabId>("pipeline");
+  const [internalTab, setInternalTab] = useState<TabId>("dashboard");
   const tab = activeTab ?? internalTab;
   const setTab = (id: TabId) => {
     if (onTabChange) onTabChange(id);
@@ -117,6 +118,14 @@ export function ReportPanel({
             Ainda não há relatório. Comece a conversa — o agente vai preencher automaticamente ao
             longo das 10 fases.
           </p>
+        ) : tab === "dashboard" ? (
+          <DashboardView
+            report={report}
+            pipeline={pipeline}
+            direction={direction}
+            emotion={emotion}
+            collection={collection}
+          />
         ) : tab === "pipeline" ? (
           <PipelineView pipeline={pipeline} emotion={emotion} />
         ) : tab === "collection" ? (
@@ -571,6 +580,160 @@ function CollectionCard({
       )}
       <div className="mt-3">
         <SelectedComponentCard item={item} business={business} />
+      </div>
+    </div>
+  );
+}
+
+function DashboardView({
+  report,
+  pipeline,
+  direction,
+  emotion,
+  collection,
+}: {
+  report: Report;
+  pipeline: PipelineState | undefined;
+  direction: CreativeDirection | undefined;
+  emotion: Emotion | undefined;
+  collection: CollectionEntry[];
+}) {
+  const completionPercentage = useMemo(() => {
+    if (!pipeline) return 0;
+    const done = pipeline.phases.filter((p) => p.status === "done").length;
+    return Math.round((done / pipeline.phases.length) * 100);
+  }, [pipeline]);
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome Card */}
+      <div className="rounded-xl border border-neon/20 bg-neon/5 p-4 shadow-[0_0_20px_rgba(34,211,238,0.05)]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-neon/10 p-2 text-neon">
+              <Zap className="size-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-foreground">Status do Projeto</h3>
+              <p className="text-xs text-muted-foreground">Configuração estratégica em tempo real</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-black text-neon">{completionPercentage}%</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">completo</div>
+          </div>
+        </div>
+        <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-border/40">
+          <div
+            className="h-full bg-neon transition-all duration-500"
+            style={{ width: `${completionPercentage}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        {/* Creative Profile Widget */}
+        <div className="rounded-xl border border-border/40 bg-card/40 p-3">
+          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <Compass className="size-3 text-neon" /> Direção
+          </div>
+          {direction ? (
+            <div className="mt-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-lg">{direction.profile.emoji}</span>
+                <span className="truncate text-xs font-bold">{direction.profile.name}</span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-[10px] text-muted-foreground leading-relaxed">
+                {direction.profile.tagline}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-2 text-[10px] italic text-muted-foreground/50">Aguardando análise...</div>
+          )}
+        </div>
+
+        {/* Target Emotion Widget */}
+        <div className="rounded-xl border border-border/40 bg-card/40 p-3">
+          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <Heart className="size-3 text-[#ff00c8]" /> Emoção
+          </div>
+          {emotion ? (
+            <div className="mt-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-lg">{emotion.emoji}</span>
+                <span className="truncate text-xs font-bold">{emotion.label}</span>
+              </div>
+              <p className="mt-1 text-[10px] text-muted-foreground">Foco sensorial definido</p>
+            </div>
+          ) : (
+            <div className="mt-2 text-[10px] italic text-muted-foreground/50">Aguardando análise...</div>
+          )}
+        </div>
+      </div>
+
+      {/* Collection Quick View */}
+      <div className="rounded-xl border border-border/40 bg-card/40 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <Boxes className="size-3 text-neon-purple" /> Coleção Proposta
+          </div>
+          <span className="rounded-md bg-neon-purple/10 px-1.5 py-0.5 font-mono text-[10px] text-neon-purple">
+            {collection.length} Itens
+          </span>
+        </div>
+        <div className="mt-4 space-y-2">
+          {collection.length > 0 ? (
+            collection.slice(0, 4).map((c) => (
+              <div key={c.slug} className="flex items-center justify-between rounded-lg bg-background/40 p-2 text-xs">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className="size-1.5 shrink-0 rounded-full bg-neon shadow-[0_0_8px_#22d3ee]" />
+                  <span className="truncate font-medium">{c.name}</span>
+                </div>
+                <span className="shrink-0 font-mono text-[9px] text-muted-foreground">{c.slotLabel}</span>
+              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-4 text-center">
+              <Search className="mb-2 size-5 text-muted-foreground/30" />
+              <p className="text-[10px] text-muted-foreground">Mencione o site ou negócio para gerar o kit</p>
+            </div>
+          )}
+          {collection.length > 4 && (
+            <div className="text-center text-[10px] text-muted-foreground">
+              + {collection.length - 4} outros componentes
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Project Briefing Health */}
+      <div className="rounded-xl border border-border/40 bg-card/40 p-4">
+        <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+          <Briefcase className="size-3" /> Briefing Health
+        </div>
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs">
+              <div className={`size-2 rounded-full ${report?.business ? "bg-neon" : "bg-border/40"}`} />
+              Negócio
+            </div>
+            <span className="text-[10px] text-muted-foreground">{report?.business ? "Identificado" : "Pendente"}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs">
+              <div className={`size-2 rounded-full ${report?.brand ? "bg-neon" : "bg-border/40"}`} />
+              Branding
+            </div>
+            <span className="text-[10px] text-muted-foreground">{report?.brand ? "Definido" : "Pendente"}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs">
+              <div className={`size-2 rounded-full ${report?.design_system ? "bg-neon" : "bg-border/40"}`} />
+              Design System
+            </div>
+            <span className="text-[10px] text-muted-foreground">{report?.design_system ? "Conectado" : "Genérico"}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
