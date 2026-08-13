@@ -4,39 +4,60 @@ import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
   const previewUrl = `https://designmaster.com.br/animmaster/${slug}`;
-  return `# ⚡ SOLICITAÇÃO DE ADAPTAÇÃO: ${name}
-> Componente Premium: \`${slug}\`
-> Link de Visualização: ${previewUrl}
+  return `# CONTEXTO DO PROJETO ALVO
+- URL: https://animemaster.lovable.app/
+- Marca / título: Design Master — Interactive UI Asset Catalog
+- Descrição: A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
+- Posição na seleção: Componente 01
+- Seção onde encaixar: **Design Master Showcase**
 
-## 📝 RESUMO DA TAREFA
-Olá Lovable, eu escolhi este componente da biblioteca **Design Master**. Sua tarefa é integrá-lo ao meu projeto atual com precisão técnica absoluta.
+# CAMADA DE ADAPTAÇÃO ESPECÍFICA PARA ESTE PROJETO
+(esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)
+Encaixe sugerido: **seção de destaque** de Design Master (categoria "Componentes Premium").
 
-## ⚙️ INSTRUÇÕES DE EXECUÇÃO
-1. **Analise a Mecânica:** Veja como o componente se comporta no link acima (animação, física, interações).
-2. **Respeite o Código:** O código de referência abaixo é a implementação exata. Use-o como base para a lógica, hooks e animações.
-3. **Adaptação Necessária:**
-   - Use meus tokens de cores (ex: \`bg-background\`, \`text-foreground\`, \`bg-primary\`).
-   - Use meus textos e imagens reais em vez da demo.
-   - Componentize de forma organizada no meu diretório de componentes.
+**O que faz aqui:** Integração direta do efeito visual ${name} no ecossistema do catálogo.
+**Mudança visível:** Adaptação de cores para o tema Neon (Green/Purple) e fontes institucionais.
+**Resultado:** Fluidez absoluta e performance otimizada para o usuário final.
 
-## 🚦 PERGUNTAS DE ALINHAMENTO
-Antes de começar, me faça 3 perguntas rápidas:
-1. Em qual página você quer que eu instale este componente?
-2. Qual conteúdo (texto/imagens) deve entrar no lugar da demo?
-3. Devo seguir o design system atual do projeto ou quer que eu mantenha as cores Neon originais?
+**Onde usar:** Em qualquer página onde se deseje elevar o nível de interatividade e impacto visual.
+- Preservar 100% a curva de easing e o trigger original.
 
----
+**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação.
 
-## 🏗️ CÓDIGO DE REFERÊNCIA (NÃO ALTERAR A LÓGICA)
+## Preservar inegociavelmente
+- Arquitetura da animação (hooks, refs, loops de raf, observers).
+- Shaders / WebGL / Canvas — nunca trocar por CSS ou SVG.
+- Easings, timings relativos, staggers, spring configs, física.
+- Comportamento de interação (mouse, scroll, hover, touch, teclado).
+
+## Perguntar ao usuário antes de codar
+1) Em qual página/rota deste projeto o componente entra?
+2) Qual conteúdo real (títulos, textos, mídia) usar no lugar da demo?
+3) Quais tokens de cor/tipografia usar (ou criar tokens dedicados)?
+4) Restrições de mobile / prefers-reduced-motion?
+
+A seguir vem o PROMPT MESTRE original completo, com o código-fonte de referência — obedeça-o na íntegra e aplique a camada de adaptação acima em cima dele.
+────────────────────────────────────────
+# 🚀 PROMPT MESTRE DE IMPLEMENTAÇÃO: ${name}
+> ID Referência: \`${slug}\`
+> Link Referência: ${previewUrl}
+
+## 🎯 OBJETIVO
+Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua missão é **transplantar** este componente para o projeto do usuário, mantendo 100% da fidelidade visual e interativa, adaptando apenas o conteúdo e o design system (cores/fontes).
+
+## 🛠️ STACK TÉCNICA
+As tecnologias originais devem ser preservadas.
+
+## 📋 PROTOCOLO DE IMPLEMENTAÇÃO (PASSO A PASSO)
+(Siga as instruções de transplante preservando a Fonte Única da Verdade abaixo)
+
+## 📂 CÓDIGO FONTE ORIGINAL (FONTE DA VERDADE)
 ${files
   .map(
     (f) =>
       `\n\n### Arquivo: \`src/${f.path}\`\n\`\`\`tsx\n${f.content}\n\`\`\``,
   )
-  .join("")}
-
----
-*Lembre-se: O objetivo é manter o efeito premium mas adaptado à identidade do meu projeto.*`;
+  .join("")}`;
 }
 
 export default function FxSourceViewer({ slug, name }: { slug: string; name: string }) {
