@@ -592,12 +592,14 @@ function DashboardView({
   direction,
   emotion,
   collection,
+  onTabChange,
 }: {
   report: Report;
   pipeline: PipelineState | undefined;
   direction: CreativeDirection | undefined;
   emotion: Emotion | undefined;
   collection: CollectionEntry[];
+  onTabChange?: (id: TabId) => void;
 }) {
   const completionPercentage = useMemo(() => {
     if (!pipeline) return 0;
