@@ -216,7 +216,9 @@ function SelectedComponentCard({
         `- Seção onde encaixar: **${item.section}**`,
         `# CAMADA DE ADAPTAÇÃO ESPECÍFICA PARA ESTE PROJETO`,
         `(esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)`,
-        item.adaptation ? `Encaixe sugerido: **${item.adaptation.split("\n")[0]}** de ${title || "Design Master"} (categoria "${item.category || "Geral"}").\n\n${item.adaptation}` : "Adapte apenas cores, tipografia, copy e mídia ao design system do projeto. Preserve timings, easings, física, shaders e complexidade técnica 1:1.",
+        item.adaptation
+          ? item.adaptation
+          : "Adapte apenas cores, tipografia, copy e mídia ao design system do projeto. Preserve timings, easings, física, shaders e complexidade técnica 1:1.",
         ``,
         `## Preservar inegociavelmente`,
         `- Arquitetura da animação (hooks, refs, loops de raf, observers).`,

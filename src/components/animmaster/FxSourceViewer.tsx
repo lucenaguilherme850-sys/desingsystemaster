@@ -4,44 +4,24 @@ import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
   const previewUrl = `https://designmaster.com.br/animmaster/${slug}`;
-  return `# CONTEXTO DO PROJETO ALVO
-- URL: https://animemaster.lovable.app/
-- Marca / título: Design Master — Interactive UI Asset Catalog
-- Descrição: A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
-- Posição na seleção: Componente 05
-- Seção onde encaixar: **Interações**
-# CAMADA DE ADAPTAÇÃO ESPECÍFICA PARA ESTE PROJETO
-(esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)
-Encaixe sugerido: **seção logo abaixo do hero (proposta de valor)** de Design Master — Interactive UI Asset Catalog (categoria "Interações").
-
-**O que faz aqui:** trilha de partículas atrás do cursor.
-**Mudança visível:** 8 pontos com fade-out escalonado seguem o movimento.
-**Resultado:** assinatura visual em landing autoral.
-
-**Onde usar:** cards de serviço / CTA de Design Master — Interactive UI Asset Catalog.
-- Highlight/glow do hover em **azul institucional (#2A5BD7)** sobre fundo **branco (#FFFFFF)**.
-- Manter a intensidade do efeito, mas ajustar duração para **10% mais lento para leitura confortável** (credibilidade e clareza).
-- Preservar a física do cursor / lerp / spring do original.
-
-**Manter inegociavelmente:** arquitetura da animação, shaders, easings, física, timings relativos, complexidade técnica e comportamento de interação — só cor, tipografia, copy, mídia e ritmo global mudam.
-## Preservar inegociavelmente
-- Arquitetura da animação (hooks, refs, loops de raf, observers).
-- Shaders / WebGL / Canvas — nunca trocar por CSS ou SVG.
-- Easings, timings relativos, staggers, spring configs, física.
-- Comportamento de interação (mouse, scroll, hover, touch, teclado).
-## Perguntar ao usuário antes de codar
-1) Em qual página/rota deste projeto o componente entra?
-2) Qual conteúdo real (títulos, textos, mídia) usar no lugar da demo?
-3) Quais tokens de cor/tipografia usar (ou criar tokens dedicados)?
-4) Restrições de mobile / prefers-reduced-motion?
-A seguir vem o PROMPT MESTRE original completo, com o código-fonte de referência — obedeça-o na íntegra e aplique a camada de adaptação acima em cima dele.
-────────────────────────────────────────
-# 🚀 PROMPT MESTRE DE IMPLEMENTAÇÃO: ${name}
+  return `# 🚀 PROMPT MESTRE DE IMPLEMENTAÇÃO: ${name}
 > ID Referência: \`${slug}\`
 > Link Referência: ${previewUrl}
 
 ## 🎯 OBJETIVO
 Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua missão é **transplantar** este componente para o projeto do usuário, mantendo 100% da fidelidade visual e interativa, adaptando apenas o conteúdo e o design system (cores/fontes).
+
+## 🛡️ Preservar inegociavelmente
+- Arquitetura da animação (hooks, refs, loops de raf, observers).
+- Shaders / WebGL / Canvas — nunca trocar por CSS ou SVG.
+- Easings, timings relativos, staggers, spring configs, física.
+- Comportamento de interação (mouse, scroll, hover, touch, teclado).
+
+## ❓ Perguntar ao usuário antes de codar
+1) Em qual página/rota deste projeto o componente entra?
+2) Qual conteúdo real (títulos, textos, mídia) usar no lugar da demo?
+3) Quais tokens de cor/tipografia usar (ou criar tokens dedicados)?
+4) Restrições de mobile / prefers-reduced-motion?
 
 ## 🛠️ STACK TÉCNICA
 As tecnologias originais devem ser preservadas.
