@@ -551,21 +551,39 @@ function CollectionView({
             </div>
           </div>
 
-          {compA && compB && (
+          {(compA || compB || compC) && (
             <div className="mt-4 space-y-4 border-t border-border/40 pt-4">
               <div className="text-[10px] font-semibold text-center text-muted-foreground uppercase tracking-widest">Métricas Comparadas</div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-3">
-                  <ExpertBadges experts={compA.experts} />
-                  <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
-                    {compA.justification?.slice(0, 150)}...
-                  </div>
+                  {compA && (
+                    <>
+                      <ExpertBadges experts={compA.experts} />
+                      <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                        {compA.justification?.slice(0, 120)}...
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="space-y-3">
-                  <ExpertBadges experts={compB.experts} />
-                  <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
-                    {compB.justification?.slice(0, 150)}...
-                  </div>
+                  {compB && (
+                    <>
+                      <ExpertBadges experts={compB.experts} />
+                      <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                        {compB.justification?.slice(0, 120)}...
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {compC && (
+                    <>
+                      <ExpertBadges experts={compC.experts} />
+                      <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                        {compC.justification?.slice(0, 120)}...
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
