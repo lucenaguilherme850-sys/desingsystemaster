@@ -143,9 +143,10 @@ function masterPrompt(input: ComponentSpecInput, d: Detected): string {
 (esta camada é aplicada POR CIMA do Prompt Mestre original — o Prompt Mestre continua valendo integralmente)
 Encaixe sugerido: **seção logo abaixo do hero (proposta de valor)** de Design Master — Interactive UI Asset Catalog (categoria "Interações").
 
-**O que faz aqui:** aplica paralaxe multi-camada em fundo + mídia + texto.
-**Mudança visível:** 3 camadas com velocidades diferentes conforme o scroll.
-**Resultado:** profundidade cinematográfica em seções âncora.
+**O que faz aqui:** trilha de partículas atrás do cursor.
+**Mudança visível:** 8 pontos com fade-out escalonado seguem o movimento.
+**Resultado:** assinatura visual em landing autoral.
+
 
 **Onde usar:** cards de serviço / CTA de Design Master — Interactive UI Asset Catalog.
 - Highlight/glow do hover em **azul institucional (#2A5BD7)** sobre fundo **branco (#FFFFFF)**.
