@@ -299,7 +299,7 @@ function AnimmasterDetail() {
                   className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-black"
                 >
                   <GoogleDriveImage
-                    src={r.poster_local ?? (r.drive_video_id ? `https://drive.google.com/thumbnail?id=${r.drive_video_id}&sz=w600` : r.poster_url)}
+                    src={r.poster_local ?? (r.drive_video_id ? `https://drive.google.com/thumbnail?id=${r.drive_video_id}&sz=${config.preload === "none" ? "w200" : "w600"}` : r.poster_url)}
                     alt={r.name}
                     className="h-full w-full transition-transform duration-300 group-hover:scale-105"
                   />

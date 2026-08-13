@@ -121,8 +121,9 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
     }
   }, [visible, videoUrl, hovered, config.hoverOnly, config.autoplay]);
 
+  const thumbSize = config.preload === "none" ? "w400" : "w1000";
   const drivePoster = item.drive_video_id
-    ? `https://drive.google.com/thumbnail?id=${item.drive_video_id}&sz=w1000`
+    ? `https://drive.google.com/thumbnail?id=${item.drive_video_id}&sz=${thumbSize}`
     : null;
   const poster = item.poster_local || item.poster_url || drivePoster;
 
