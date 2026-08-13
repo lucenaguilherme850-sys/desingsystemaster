@@ -6,11 +6,17 @@ export default function NoiseBackground() {
     const c = cRef.current;
     if (!c) return;
     const ctx = c.getContext("2d")!;
-    const resize = () => { c.width = c.offsetWidth; c.height = c.offsetHeight; };
-    resize();
-    window.addEventListener("resize", resize);
     let raf = 0;
+    let observer: IntersectionObserver | null = null;
+
+    const resize = () => {
+      if (!c) return;
+      c.width = c.offsetWidth;
+      c.height = c.offsetHeight;
+    };
+
     const draw = () => {
+      if (!c) return;
       const img = ctx.createImageData(c.width, c.height);
       const d = img.data;
       for (let i = 0; i < d.length; i += 4) {
@@ -20,8 +26,31 @@ export default function NoiseBackground() {
       ctx.putImageData(img, 0, 0);
       raf = requestAnimationFrame(draw);
     };
-    draw();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+
+    const start = () => {
+      if (raf) return;
+      draw();
+    };
+
+    const stop = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) start();
+      else stop();
+    }, { threshold: 0.01 });
+    observer.observe(c);
+
+    return () => {
+      stop();
+      window.removeEventListener("resize", resize);
+      if (observer) observer.disconnect();
+    };
   }, []);
   return (
     <div className="relative grid min-h-[70vh] place-items-center overflow-hidden bg-gradient-to-br from-[#0a0e1a] via-[#141828] to-[#0a0e1a]">
