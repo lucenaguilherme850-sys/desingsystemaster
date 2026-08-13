@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ExternalLink, Loader2, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mirrorAnimmasterAsset } from "@/lib/animmaster-mirror.functions";
@@ -44,6 +44,17 @@ export const Route = createFileRoute("/animmaster/$slug")({
     ],
   }),
 });
+
+function ClientOnlyFallback({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return (
+    <div className="grid h-96 place-items-center text-muted-foreground">
+      <Loader2 className="size-5 animate-spin text-neon" />
+    </div>
+  );
+  return <>{children}</>;
+}
 
 function AnimmasterDetail() {
   const { slug } = Route.useParams();
@@ -168,7 +179,9 @@ function AnimmasterDetail() {
                 </div>
                 <div className="max-h-[80vh] overflow-auto">
                   <Suspense fallback={<div className="grid h-96 place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin text-neon" /></div>}>
-                    <LiveFx />
+                    <ClientOnlyFallback>
+                      <LiveFx />
+                    </ClientOnlyFallback>
                   </Suspense>
                 </div>
               </div>

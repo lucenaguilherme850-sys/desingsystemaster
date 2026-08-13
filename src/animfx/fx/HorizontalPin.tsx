@@ -8,7 +8,11 @@ export default function HorizontalPin() {
     const track = trackRef.current;
     if (!wrap || !track) return;
     let raf = 0;
+    let observer: IntersectionObserver | null = null;
+    let isVisible = false;
+
     const onScroll = () => {
+      if (!isVisible) return;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const rect = wrap.getBoundingClientRect();
@@ -18,9 +22,21 @@ export default function HorizontalPin() {
         track.style.transform = `translate3d(${-p * move}px,0,0)`;
       });
     };
+
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    observer = new IntersectionObserver((entries) => {
+      isVisible = entries[0].isIntersecting;
+      if (isVisible) onScroll();
+    }, { threshold: 0.01 });
+    observer.observe(wrap);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (observer) observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, []);
   const cards = ["scroll", "hover", "webgl", "grid", "hero", "menu"];
   return (
