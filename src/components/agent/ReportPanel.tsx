@@ -675,9 +675,15 @@ function DashboardView({
 
       <div className="grid grid-cols-2 gap-4">
         {/* Creative Profile Widget */}
-        <div className="rounded-xl border border-border/40 bg-card/40 p-3">
-          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-            <Compass className="size-3 text-neon" /> Direção
+        <button 
+          onClick={() => onJump("direction")}
+          className="group text-left rounded-xl border border-border/40 bg-card/40 p-3 transition-all hover:border-neon/40 hover:bg-neon/5"
+        >
+          <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Compass className="size-3 text-neon" /> Direção
+            </span>
+            <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           {direction ? (
             <div className="mt-2">
@@ -692,12 +698,18 @@ function DashboardView({
           ) : (
             <div className="mt-2 text-[10px] italic text-muted-foreground/50">Aguardando análise...</div>
           )}
-        </div>
+        </button>
 
         {/* Target Emotion Widget */}
-        <div className="rounded-xl border border-border/40 bg-card/40 p-3">
-          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-            <Heart className="size-3 text-[#ff00c8]" /> Emoção
+        <button 
+          onClick={() => onJump("pipeline")}
+          className="group text-left rounded-xl border border-border/40 bg-card/40 p-3 transition-all hover:border-[#ff00c8]/40 hover:bg-[#ff00c8]/5"
+        >
+          <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Heart className="size-3 text-[#ff00c8]" /> Emoção
+            </span>
+            <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           {emotion ? (
             <div className="mt-2">
@@ -710,18 +722,24 @@ function DashboardView({
           ) : (
             <div className="mt-2 text-[10px] italic text-muted-foreground/50">Aguardando análise...</div>
           )}
-        </div>
+        </button>
       </div>
 
       {/* Collection Quick View */}
-      <div className="rounded-xl border border-border/40 bg-card/40 p-4">
+      <button 
+        onClick={() => onJump("collection")}
+        className="group block w-full text-left rounded-xl border border-border/40 bg-card/40 p-4 transition-all hover:border-neon-purple/40 hover:bg-neon-purple/5"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
             <Boxes className="size-3 text-neon-purple" /> Coleção Proposta
           </div>
-          <span className="rounded-md bg-neon-purple/10 px-1.5 py-0.5 font-mono text-[10px] text-neon-purple">
-            {collection.length} Itens
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-md bg-neon-purple/10 px-1.5 py-0.5 font-mono text-[10px] text-neon-purple">
+              {collection.length} Itens
+            </span>
+            <Zap className="size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
         </div>
         <div className="mt-4 space-y-2">
           {collection.length > 0 ? (
