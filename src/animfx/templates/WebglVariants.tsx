@@ -29,24 +29,68 @@ export default function WebglVariants({ seed = 1 }: { seed?: number }) {
   const [c1, c2] = palette(seed);
   const shader = SHADERS[seed % SHADERS.length];
   useEffect(() => {
-    const wrap = wrapRef.current!;
-    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2) });
-    const gl = renderer.gl;
-    wrap.appendChild(gl.canvas);
-    const program = new Program(gl, {
-      vertex: `attribute vec2 position;void main(){gl_Position=vec4(position,0.,1.);}`,
-      fragment: shader,
-      uniforms: { uTime: { value: 0 }, uRes: { value: [1, 1] }, uA: { value: hex(c1) }, uB: { value: hex(c2) } },
-    });
-    const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
-    const resize = () => { renderer.setSize(wrap.clientWidth, wrap.clientHeight); program.uniforms.uRes.value = [gl.canvas.width, gl.canvas.height]; };
-    resize();
-    window.addEventListener("resize", resize);
-    const start = performance.now();
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+
+    let renderer: Renderer | null = null;
+    let program: Program | null = null;
+    let mesh: Mesh | null = null;
     let raf = 0;
-    const loop = () => { program.uniforms.uTime.value = (performance.now() - start) / 1000; renderer.render({ scene: mesh }); raf = requestAnimationFrame(loop); };
-    loop();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); gl.canvas.remove(); };
+    let observer: IntersectionObserver | null = null;
+
+    const init = () => {
+      if (renderer) return;
+      renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2) });
+      const gl = renderer.gl;
+      wrap.appendChild(gl.canvas);
+      program = new Program(gl, {
+        vertex: `attribute vec2 position;void main(){gl_Position=vec4(position,0.,1.);}`,
+        fragment: shader,
+        uniforms: { uTime: { value: 0 }, uRes: { value: [1, 1] }, uA: { value: hex(c1) }, uB: { value: hex(c2) } },
+      });
+      mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+      resize();
+      loop();
+    };
+
+    const dispose = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      if (renderer) {
+        renderer.gl.canvas.remove();
+      }
+      renderer = null;
+      program = null;
+      mesh = null;
+    };
+
+    const resize = () => {
+      if (!renderer || !program || !wrap) return;
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      program.uniforms.uRes.value = [renderer.gl.canvas.width, renderer.gl.canvas.height];
+    };
+
+    const startTime = performance.now();
+    const loop = () => {
+      if (!renderer || !program || !mesh) return;
+      program.uniforms.uTime.value = (performance.now() - startTime) / 1000;
+      renderer.render({ scene: mesh });
+      raf = requestAnimationFrame(loop);
+    };
+
+    window.addEventListener("resize", resize);
+
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) init();
+      else dispose();
+    }, { threshold: 0.01 });
+    observer.observe(wrap);
+
+    return () => {
+      dispose();
+      window.removeEventListener("resize", resize);
+      if (observer) observer.disconnect();
+    };
   }, [c1, c2, shader]);
   return <div ref={wrapRef} className="h-[70vh] w-full bg-black" />;
 }

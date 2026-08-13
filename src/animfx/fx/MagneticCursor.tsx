@@ -9,8 +9,11 @@ export default function MagneticCursor() {
     const dot = dotRef.current;
     const ring = ringRef.current;
     if (!root || !dot || !ring) return;
+
     const state = { x: 0, y: 0, rx: 0, ry: 0 };
     let raf = 0;
+    let observer: IntersectionObserver | null = null;
+
     const loop = () => {
       state.rx += (state.x - state.rx) * 0.18;
       state.ry += (state.y - state.ry) * 0.18;
@@ -18,16 +21,35 @@ export default function MagneticCursor() {
       ring.style.transform = `translate3d(${state.rx - 24}px, ${state.ry - 24}px, 0)`;
       raf = requestAnimationFrame(loop);
     };
+
+    const start = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(loop);
+    };
+
+    const stop = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
     const onMove = (e: MouseEvent) => {
       const r = root.getBoundingClientRect();
       state.x = e.clientX - r.left;
       state.y = e.clientY - r.top;
     };
+
     root.addEventListener("mousemove", onMove);
-    raf = requestAnimationFrame(loop);
+
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) start();
+      else stop();
+    }, { threshold: 0.01 });
+    observer.observe(root);
+
     return () => {
-      cancelAnimationFrame(raf);
+      stop();
       root.removeEventListener("mousemove", onMove);
+      if (observer) observer.disconnect();
     };
   }, []);
   return (

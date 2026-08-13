@@ -26,48 +26,80 @@ export default function WebglWaves() {
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
-    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2) });
-    const gl = renderer.gl;
-    wrap.appendChild(gl.canvas);
-    const geometry = new Triangle(gl);
-    const program = new Program(gl, {
-      vertex: vert,
-      fragment: frag,
-      uniforms: {
-        uTime: { value: 0 },
-        uRes: { value: [1, 1] },
-        uMouse: { value: [0, 0] },
-      },
-    });
-    const mesh = new Mesh(gl, { geometry, program });
-    const resize = () => {
-      const w = wrap.clientWidth, h = wrap.clientHeight;
-      renderer.setSize(w, h);
-      program.uniforms.uRes.value = [gl.canvas.width, gl.canvas.height];
+
+    let renderer: Renderer | null = null;
+    let program: Program | null = null;
+    let mesh: Mesh | null = null;
+    let raf = 0;
+    let observer: IntersectionObserver | null = null;
+
+    const init = () => {
+      if (renderer) return;
+      renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2) });
+      const gl = renderer.gl;
+      wrap.appendChild(gl.canvas);
+      program = new Program(gl, {
+        vertex: vert,
+        fragment: frag,
+        uniforms: {
+          uTime: { value: 0 },
+          uRes: { value: [1, 1] },
+          uMouse: { value: [0, 0] },
+        },
+      });
+      mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+      resize();
+      loop();
     };
-    resize();
-    window.addEventListener("resize", resize);
+
+    const dispose = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      if (renderer) {
+        renderer.gl.canvas.remove();
+      }
+      renderer = null;
+      program = null;
+      mesh = null;
+    };
+
+    const resize = () => {
+      if (!renderer || !program || !wrap) return;
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      program.uniforms.uRes.value = [renderer.gl.canvas.width, renderer.gl.canvas.height];
+    };
+
+    const start = performance.now();
+    const loop = () => {
+      if (!renderer || !program || !mesh) return;
+      program.uniforms.uTime.value = (performance.now() - start) / 1000;
+      renderer.render({ scene: mesh });
+      raf = requestAnimationFrame(loop);
+    };
+
     const onMove = (e: MouseEvent) => {
+      if (!program || !wrap) return;
       const r = wrap.getBoundingClientRect();
       program.uniforms.uMouse.value = [
         (e.clientX - r.left) / r.width - 0.5,
         (e.clientY - r.top) / r.height - 0.5,
       ];
     };
+
+    window.addEventListener("resize", resize);
     wrap.addEventListener("mousemove", onMove);
-    let raf = 0;
-    const start = performance.now();
-    const loop = () => {
-      program.uniforms.uTime.value = (performance.now() - start) / 1000;
-      renderer.render({ scene: mesh });
-      raf = requestAnimationFrame(loop);
-    };
-    loop();
+
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) init();
+      else dispose();
+    }, { threshold: 0.01 });
+    observer.observe(wrap);
+
     return () => {
-      cancelAnimationFrame(raf);
+      dispose();
       window.removeEventListener("resize", resize);
       wrap.removeEventListener("mousemove", onMove);
-      gl.canvas.remove();
+      if (observer) observer.disconnect();
     };
   }, []);
   return (

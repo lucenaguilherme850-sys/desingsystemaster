@@ -16,47 +16,82 @@ export default function ShaderCanvas({ frag, title, subtitle, overlay, className
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
-    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2), alpha: false });
-    const gl = renderer.gl;
-    wrap.appendChild(gl.canvas);
-    const program = new Program(gl, {
-      vertex: VERT,
-      fragment: frag,
-      uniforms: {
-        uTime: { value: 0 },
-        uRes: { value: [1, 1] },
-        uMouse: { value: [0, 0] },
-      },
-    });
-    const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
-    const resize = () => {
-      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-      program.uniforms.uRes.value = [gl.canvas.width, gl.canvas.height];
+
+    let renderer: Renderer | null = null;
+    let program: Program | null = null;
+    let mesh: Mesh | null = null;
+    let raf = 0;
+    let observer: IntersectionObserver | null = null;
+
+    const init = () => {
+      if (renderer) return;
+      renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2), alpha: false });
+      const gl = renderer.gl;
+      wrap.appendChild(gl.canvas);
+      program = new Program(gl, {
+        vertex: VERT,
+        fragment: frag,
+        uniforms: {
+          uTime: { value: 0 },
+          uRes: { value: [1, 1] },
+          uMouse: { value: [0, 0] },
+        },
+      });
+      mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+      resize();
+      loop();
     };
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(wrap);
+
+    const dispose = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      if (renderer) {
+        renderer.gl.canvas.remove();
+        // OGL doesn't have a formal dispose() for renderer, but we remove the canvas
+      }
+      renderer = null;
+      program = null;
+      mesh = null;
+    };
+
+    const resize = () => {
+      if (!renderer || !program || !wrap) return;
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      program.uniforms.uRes.value = [renderer.gl.canvas.width, renderer.gl.canvas.height];
+    };
+
+    const t0 = performance.now();
+    const loop = () => {
+      if (!renderer || !program || !mesh) return;
+      program.uniforms.uTime.value = (performance.now() - t0) / 1000;
+      renderer.render({ scene: mesh });
+      raf = requestAnimationFrame(loop);
+    };
+
     const onMove = (e: MouseEvent) => {
+      if (!program || !wrap) return;
       const r = wrap.getBoundingClientRect();
       program.uniforms.uMouse.value = [
         (e.clientX - r.left) / r.width - 0.5,
         -((e.clientY - r.top) / r.height - 0.5),
       ];
     };
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(wrap);
     wrap.addEventListener("mousemove", onMove);
-    let raf = 0;
-    const t0 = performance.now();
-    const loop = () => {
-      program.uniforms.uTime.value = (performance.now() - t0) / 1000;
-      renderer.render({ scene: mesh });
-      raf = requestAnimationFrame(loop);
-    };
-    loop();
+
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) init();
+      else dispose();
+    }, { threshold: 0.01 });
+    observer.observe(wrap);
+
     return () => {
-      cancelAnimationFrame(raf);
+      dispose();
       ro.disconnect();
+      if (observer) observer.disconnect();
       wrap.removeEventListener("mousemove", onMove);
-      gl.canvas.remove();
     };
   }, [frag]);
   return (

@@ -149,7 +149,7 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
             }}
           />
         ) : null}
-        {videoUrl && (
+        {visible && videoUrl && (
           <video
             ref={videoRef}
             className="absolute inset-0 h-full w-full object-cover will-change-transform"
