@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, Copy, Check, Loader2, Sparkles, Target, Briefcase, Compass, Layers, Map as MapIcon, Boxes, ListChecks, Zap, Heart, Search } from "lucide-react";
+import { ExternalLink, Copy, Check, Loader2, Sparkles, Target, Briefcase, Compass, Layers, Map as MapIcon, Boxes, ListChecks, Zap, Heart, Search, X, Scale } from "lucide-react";
 import { getAnimmasterDriveMasterPrompt } from "@/lib/animmaster-drive-code.functions";
 import type {
   CreativeDirection,
@@ -470,6 +470,8 @@ function CollectionView({
   collection: CollectionEntry[];
   business: Record<string, unknown> | null;
 }) {
+  const [comparing, setComparing] = useState<string[]>([]);
+
   if (!collection.length) {
     return (
       <p className="text-xs text-muted-foreground">
@@ -477,10 +479,94 @@ function CollectionView({
       </p>
     );
   }
+
+  const toggleCompare = (slug: string) => {
+    setComparing((prev) => {
+      if (prev.includes(slug)) return prev.filter((s) => s !== slug);
+      if (prev.length >= 2) return [prev[1], slug];
+      return [...prev, slug];
+    });
+  };
+
+  const compA = collection.find((c) => c.slug === comparing[0]);
+  const compB = collection.find((c) => c.slug === comparing[1]);
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 relative">
+      {comparing.length > 0 && (
+        <div className="sticky top-0 z-20 mb-4 rounded-xl border border-neon/40 bg-black/80 p-3 backdrop-blur-xl shadow-[0_0_30px_rgba(34,211,238,0.1)]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Scale className="size-4 text-neon" />
+              <span className="text-xs font-bold uppercase tracking-widest text-neon">Comparação</span>
+            </div>
+            <button
+              onClick={() => setComparing([])}
+              className="rounded-full p-1 hover:bg-white/10"
+            >
+              <X className="size-3 text-muted-foreground" />
+            </button>
+          </div>
+          
+          <div className="mt-3 grid grid-cols-2 gap-3 divide-x divide-border/40">
+            <div className="min-w-0 pr-1.5">
+              {compA ? (
+                <div>
+                  <div className="truncate text-[10px] font-bold text-foreground">{compA.name}</div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-muted-foreground">Fit {compA.fit.toFixed(1)}</span>
+                    <button onClick={() => toggleCompare(compA.slug)} className="text-[9px] text-neon/60 hover:text-neon">Remover</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[9px] text-muted-foreground italic">Selecione o 1º...</div>
+              )}
+            </div>
+            <div className="min-w-0 pl-3">
+              {compB ? (
+                <div>
+                  <div className="truncate text-[10px] font-bold text-foreground">{compB.name}</div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-muted-foreground">Fit {compB.fit.toFixed(1)}</span>
+                    <button onClick={() => toggleCompare(compB.slug)} className="text-[9px] text-neon/60 hover:text-neon">Remover</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[9px] text-muted-foreground italic">Selecione o 2º...</div>
+              )}
+            </div>
+          </div>
+
+          {compA && compB && (
+            <div className="mt-4 space-y-4 border-t border-border/40 pt-4">
+              <div className="text-[10px] font-semibold text-center text-muted-foreground uppercase tracking-widest">Métricas Comparadas</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <ExpertBadges experts={compA.experts} />
+                  <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                    {compA.justification?.slice(0, 150)}...
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <ExpertBadges experts={compB.experts} />
+                  <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                    {compB.justification?.slice(0, 150)}...
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {collection.map((c) => (
-        <CollectionCard key={c.slot} entry={c} business={business} />
+        <CollectionCard 
+          key={c.slot} 
+          entry={c} 
+          business={business} 
+          isComparing={comparing.includes(c.slug)}
+          onCompare={() => toggleCompare(c.slug)}
+        />
       ))}
     </div>
   );
@@ -506,9 +592,13 @@ function ExpertBadges({ experts }: { experts: ExpertScore[] }) {
 function CollectionCard({
   entry,
   business,
+  isComparing,
+  onCompare,
 }: {
   entry: CollectionEntry;
   business: Record<string, unknown> | null;
+  isComparing?: boolean;
+  onCompare?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [showJustification, setShowJustification] = useState(false);
@@ -542,11 +632,23 @@ function CollectionCard({
           <div className="text-sm font-semibold">{entry.fit.toFixed(1)}</div>
         </div>
       </div>
-      <div className="mt-2 flex items-center justify-between">
-        <ExpertBadges experts={entry.experts} />
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <ExpertBadges experts={entry.experts} />
+          <button
+            onClick={onCompare}
+            className={`rounded px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider transition-colors ${
+              isComparing 
+                ? "bg-neon text-background border border-neon" 
+                : "bg-background/60 text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
+            }`}
+          >
+            {isComparing ? "Comparando" : "Comparar"}
+          </button>
+        </div>
         <button
           onClick={() => setShowJustification(!showJustification)}
-          className="rounded bg-neon/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-neon hover:bg-neon/20 transition-colors"
+          className="rounded bg-neon/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-neon hover:bg-neon/20 transition-colors shrink-0"
         >
           {showJustification ? "Ocultar Porquê" : "Justificativa"}
         </button>
