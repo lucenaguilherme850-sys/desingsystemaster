@@ -509,7 +509,7 @@ function CollectionView({
             </button>
           </div>
           
-          <div className="mt-3 grid grid-cols-2 gap-3 divide-x divide-border/40">
+          <div className="mt-3 grid grid-cols-3 gap-3 divide-x divide-border/40">
             <div className="min-w-0 pr-1.5">
               {compA ? (
                 <div>
@@ -520,7 +520,7 @@ function CollectionView({
                   </div>
                 </div>
               ) : (
-                <div className="text-[9px] text-muted-foreground italic">Selecione o 1º...</div>
+                <div className="text-[9px] text-muted-foreground italic">1º...</div>
               )}
             </div>
             <div className="min-w-0 pl-3">
@@ -533,7 +533,20 @@ function CollectionView({
                   </div>
                 </div>
               ) : (
-                <div className="text-[9px] text-muted-foreground italic">Selecione o 2º...</div>
+                <div className="text-[9px] text-muted-foreground italic">2º...</div>
+              )}
+            </div>
+            <div className="min-w-0 pl-3">
+              {compC ? (
+                <div>
+                  <div className="truncate text-[10px] font-bold text-foreground">{compC.name}</div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-muted-foreground">Fit {compC.fit.toFixed(1)}</span>
+                    <button onClick={() => toggleCompare(compC.slug)} className="text-[9px] text-neon/60 hover:text-neon">Remover</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[9px] text-muted-foreground italic">3º...</div>
               )}
             </div>
           </div>
