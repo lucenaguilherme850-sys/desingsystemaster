@@ -42,26 +42,8 @@ export function BlurSmearTitle({
         },
       );
     });
-    // breath after entry
-    const total = spans.length * stagger + 900;
-    const t = setTimeout(() => {
-      spans.forEach((s, i) => {
-        s.animate(
-          [
-            { filter: "blur(0px)" },
-            { filter: "blur(2px)" },
-            { filter: "blur(0px)" },
-          ],
-          {
-            duration: 3800,
-            delay: (i % 6) * 120,
-            iterations: Infinity,
-            easing: "ease-in-out",
-          },
-        );
-      });
-    }, total);
-    return () => clearTimeout(t);
+    // breath after entry - removed for performance on main list to save RAM
+    return;
   }, [children, stagger]);
 
   const chars = Array.from(children);

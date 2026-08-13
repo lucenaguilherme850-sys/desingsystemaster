@@ -111,6 +111,7 @@
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
+    content-visibility: auto;
   }
 
   code, pre, .font-mono {

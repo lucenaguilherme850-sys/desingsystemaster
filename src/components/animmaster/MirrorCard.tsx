@@ -110,8 +110,9 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
     const v = videoRef.current;
     if (!v) return;
     const shouldPlay =
+      visible &&
       videoUrl != null &&
-      (config.hoverOnly ? hovered : config.autoplay && visible);
+      (config.hoverOnly ? hovered : config.autoplay);
     if (shouldPlay) {
       void v.play().catch(() => undefined);
     } else {
@@ -151,7 +152,7 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
         {videoUrl && (
           <video
             ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover will-change-transform"
             muted
             loop
             playsInline
