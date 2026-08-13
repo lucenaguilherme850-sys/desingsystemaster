@@ -799,6 +799,98 @@ function DashboardView({
           </div>
         </div>
       </button>
+
+function CompetencyView() {
+  const categories = [
+    {
+      title: "1. 🧱 Fundamentos",
+      items: ["Lógica & Algoritmos", "Big O & Estruturas", "POO & Funcional", "Concorrência"],
+    },
+    {
+      title: "2. 🌐 Engenharia Web",
+      items: ["HTML Semântico", "CSS Avançado", "React/Next.js", "Performance/Web Vitals"],
+    },
+    {
+      title: "3. 🗄️ Bancos de Dados",
+      items: ["SQL Avançado", "Query Optimization", "PostgreSQL/Redis", "Indexes/Locks"],
+    },
+    {
+      title: "4. 🔐 Cybersecurity",
+      items: ["OWASP Top 10", "Threat Modeling", "Criptografia", "Secure Coding"],
+    },
+    {
+      title: "5. 🎨 UI/UX + Design System",
+      items: ["Design Tokens", "Motion Design", "Hierarquia Visual", "Acessibilidade"],
+    },
+    {
+      title: "6. ☁️ DevOps + Cloud",
+      items: ["Linux/Bash", "Docker/Containers", "CI/CD Pipeline", "AWS/Cloud Monitoring"],
+    },
+    {
+      title: "7. 🏗️ Arquitetura",
+      items: ["SOLID & Patterns", "Clean Architecture", "Distributed Systems", "Scalability"],
+    },
+    {
+      title: "8. 🤖 AI Engineering",
+      items: ["LLMs & RAG", "Agents & Tool Use", "Prompt Engineering", "Fine-tuning"],
+    },
+    {
+      title: "9. 🧪 Engenharia de Software",
+      items: ["Unit & E2E Testing", "TDD / Refactoring", "Logging & Observability"],
+    },
+    {
+      title: "10. 🔬 Engenharia Reversa",
+      items: ["DevTools Insight", "Source Maps Analysis", "Protocol Inspection"],
+    },
+    {
+      title: "11. 🧠 Engenharia de Produto",
+      items: ["Problem Solving", "MVP Architecture", "Product-Market Fit Focus"],
+    },
+    {
+      title: "12. 💼 Negócios",
+      items: ["SaaS Metrics (LTV/CAC)", "UX Comercial", "Conversion Copywriting"],
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-neon/40 bg-neon/5 p-3">
+        <h3 className="text-sm font-semibold text-neon flex items-center gap-2">
+          <Zap className="size-4" /> Motor de Decisão do Agente
+        </h3>
+        <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+          O Agente Creative Director opera com a mentalidade de um Engenheiro Full-Stack Sênior. 
+          Cada componente é selecionado com base em fundamentos técnicos, não apenas estética.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        {categories.map((cat, i) => (
+          <div key={i} className="rounded-lg border border-border/60 bg-background/40 p-3">
+            <h4 className="font-mono text-[10px] uppercase tracking-widest text-foreground/70">
+              {cat.title}
+            </h4>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {cat.items.map((item, j) => (
+                <span
+                  key={j}
+                  className="rounded bg-accent/30 px-1.5 py-0.5 text-[9px] text-muted-foreground"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 rounded-lg border border-[#ff00c8]/20 bg-[#ff00c8]/5 p-3 text-[10px] text-muted-foreground italic text-center">
+        "A regra é: primeiro entender, depois modificar. E sempre prever o erro antes que ele aconteça."
+      </div>
+    </div>
+  );
+}
+
     </div>
   );
 }
