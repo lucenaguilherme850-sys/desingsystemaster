@@ -483,13 +483,14 @@ function CollectionView({
   const toggleCompare = (slug: string) => {
     setComparing((prev) => {
       if (prev.includes(slug)) return prev.filter((s) => s !== slug);
-      if (prev.length >= 2) return [prev[1], slug];
+      if (prev.length >= 3) return [prev[1], prev[2], slug];
       return [...prev, slug];
     });
   };
 
   const compA = collection.find((c) => c.slug === comparing[0]);
   const compB = collection.find((c) => c.slug === comparing[1]);
+  const compC = collection.find((c) => c.slug === comparing[2]);
 
   return (
     <div className="space-y-3 relative">
@@ -508,7 +509,7 @@ function CollectionView({
             </button>
           </div>
           
-          <div className="mt-3 grid grid-cols-2 gap-3 divide-x divide-border/40">
+          <div className="mt-3 grid grid-cols-3 gap-3 divide-x divide-border/40">
             <div className="min-w-0 pr-1.5">
               {compA ? (
                 <div>
@@ -519,7 +520,7 @@ function CollectionView({
                   </div>
                 </div>
               ) : (
-                <div className="text-[9px] text-muted-foreground italic">Selecione o 1º...</div>
+                <div className="text-[9px] text-muted-foreground italic">1º...</div>
               )}
             </div>
             <div className="min-w-0 pl-3">
@@ -532,26 +533,57 @@ function CollectionView({
                   </div>
                 </div>
               ) : (
-                <div className="text-[9px] text-muted-foreground italic">Selecione o 2º...</div>
+                <div className="text-[9px] text-muted-foreground italic">2º...</div>
+              )}
+            </div>
+            <div className="min-w-0 pl-3">
+              {compC ? (
+                <div>
+                  <div className="truncate text-[10px] font-bold text-foreground">{compC.name}</div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-muted-foreground">Fit {compC.fit.toFixed(1)}</span>
+                    <button onClick={() => toggleCompare(compC.slug)} className="text-[9px] text-neon/60 hover:text-neon">Remover</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[9px] text-muted-foreground italic">3º...</div>
               )}
             </div>
           </div>
 
-          {compA && compB && (
+          {(compA || compB || compC) && (
             <div className="mt-4 space-y-4 border-t border-border/40 pt-4">
               <div className="text-[10px] font-semibold text-center text-muted-foreground uppercase tracking-widest">Métricas Comparadas</div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-3">
-                  <ExpertBadges experts={compA.experts} />
-                  <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
-                    {compA.justification?.slice(0, 150)}...
-                  </div>
+                  {compA && (
+                    <>
+                      <ExpertBadges experts={compA.experts} />
+                      <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                        {compA.justification?.slice(0, 120)}...
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="space-y-3">
-                  <ExpertBadges experts={compB.experts} />
-                  <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
-                    {compB.justification?.slice(0, 150)}...
-                  </div>
+                  {compB && (
+                    <>
+                      <ExpertBadges experts={compB.experts} />
+                      <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                        {compB.justification?.slice(0, 120)}...
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {compC && (
+                    <>
+                      <ExpertBadges experts={compC.experts} />
+                      <div className="mt-2 rounded bg-neon/5 p-2 text-[9px] leading-relaxed text-foreground/80 border border-neon/10">
+                        {compC.justification?.slice(0, 120)}...
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
