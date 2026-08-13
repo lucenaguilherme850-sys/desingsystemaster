@@ -86,7 +86,7 @@ function AgentThread() {
     [],
   );
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "direction" | "collection" | "brief" | "plan"
+    "dashboard" | "direction" | "collection" | "brief" | "competencies" | "plan"
   >("dashboard");
 
   const railTabs = [
@@ -94,6 +94,7 @@ function AgentThread() {
     { id: "direction" as const, icon: Palette, label: "Direção" },
     { id: "collection" as const, icon: Puzzle, label: "Coleção" },
     { id: "brief" as const, icon: FileText, label: "Briefing" },
+    { id: "competencies" as const, icon: Zap, label: "Competências" },
     { id: "plan" as const, icon: ListChecks, label: "Plano" },
   ];
 
