@@ -19,6 +19,7 @@ import { CursorGlow } from "@/components/fx/CursorGlow";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "@tanstack/react-router";
+import { PerformanceDashboard } from "@/components/animmaster/PerformanceDashboard";
 
 function NotFoundComponent() {
   return (
@@ -166,6 +167,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="relative min-h-screen flex flex-col">
         <CursorGlow />
+        <PerformanceDashboard />
         <SiteHeader />
         <main className="relative z-10 flex-1">
           {!loading && !user && !isPublic ? (
