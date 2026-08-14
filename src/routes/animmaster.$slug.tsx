@@ -141,6 +141,22 @@ function AnimmasterDetail() {
     [item, slug],
   );
 
+  const jsonLd = useMemo(() => {
+    if (!item) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": heading,
+      "description": `Componente premium ${heading} da categoria ${item.category}.`,
+      "image": posterSrc,
+      "sku": item.slug,
+      "brand": {
+        "@type": "Brand",
+        "name": "Design Master"
+      }
+    };
+  }, [item, heading, posterSrc]);
+
   const LiveFx = useMemo(() => (item ? loadLiveFx(item.slug) : null), [item]);
 
   const goFullscreen = () => {
@@ -173,6 +189,12 @@ function AnimmasterDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <div className="mx-auto max-w-[1400px] px-6 py-8">
         <Link
           to="/animmaster"
