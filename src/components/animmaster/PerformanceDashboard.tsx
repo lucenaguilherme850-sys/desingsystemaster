@@ -1,8 +1,15 @@
 import { usePerformanceMetrics } from "@/hooks/use-performance-metrics";
-import { Activity, Cpu, Database, Gauge, Timer } from "lucide-react";
+import { Activity, Cpu, Database, Gauge, Timer, User } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+
 
 export function PerformanceDashboard() {
   const { fps, frameTime } = usePerformanceMetrics();
+  const { user } = useAuth();
+
+  // Only show for the specific admin user mentioned in requirements
+  if (user?.email !== "lucenaguilherme850@gmail.com") return null;
+
 
   return (
     <div className="fixed bottom-4 left-4 z-50 flex flex-col gap-2 rounded-lg border border-border/40 bg-black/80 p-3 font-mono text-[10px] backdrop-blur-md shadow-2xl">
