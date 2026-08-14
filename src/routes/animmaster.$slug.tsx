@@ -38,11 +38,13 @@ export const Route = createFileRoute("/animmaster/$slug")({
   component: AnimmasterDetail,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} — Design Master Mirror` },
+      { title: `${params.slug} — Componente Premium Design Master` },
       {
         name: "description",
-        content: `Preview em tela cheia do componente animado ${params.slug}.`,
+        content: `Veja a demonstração e documentação técnica do componente animado ${params.slug}. Shaders, animações e Prompt Mestre para IA.`,
       },
+      { property: "og:title", content: `${params.slug} — Preview Design Master` },
+      { property: "og:type", content: "product" },
     ],
   }),
 });

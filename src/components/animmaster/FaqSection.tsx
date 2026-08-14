@@ -36,6 +36,23 @@ export function FaqSection() {
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className="border-t border-border/60 bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faqs.map(f => ({
+              "@type": "Question",
+              "name": f.q,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": f.a
+              }
+            }))
+          })
+        }}
+      />
       <div className="mx-auto max-w-4xl px-6 py-24">
         <div className="font-mono text-[11px] uppercase tracking-widest text-neon">
           faq
