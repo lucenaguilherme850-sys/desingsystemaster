@@ -38,13 +38,15 @@ export const Route = createFileRoute("/animmaster/$slug")({
   component: AnimmasterDetail,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} — Componente Premium Design Master` },
+      { title: `${params.slug} — Documentação e Preview | Design Master` },
       {
         name: "description",
-        content: `Veja a demonstração e documentação técnica do componente animado ${params.slug}. Shaders, animações e Prompt Mestre para IA.`,
+        content: `Preview técnico do componente ${params.slug}. Documentação completa, Prompt Mestre para IA e implementação premium pronta para uso.`,
       },
-      { property: "og:title", content: `${params.slug} — Preview Design Master` },
+      { property: "og:title", content: `${params.slug} — Preview Técnico Design Master` },
+      { property: "og:description", content: `Veja como implementar o componente ${params.slug} no seu projeto web.` },
       { property: "og:type", content: "product" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
 });
@@ -153,6 +155,29 @@ function AnimmasterDetail() {
       "brand": {
         "@type": "Brand",
         "name": "Design Master"
+      },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://animemaster.lovable.app"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Galeria",
+            "item": "https://animemaster.lovable.app/animmaster"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": heading,
+            "item": `https://animemaster.lovable.app/animmaster/${item.slug}`
+          }
+        ]
       }
     };
   }, [item, heading, posterSrc]);
@@ -311,9 +336,9 @@ function AnimmasterDetail() {
 
         {related && related.length > 0 && (
           <section className="mt-16">
-            <div className="font-mono text-[11px] uppercase tracking-widest text-neon">
+            <h2 className="font-mono text-[11px] uppercase tracking-widest text-neon">
               mais em {item.category}
-            </div>
+            </h2>
             <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
               {related.map((r) => (
                 <Link
@@ -338,9 +363,9 @@ function AnimmasterDetail() {
         )}
 
         <section className="mt-16">
-          <div className="font-mono text-[11px] uppercase tracking-widest text-neon">
+          <h2 className="font-mono text-[11px] uppercase tracking-widest text-neon">
             código + prompt
-          </div>
+          </h2>
           <h2 className="mt-1 text-2xl font-bold">Como replicar no seu app</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Copie o arquivo do componente ou o <strong>prompt pronto</strong> para colar

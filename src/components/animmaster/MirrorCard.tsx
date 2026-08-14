@@ -18,6 +18,7 @@ export type MirrorItem = {
   video_local: string | null;
   mirrored: boolean;
   drive_video_id: string | null;
+  position: number;
 };
 
 // Global concurrency-limited mirror queue so we don't hammer the server
@@ -143,8 +144,9 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
         {poster ? (
           <GoogleDriveImage
             src={poster}
-            alt={item.name}
+            alt={item.type_name || item.name || item.slug}
             className="absolute inset-0 h-full w-full"
+            loading={item.position < 6 ? "eager" : "lazy"}
           />
         ) : null}
         {visible && videoUrl && (

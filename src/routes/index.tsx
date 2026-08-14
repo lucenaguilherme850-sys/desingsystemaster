@@ -7,7 +7,7 @@ import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
 import { PreviewQualityPicker } from "@/components/animmaster/PreviewQualityPicker";
 
-type Item = MirrorItem & { position: number };
+// Use MirrorItem directly
 
 const CATEGORIES: { key: string; label: string }[] = [
   { key: "all", label: "Todos" },
@@ -31,13 +31,31 @@ export const Route = createFileRoute("/")({
   component: LibraryIndex,
   head: () => ({
     meta: [
-      { title: "Design Master — Efeitos & Componentes Premium para Web" },
+      { title: "Design Master — Catálogo Premium de Assets UI & Efeitos Web" },
       {
         name: "description",
-        content: "Descubra uma biblioteca curada de efeitos de mouse, animações de rolagem e Shaders WebGL prontos para o seu projeto.",
+        content: "Explore o maior catálogo de efeitos de mouse, animações de rolagem e Shaders WebGL premium. Componentes interativos otimizados para React e Tailwind.",
       },
-      { property: "og:title", content: "Design Master — Catálogo de Efeitos Premium" },
-      { property: "og:description", content: "Componentes interativos de alto nível inspirados nas maiores referências do design web global." },
+      { property: "og:title", content: "Design Master — Assets UI de Alta Performance" },
+      { property: "og:description", content: "Biblioteca curada de componentes interativos e animações inspiradas nos padrões Awwwards." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "Design Master",
+          "url": "https://animemaster.lovable.app",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://animemaster.lovable.app/animmaster?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        })
+      }
     ]
   })
 });
@@ -51,13 +69,13 @@ function LibraryIndex() {
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["animmaster-items"],
-    queryFn: async (): Promise<Item[]> => {
+    queryFn: async (): Promise<MirrorItem[]> => {
       const { data, error } = await supabase
         .from("animmaster_items")
         .select("*")
         .order("position", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as Item[];
+      return (data ?? []) as unknown as MirrorItem[];
     },
   });
 
@@ -117,8 +135,9 @@ function LibraryIndex() {
         </div>
       </section>
 
-      {/* Filters */}
+      {/* Filters and Catalog */}
       <section id="components" className="mx-auto max-w-[1400px] px-6 py-10">
+        <h2 className="sr-only">Explorar Componentes e Filtros</h2>
         <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <PreviewQualityPicker className="mb-3" />

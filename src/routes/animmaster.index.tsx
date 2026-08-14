@@ -8,7 +8,7 @@ import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
 import { PreviewQualityPicker } from "@/components/animmaster/PreviewQualityPicker";
 
-type Item = MirrorItem & { position: number };
+// Use MirrorItem directly as it now includes position
 
 const CATEGORIES: { slug: string; label: string }[] = [
   { slug: "all", label: "Todos" },
@@ -32,14 +32,16 @@ export const Route = createFileRoute("/animmaster/")({
   component: AnimmasterMirror,
   head: () => ({
     meta: [
-      { title: "Galeria PRO 280+ — Design Master Components" },
+      { title: "Galeria PRO 280+ — Catálogo Design Master" },
       {
         name: "description",
         content:
-          "Acesso completo ao catálogo espelhado de 280+ componentes PRO. Shaders, Sliders e Heros extraídos de projetos Awwwards.",
+          "Acesso completo ao catálogo premium com mais de 280 componentes PRO. Shaders, Sliders e Heros inspirados em projetos de elite.",
       },
       { property: "og:title", content: "Galeria PRO 280+ — Design Master" },
-      { property: "og:type", content: "article" },
+      { property: "og:description", content: "Explore centenas de componentes interativos premium para seus projetos web." },
+      { property: "og:type", content: "collection" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     scripts: [
       {
@@ -48,7 +50,24 @@ export const Route = createFileRoute("/animmaster/")({
           "@context": "https://schema.org",
           "@type": "CollectionPage",
           "name": "Galeria PRO 280+ Design Master",
-          "description": "Coleção de 280+ componentes animados premium."
+          "description": "Coleção de 280+ componentes animados premium de alto nível.",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://animemaster.lovable.app"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Galeria PRO",
+                "item": "https://animemaster.lovable.app/animmaster"
+              }
+            ]
+          }
         })
       }
     ]
@@ -61,13 +80,13 @@ function AnimmasterMirror() {
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["animmaster-items"],
-    queryFn: async (): Promise<Item[]> => {
+    queryFn: async (): Promise<MirrorItem[]> => {
       const { data, error } = await supabase
         .from("animmaster_items")
         .select("*")
         .order("position", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as Item[];
+      return (data ?? []) as unknown as MirrorItem[];
     },
   });
 
@@ -112,6 +131,7 @@ function AnimmasterMirror() {
       </section>
 
       <section className="mx-auto max-w-[1400px] px-6 py-10">
+        <h2 className="sr-only">Explorar Componentes PRO</h2>
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <PreviewQualityPicker className="mb-3" />
