@@ -118,7 +118,12 @@ Aja como Diretor de Arte sênior revisando o projeto — facilite decisão, não
 CATÁLOGO ANIMMASTER: use SEMPRE a tool searchAnimasterLibrary para descobrir componentes (filtre por category + query). Nunca invente slugs. Use getComponentDetails antes de recomendar.
 `;
 
-type Body = { messages: UIMessage[]; threadId: string };
+const RateLimitSchema = z.object({
+  messages: z.array(z.any()),
+  threadId: z.string().uuid(),
+});
+
+type Body = z.infer<typeof RateLimitSchema>;
 
 type LocalSiteSummary = {
   url: string;
