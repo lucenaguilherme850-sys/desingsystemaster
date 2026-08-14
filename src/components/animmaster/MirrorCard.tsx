@@ -111,16 +111,36 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    
+    let isPlaying = false;
     const shouldPlay =
       visible &&
       videoUrl != null &&
       (config.hoverOnly ? hovered : config.autoplay);
+
     if (shouldPlay) {
-      void v.play().catch(() => undefined);
+      isPlaying = true;
+      void v.play().catch(() => {
+        isPlaying = false;
+      });
     } else {
       v.pause();
+      // Optimization: unload video if hidden for a long time to free memory
+      if (!visible && config.preload === "none") {
+        v.src = "";
+        v.load();
+      }
     }
-  }, [visible, videoUrl, hovered, config.hoverOnly, config.autoplay]);
+
+    return () => {
+      if (v) {
+        v.pause();
+        v.src = "";
+        v.load();
+      }
+    };
+  }, [visible, videoUrl, hovered, config.hoverOnly, config.autoplay, config.preload]);
+
 
   const thumbSize = config.preload === "none" ? "w400" : "w1000";
   const drivePoster = item.drive_video_id
