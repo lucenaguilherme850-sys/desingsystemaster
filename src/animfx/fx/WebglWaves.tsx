@@ -35,7 +35,15 @@ export default function WebglWaves() {
 
     const init = () => {
       if (renderer) return;
-      renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2) });
+      // Adaptive DPR for performance
+      const mem = (navigator as any).deviceMemory || 8;
+      const cores = navigator.hardwareConcurrency || 4;
+      const dprFactor = mem < 4 || cores <= 2 ? 1 : 2;
+
+      renderer = new Renderer({ 
+        dpr: Math.min(window.devicePixelRatio, dprFactor),
+        powerPreference: "high-performance"
+      });
       const gl = renderer.gl;
       wrap.appendChild(gl.canvas);
       program = new Program(gl, {
@@ -56,12 +64,22 @@ export default function WebglWaves() {
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       if (renderer) {
+        const gl = renderer.gl;
+        if (mesh && mesh.geometry.attributes.position.buffer) {
+          gl.deleteBuffer(mesh.geometry.attributes.position.buffer);
+        }
+        if (program) {
+          gl.deleteProgram(program.program);
+        }
         renderer.gl.canvas.remove();
+        const extension = gl.getExtension('WEBGL_lose_context');
+        if (extension) extension.loseContext();
       }
       renderer = null;
       program = null;
       mesh = null;
     };
+
 
     const resize = () => {
       if (!renderer || !program || !wrap) return;

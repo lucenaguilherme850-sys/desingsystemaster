@@ -1,16 +1,18 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, Suspense, useEffect, useMemo, useRef, useState, lazy } from "react";
+
 import { ArrowLeft, ExternalLink, Loader2, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mirrorAnimmasterAsset } from "@/lib/animmaster-mirror.functions";
 import { mirrorAnimmasterDrive } from "@/lib/animmaster-drive.functions";
 import { hasLiveFx, loadLiveFx } from "@/animfx/registry";
-import FxSourceViewer from "@/components/animmaster/FxSourceViewer";
-import DriveCodeBrowser from "@/components/animmaster/DriveCodeBrowser";
-import ComponentSpec from "@/components/animmaster/ComponentSpec";
-import ComponentSpecDrive from "@/components/animmaster/ComponentSpecDrive";
+const FxSourceViewer = lazy(() => import("@/components/animmaster/FxSourceViewer"));
+const DriveCodeBrowser = lazy(() => import("@/components/animmaster/DriveCodeBrowser"));
+const ComponentSpec = lazy(() => import("@/components/animmaster/ComponentSpec"));
+const ComponentSpecDrive = lazy(() => import("@/components/animmaster/ComponentSpecDrive"));
+
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 import { LockedGate } from "@/components/LockedGate";
 import { usePreviewQuality } from "@/hooks/use-preview-quality";
@@ -373,33 +375,38 @@ function AnimmasterDetail() {
             montar antes de instalar.
           </p>
           <LockedGate requires="pro" label="Código + prompt mestre bloqueados">
-            {item.drive_zip_id ? (
-              <DriveCodeBrowser slug={item.slug} />
-            ) : (
-              <FxSourceViewer slug={item.slug} name={heading} />
-            )}
+            <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-card/40" />}>
+              {item.drive_zip_id ? (
+                <DriveCodeBrowser slug={item.slug} />
+              ) : (
+                <FxSourceViewer slug={item.slug} name={heading} />
+              )}
+            </Suspense>
 
-            {item.drive_zip_id ? (
-              <ComponentSpecDrive
-                slug={item.slug}
-                name={heading}
-                category={item.category}
-                summary={item.instruction_text}
-              />
-            ) : (
-              (() => {
-                const info = getFxSourceForSlug(item.slug);
-                if (!info) return null;
-                return (
-                  <ComponentSpec
-                    slug={item.slug}
-                    name={heading}
-                    category={item.category}
-                    files={info.files.map((f) => ({ path: f.path, content: f.content }))}
-                  />
-                );
-              })()
-            )}
+            <Suspense fallback={<div className="mt-8 h-80 animate-pulse rounded-xl bg-card/40" />}>
+              {item.drive_zip_id ? (
+                <ComponentSpecDrive
+                  slug={item.slug}
+                  name={heading}
+                  category={item.category}
+                  summary={item.instruction_text}
+                />
+              ) : (
+                (() => {
+                  const info = getFxSourceForSlug(item.slug);
+                  if (!info) return null;
+                  return (
+                    <ComponentSpec
+                      slug={item.slug}
+                      name={heading}
+                      category={item.category}
+                      files={info.files.map((f) => ({ path: f.path, content: f.content }))}
+                    />
+                  );
+                })()
+              )}
+            </Suspense>
+
           </LockedGate>
         </section>
       </div>

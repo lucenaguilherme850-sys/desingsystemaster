@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
 import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
 import { PreviewQualityPicker } from "@/components/animmaster/PreviewQualityPicker";
-
-// Use MirrorItem directly
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useEcoMode } from "@/hooks/use-eco-mode";
 
 const CATEGORIES: { key: string; label: string }[] = [
   { key: "all", label: "Todos" },
@@ -60,10 +60,8 @@ export const Route = createFileRoute("/")({
   })
 });
 
-import { useEcoMode } from "@/hooks/use-eco-mode";
-
 function LibraryIndex() {
-  useEcoMode(); // Ativa o modo Eco automaticamente se necessário
+  useEcoMode();
   const [cat, setCat] = useState<string>("all");
   const [onlyLive, setOnlyLive] = useState(false);
 
@@ -101,70 +99,39 @@ function LibraryIndex() {
 
   return (
     <div>
-      {/* Hero */}
       <section id="top" className="relative overflow-hidden border-b border-border/50">
         <div className="absolute inset-0 grid-bg opacity-40" />
         <div className="absolute inset-0 hero-glow" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
         <div className="relative mx-auto max-w-[1400px] px-8 py-32 md:py-40 text-center">
-          <BlurSmearTitle
-            as="h1"
-            className="mx-auto max-w-5xl text-balance text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95]"
-          >
+          <BlurSmearTitle as="h1" className="mx-auto max-w-5xl text-balance text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95]">
             {"DESIGN MASTER"}
           </BlurSmearTitle>
-          <BlurSmearTitle
-            as="span"
-            accent
-            stagger={45}
-            className="mt-3 block max-w-5xl mx-auto text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95] drop-shadow-[0_0_40px_oklch(0.82_0.17_225/45%)]"
-          >
+          <BlurSmearTitle as="span" accent stagger={45} className="mt-3 block max-w-5xl mx-auto text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95] drop-shadow-[0_0_40px_oklch(0.82_0.17_225/45%)]">
             {"PREMIUM ASSET CATALOG"}
           </BlurSmearTitle>
           <p className="mx-auto mt-8 max-w-xl text-base text-muted-foreground">
-            A curated catalog of interactive UI assets: magnetic buttons, hero reveals, cursor trails, pinned galleries and more — with full technical specs and live demos.
+            A curated catalog of interactive UI assets with full technical specs and live demos.
           </p>
           <div className="mt-10 flex items-center justify-center gap-3">
-            <a
-              href="#components"
-              className="glow-cyan rounded-full bg-neon px-7 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.03]"
-            >
+            <a href="#components" className="glow-cyan rounded-full bg-neon px-7 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">
               View Components
             </a>
           </div>
         </div>
       </section>
 
-      {/* Filters and Catalog */}
       <section id="components" className="mx-auto max-w-[1400px] px-6 py-10">
-        <h2 className="sr-only">Explorar Componentes e Filtros</h2>
         <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <PreviewQualityPicker className="mb-3" />
             <button
               onClick={() => setOnlyLive((v) => !v)}
-              className={
-                "mb-3 flex w-full items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-semibold transition-all " +
-                (onlyLive
-                  ? "border-neon bg-neon text-background"
-                  : "border-neon/50 bg-neon/10 text-neon hover:bg-neon/20")
-              }
+              className={"mb-3 flex w-full items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-semibold transition-all " + (onlyLive ? "border-neon bg-neon text-background" : "border-neon/50 bg-neon/10 text-neon hover:bg-neon/20")}
             >
               <span>● só efeitos ao vivo</span>
-              <span className="font-mono text-[10px]">
-                {(items ?? []).filter((i) => isSlugLive(i.slug)).length}
-              </span>
+              <span className="font-mono text-[10px]">{(items ?? []).filter((i) => isSlugLive(i.slug)).length}</span>
             </button>
-            <div className="mb-3 rounded-lg border border-border/60 bg-card/40 p-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-[#ff00c8] shadow-[0_0_8px_#ff00c8]" />{" "}
-                handcrafted (
-                {(items ?? []).filter((i) => isSlugHandcrafted(i.slug)).length})
-              </div>
-              <div className="mt-1 flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-neon" /> template
-              </div>
-            </div>
             <div className="flex flex-col gap-1.5">
               {CATEGORIES.map((c) => {
                 const active = cat === c.key;
@@ -173,22 +140,10 @@ function LibraryIndex() {
                   <button
                     key={c.key}
                     onClick={() => setCat(c.key)}
-                    className={
-                      "flex items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-medium transition-all " +
-                      (active
-                        ? "border-neon bg-neon text-background shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]"
-                        : "border-border bg-card/40 text-muted-foreground hover:border-neon/50 hover:text-foreground")
-                    }
+                    className={"flex items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-medium transition-all " + (active ? "border-neon bg-neon text-background shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]" : "border-border bg-card/40 text-muted-foreground hover:border-neon/50 hover:text-foreground")}
                   >
                     <span>{c.label}</span>
-                    <span
-                      className={
-                        "font-mono text-[10px] " +
-                        (active ? "text-background/80" : "text-muted-foreground/70")
-                      }
-                    >
-                      {n}
-                    </span>
+                    <span className={"font-mono text-[10px] " + (active ? "text-background/80" : "text-muted-foreground/70")}>{n}</span>
                   </button>
                 );
               })}
@@ -199,10 +154,7 @@ function LibraryIndex() {
             {isLoading ? (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 9 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="aspect-[4/3] animate-pulse rounded-xl border border-border bg-card/40"
-                  />
+                  <div key={i} className="aspect-[4/3] animate-pulse rounded-xl border border-border bg-card/40" />
                 ))}
               </div>
             ) : filtered.length === 0 ? (
@@ -210,11 +162,7 @@ function LibraryIndex() {
                 nenhum componente nesta categoria
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {filtered.map((item) => (
-                  <MirrorCard key={item.id} item={item} />
-                ))}
-              </div>
+              <VirtualizedGrid items={filtered} />
             )}
           </div>
         </div>
@@ -223,3 +171,64 @@ function LibraryIndex() {
   );
 }
 
+function VirtualizedGrid({ items }: { items: MirrorItem[] }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const [cols, setCols] = useState(1);
+
+  useEffect(() => {
+    const updateCols = () => {
+      const w = window.innerWidth;
+      if (w >= 1280) setCols(3);
+      else if (w >= 768) setCols(2);
+      else setCols(1);
+    };
+    updateCols();
+    window.addEventListener("resize", updateCols);
+    return () => window.removeEventListener("resize", updateCols);
+  }, []);
+
+  const rowCount = Math.ceil(items.length / cols);
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 400,
+    overscan: 2,
+  });
+
+  return (
+    <div
+      ref={parentRef}
+      className="relative w-full h-[80vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neon/20"
+    >
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const rowItems = items.slice(
+            virtualRow.index * cols,
+            (virtualRow.index + 1) * cols
+          );
+
+          return (
+            <div
+              key={virtualRow.key}
+              className="absolute left-0 top-0 grid w-full gap-4"
+              style={{
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`,
+                gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+              }}
+            >
+              {rowItems.map((item) => (
+                <MirrorCard key={item.id} item={item} />
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

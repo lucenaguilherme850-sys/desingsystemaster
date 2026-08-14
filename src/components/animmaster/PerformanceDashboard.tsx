@@ -1,83 +1,55 @@
-import { usePerformanceMonitor } from "@/hooks/use-performance-monitor";
-import { useState } from "react";
-import { Activity, Zap, Cpu, Clock, ChevronRight, ChevronLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { usePerformanceMetrics } from "@/hooks/use-performance-metrics";
+import { Activity, Cpu, Database, Gauge, Timer, User } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+
 
 export function PerformanceDashboard() {
-  const { fps, memory, loadingTime } = usePerformanceMonitor();
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const { fps, frameTime } = usePerformanceMetrics();
+  const { user } = useAuth();
+
+  // Only show for the specific admin user mentioned in requirements
+  if (user?.email !== "lucenaguilherme850@gmail.com") return null;
+
 
   return (
-    <div 
-      className={cn(
-        "fixed bottom-4 left-4 z-[9999] transition-all duration-300 ease-in-out",
-        isCollapsed ? "w-10 overflow-hidden" : "w-64"
-      )}
-    >
-      <div className="flex flex-col rounded-xl border border-neon/30 bg-black/80 p-2 backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.1)]">
-        <button 
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex items-center justify-between text-neon hover:text-white transition-colors p-1"
-        >
-          {isCollapsed ? <Activity size={18} /> : (
-            <>
-              <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                <Activity size={14} /> Metrics
-              </span>
-              <ChevronLeft size={16} />
-            </>
-          )}
-        </button>
-
-        {!isCollapsed && (
-          <div className="mt-3 space-y-3 px-1 pb-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Zap size={14} className="text-yellow-400" />
-                <span className="text-xs">FPS</span>
-              </div>
-              <span className={cn(
-                "font-mono text-sm font-bold",
-                fps > 55 ? "text-green-400" : fps > 30 ? "text-yellow-400" : "text-red-400"
-              )}>
-                {fps}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Cpu size={14} className="text-blue-400" />
-                <span className="text-xs">Memory</span>
-              </div>
-              <span className="font-mono text-sm text-white">
-                {memory > 0 ? `${memory}MB` : "N/A"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock size={14} className="text-purple-400" />
-                <span className="text-xs">Load Time</span>
-              </div>
-              <span className="font-mono text-sm text-white">
-                {loadingTime}ms
-              </span>
-            </div>
-            
-            <div className="pt-2 border-t border-white/10">
-              <div className="text-[9px] text-muted-foreground uppercase leading-tight">
-                Diag: {memory > 1000 ? "High Usage" : "Normal"}
-              </div>
-            </div>
-          </div>
-        )}
+    <div className="fixed bottom-4 left-4 z-50 flex flex-col gap-2 rounded-lg border border-border/40 bg-black/80 p-3 font-mono text-[10px] backdrop-blur-md shadow-2xl">
+      <div className="flex items-center gap-2 border-b border-border/40 pb-2 mb-1">
+        <Gauge className="size-3 text-neon" />
+        <span className="uppercase tracking-widest text-muted-foreground">Diagnostics</span>
       </div>
       
-      {isCollapsed && (
-        <button 
-          onClick={() => setIsCollapsed(false)}
-          className="absolute inset-0 opacity-0 cursor-pointer"
-        />
+      <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center gap-1.5">
+          <Activity className={`size-3 ${fps < 30 ? 'text-red-500' : fps < 50 ? 'text-yellow-500' : 'text-green-500'}`} />
+          <span className="text-muted-foreground">FPS:</span>
+          <span className={`font-bold ${fps < 30 ? 'text-red-500' : 'text-foreground'}`}>{fps}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Timer className="size-3 text-blue-400" />
+          <span className="text-muted-foreground">Frame:</span>
+          <span className="text-foreground">{frameTime}ms</span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center gap-1.5">
+          <Cpu className="size-3 text-purple-400" />
+          <span className="text-muted-foreground">Memory:</span>
+          <span className="text-foreground">
+            {(performance as any).memory ? Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024) : '?'} MB
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Database className="size-3 text-orange-400" />
+          <span className="text-muted-foreground">DOM:</span>
+          <span className="text-foreground">{document.querySelectorAll('*').length}</span>
+        </div>
+      </div>
+      
+      {fps < 45 && (
+        <div className="mt-1 flex items-center gap-1.5 text-[9px] text-yellow-500 border-t border-yellow-500/20 pt-1">
+          <span className="animate-pulse">●</span> Adaptive Quality Throttling Active
+        </div>
       )}
     </div>
   );
