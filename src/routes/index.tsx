@@ -98,24 +98,42 @@ function LibraryIndex() {
   }, [items]);
 
   return (
-    <div>
-      <section id="top" className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        <div className="absolute inset-0 hero-glow" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
-        <div className="relative mx-auto max-w-[1400px] px-8 py-32 md:py-40 text-center">
-          <BlurSmearTitle as="h1" className="mx-auto max-w-5xl text-balance text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95]">
-            {"DESIGN MASTER"}
+    <div className="min-h-screen bg-background selection:bg-neon/30 selection:text-neon">
+      {/* Premium Hero Section */}
+      <section id="top" className="relative overflow-hidden border-b border-border/40 bg-background pt-24 pb-32 md:pt-32 md:pb-48">
+        <div className="absolute inset-0 grid-bg opacity-[0.03]" />
+        <div className="absolute inset-0 hero-glow opacity-30" />
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        
+        <div className="relative mx-auto max-w-[1400px] px-6 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-neon/20 bg-neon/5 px-3 py-1 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-neon"></span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neon">
+              Design Engineering Library
+            </span>
+          </div>
+          
+          <BlurSmearTitle as="h1" className="mx-auto max-w-5xl text-balance text-6xl md:text-8xl lg:text-[120px] font-black uppercase tracking-tighter leading-[0.85] mb-2">
+            {"DESIGN"}
           </BlurSmearTitle>
-          <BlurSmearTitle as="span" accent stagger={45} className="mt-3 block max-w-5xl mx-auto text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95] drop-shadow-[0_0_40px_oklch(0.82_0.17_225/45%)]">
-            {"PREMIUM ASSET CATALOG"}
+          <BlurSmearTitle as="span" accent stagger={45} className="mt-1 block max-w-5xl mx-auto text-6xl md:text-8xl lg:text-[120px] font-black uppercase tracking-tighter leading-[0.85] text-neon drop-shadow-[0_0_50px_oklch(0.86_0.28_140/40%)]">
+            {"MASTER"}
           </BlurSmearTitle>
-          <p className="mx-auto mt-8 max-w-xl text-base text-muted-foreground">
-            A curated catalog of interactive UI assets with full technical specs and live demos.
+          
+          <p className="mx-auto mt-12 max-w-2xl text-lg md:text-xl text-muted-foreground font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+            A specialized library of 280+ high-end UI components, interactive shaders, and motion systems for creative developers.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-3">
-            <a href="#components" className="glow-cyan rounded-full bg-neon px-7 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">
-              View Components
+          
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
+            <a href="#components" className="group relative flex h-14 items-center justify-center overflow-hidden rounded-full bg-neon px-10 text-sm font-bold uppercase tracking-widest text-background transition-all hover:scale-[1.02] active:scale-[0.98]">
+              <span className="relative z-10">Explore Catalog</span>
+              <div className="absolute inset-0 translate-y-full bg-white transition-transform duration-300 group-hover:translate-y-0" />
+            </a>
+            <a href="/pricing" className="group flex h-14 items-center justify-center rounded-full border border-border bg-card/50 px-10 text-sm font-bold uppercase tracking-widest text-foreground transition-all hover:bg-card hover:border-neon/30 active:scale-[0.98]">
+              Get Full Access
             </a>
           </div>
         </div>
