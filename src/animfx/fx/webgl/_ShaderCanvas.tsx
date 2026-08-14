@@ -62,9 +62,10 @@ export default function ShaderCanvas({ frag, title, subtitle, overlay, className
       if (renderer) {
         const gl = renderer.gl;
         // Strict WebGL resource cleanup
-        if (mesh) {
+        if (mesh && mesh.geometry.attributes.position.buffer) {
           gl.deleteBuffer(mesh.geometry.attributes.position.buffer);
         }
+
         if (program) {
           gl.deleteProgram(program.program);
         }
