@@ -20,12 +20,22 @@ declare global {
 
 export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
   if (typeof window === "undefined") return;
+  
+  // Sanitização: não logar stack traces completos ou mensagens brutas em produção
+  // apenas o tipo do erro e o contexto seguro.
+  const isProd = window.location.hostname !== "localhost";
+  const safeError = error instanceof Error 
+    ? { name: error.name, message: isProd ? "Um erro inesperado ocorreu." : error.message }
+    : "Unknown error";
+
   window.__lovableEvents?.captureException?.(
-    error,
+    safeError,
     {
       source: "react_error_boundary",
       route: window.location.pathname,
       ...context,
+      // Evitar PII
+      timestamp: new Date().toISOString()
     },
     {
       mechanism: "react_error_boundary",

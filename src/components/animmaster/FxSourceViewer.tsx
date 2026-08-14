@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 
@@ -40,8 +41,17 @@ ${files
 
 export default function FxSourceViewer({ slug, name }: { slug: string; name: string }) {
   const info = useMemo(() => getFxSourceForSlug(slug), [slug]);
+  const { user } = useAuth();
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState<"code" | "prompt" | null>(null);
+
+  if (!user) {
+    return (
+      <div className="rounded-xl border border-dashed border-border/60 bg-card/40 p-6 text-sm text-center text-muted-foreground">
+        Você precisa estar logado para visualizar o código fonte e o prompt mestre.
+      </div>
+    );
+  }
 
   if (!info) {
     return (
