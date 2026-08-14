@@ -18,6 +18,7 @@ export type MirrorItem = {
   video_local: string | null;
   mirrored: boolean;
   drive_video_id: string | null;
+  position: number;
 };
 
 // Global concurrency-limited mirror queue so we don't hammer the server
