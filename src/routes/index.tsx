@@ -75,7 +75,7 @@ function LibraryIndex() {
         .select("*")
         .order("position", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as Item[];
+      return (data ?? []) as unknown as MirrorItem[];
     },
   });
 
