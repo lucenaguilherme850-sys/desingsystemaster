@@ -281,64 +281,60 @@ function AnimmasterDetail() {
             )}
           </div>
 
-          <aside className="space-y-5">
+          <aside className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
             <div>
-              <div className="font-mono text-[11px] uppercase tracking-widest text-neon">
+              <div className="inline-flex items-center rounded-md border border-neon/30 bg-neon/5 px-2 py-0.5 font-mono text-[9px] font-black uppercase tracking-[0.2em] text-neon">
                 {item.category}
               </div>
-              <h1 className="mt-2 text-2xl font-bold leading-tight">{heading}</h1>
-              <p className="mt-2 font-mono text-xs text-muted-foreground">
-                slug · {item.slug}
-              </p>
-              {hasLiveFx(item.slug) && (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-neon/40 bg-neon/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neon">
-                  ● efeito ao vivo implementado
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-xl border border-border bg-card/60 p-4 text-xs">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                status do mirror
-              </div>
-              <div className="mt-2 flex items-center gap-2 text-sm">
-                {mirrorState ? (
-                  <span className="text-neon">✓ servido localmente</span>
-                ) : mirroring ? (
-                  <span className="text-muted-foreground">baixando remoto…</span>
-                ) : (
-                  <span className="text-muted-foreground">remoto (hotlink)</span>
+              <h1 className="mt-4 text-4xl font-black leading-[0.9] tracking-tighter uppercase">{heading}</h1>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                  REF: {item.slug}
+                </span>
+                {hasLiveFx(item.slug) && (
+                  <span className="rounded-full bg-neon/10 px-2 py-0.5 font-mono text-[9px] font-black uppercase tracking-widest text-neon">
+                    ● PRO READY
+                  </span>
                 )}
               </div>
             </div>
 
-            <a
-              href={item.video_url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-neon"
-            >
-              vídeo original <ExternalLink className="size-3" />
-            </a>
-
-            {drive?.zipUrl && (
-              <a
-                href={drive.zipUrl}
-                className="inline-flex items-center gap-2 rounded-full border border-neon/60 bg-neon/10 px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-neon transition-colors hover:bg-neon hover:text-background"
-              >
-                baixar code.zip <ExternalLink className="size-3" />
-              </a>
-            )}
-            {drive?.instruction && (
-              <div className="rounded-xl border border-border bg-card/60 p-4">
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  instruções do autor
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-border bg-card/30 p-6 backdrop-blur-xl">
+                <div className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
+                  Sync Status
                 </div>
-                <pre className="mt-2 whitespace-pre-wrap font-mono text-xs text-foreground">
-                  {drive.instruction?.replace(/Animmaster/g, 'Design Master')}
-                </pre>
+                <div className="mt-3 flex items-center gap-3">
+                  <div className={`h-2 w-2 rounded-full ${mirrorState ? 'bg-neon shadow-[0_0_8px_var(--neon)]' : 'bg-muted-foreground/30'}`} />
+                  <span className="text-xs font-bold tracking-tight">
+                    {mirrorState ? "LOCAL OPTIMIZED" : mirroring ? "SYNCING RESOURCES..." : "REMOTE HOTLINK"}
+                  </span>
+                </div>
               </div>
-            )}
+
+              {drive?.zipUrl && (
+                <a
+                  href={drive.zipUrl}
+                  className="group flex w-full items-center justify-between rounded-2xl bg-neon p-5 text-background transition-all hover:scale-[1.02] hover:shadow-neon active:scale-[0.98]"
+                >
+                  <span className="font-black uppercase tracking-widest text-xs">Download Source</span>
+                  <ExternalLink className="size-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                </a>
+              )}
+
+              {drive?.instruction && (
+                <div className="rounded-2xl border border-border bg-card/20 p-6">
+                  <div className="mb-4 font-mono text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
+                    Author Directives
+                  </div>
+                  <div className="max-h-48 overflow-y-auto pr-2 scrollbar-thin">
+                    <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-foreground/80">
+                      {drive.instruction?.replace(/Animmaster/g, 'Design Master')}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
           </aside>
         </div>
 
