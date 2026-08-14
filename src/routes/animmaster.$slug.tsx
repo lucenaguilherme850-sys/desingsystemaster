@@ -222,24 +222,30 @@ function AnimmasterDetail() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <div className="mx-auto max-w-[1400px] px-6 py-8">
+      <div className="mx-auto max-w-[1400px] px-6 py-12">
         <Link
           to="/animmaster"
-          className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-neon"
+          className="group inline-flex items-center gap-2 rounded-full border border-border bg-card/40 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground transition-all hover:border-neon/40 hover:text-neon"
         >
-          <ArrowLeft className="size-3.5" /> voltar
+          <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-1" /> Back to Catalog
         </Link>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
+        <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_360px]">
           <div>
             {LiveFx ? (
-              <div className="relative overflow-hidden rounded-2xl border border-neon/60 bg-black shadow-[0_0_60px_oklch(0.82_0.17_225/25%)]">
-                <div className="flex items-center justify-between border-b border-border/60 bg-background/70 px-4 py-2 font-mono text-[10px] uppercase tracking-widest">
-                  <span className="text-neon">● live component</span>
-                  <span className="text-muted-foreground">{item.slug}</span>
+              <div className="relative overflow-hidden rounded-[2rem] border border-neon/40 bg-background shadow-neon animate-in zoom-in-95 duration-700">
+                <div className="flex items-center justify-between border-b border-border/40 bg-card/60 px-6 py-4 font-mono text-[10px] uppercase tracking-widest backdrop-blur-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-neon"></span>
+                    </span>
+                    <span className="text-neon font-black">Live Production Mode</span>
+                  </div>
+                  <span className="text-muted-foreground/60">{item.slug}</span>
                 </div>
-                <div className="max-h-[80vh] overflow-auto">
-                  <Suspense fallback={<div className="grid h-96 place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin text-neon" /></div>}>
+                <div className="min-h-[500px] max-h-[85vh] overflow-auto bg-black/20">
+                  <Suspense fallback={<div className="grid h-96 place-items-center text-muted-foreground"><Loader2 className="size-6 animate-spin text-neon" /></div>}>
                     <ClientOnlyFallback>
                       <LiveFx />
                     </ClientOnlyFallback>
@@ -247,7 +253,7 @@ function AnimmasterDetail() {
                 </div>
               </div>
             ) : (
-            <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-black">
+            <div className="relative aspect-video overflow-hidden rounded-[2rem] border border-border bg-black shadow-2xl animate-in zoom-in-95 duration-700">
               <video
                 ref={videoRef}
                 key={videoSrc}
@@ -261,15 +267,15 @@ function AnimmasterDetail() {
                 className="absolute inset-0 h-full w-full object-contain"
               />
               {mirroring && (
-                <div className="absolute right-3 top-3 flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neon backdrop-blur">
-                  <Loader2 className="size-3 animate-spin" /> mirroring…
+                <div className="absolute right-6 top-6 flex items-center gap-2 rounded-full border border-neon/30 bg-background/80 px-4 py-2 font-mono text-[10px] font-black uppercase tracking-widest text-neon backdrop-blur-xl">
+                  <Loader2 className="size-3 animate-spin" /> Syncing Local...
                 </div>
               )}
               <button
                 onClick={goFullscreen}
-                className="absolute bottom-3 right-3 inline-flex items-center gap-2 rounded-full border border-neon/50 bg-background/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-neon backdrop-blur transition-colors hover:bg-neon hover:text-background"
+                className="absolute bottom-6 right-6 inline-flex items-center gap-2 rounded-full border border-neon/40 bg-background/60 px-5 py-2.5 font-mono text-[10px] font-black uppercase tracking-widest text-neon backdrop-blur-xl transition-all hover:bg-neon hover:text-background hover:shadow-neon active:scale-95"
               >
-                <Maximize2 className="size-3" /> fullscreen
+                <Maximize2 className="size-3" /> View Fullscreen
               </button>
             </div>
             )}
