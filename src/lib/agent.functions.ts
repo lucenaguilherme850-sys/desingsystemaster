@@ -1,86 +1,83 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertAdmin } from "@/lib/admin.functions";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const listThreads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("agent_threads")
-      .select("id,title,brief_summary,updated_at")
+      .select("*")
+      .eq("user_id", context.userId)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return data;
   });
 
 export const createThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ title: z.string().max(120).optional() }).parse(d))
+  .inputValidator((data: unknown) => z.object({ title: z.string().min(1).max(255) }).parse(data))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { data: row, error } = await context.supabase
+    const { data: thread, error } = await context.supabase
       .from("agent_threads")
-      .insert({ user_id: context.userId, title: data.title || "Novo projeto" })
-      .select("id")
+      .insert({ title: data.title, user_id: context.userId })
+      .select()
       .single();
     if (error) throw new Error(error.message);
-    return { id: row.id as string };
+    return thread;
   });
 
 export const deleteThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((data: unknown) => z.object({ threadId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { error } = await context.supabase.from("agent_threads").delete().eq("id", data.id);
+    const { error } = await context.supabase
+      .from("agent_threads")
+      .delete()
+      .eq("id", data.threadId)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const renameThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z.object({ id: z.string().uuid(), title: z.string().min(1).max(120) }).parse(d),
-  )
+  .inputValidator((data: unknown) => z.object({ 
+    threadId: z.string().uuid(), 
+    title: z.string().min(1).max(255) 
+  }).parse(data))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
     const { error } = await context.supabase
       .from("agent_threads")
       .update({ title: data.title })
-      .eq("id", data.id);
+      .eq("id", data.threadId)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const getThreadMessages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ threadId: z.string().uuid() }).parse(d))
+  .inputValidator((data: unknown) => z.object({ threadId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { data: rows, error } = await context.supabase
+    const { data: messages, error } = await context.supabase
       .from("agent_messages")
-      .select("id,role,parts,created_at")
+      .select("*")
       .eq("thread_id", data.threadId)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
-    return (rows ?? []).map((r) => ({
-      id: r.id as string,
-      role: r.role as "user" | "assistant" | "system",
-      parts: (r.parts as Array<{ type: string; text?: string }>) ?? [],
-    }));
+    return messages;
   });
 
 export const getReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ threadId: z.string().uuid() }).parse(d))
+  .inputValidator((data: unknown) => z.object({ threadId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { data: row } = await context.supabase
+    const { data: report, error } = await context.supabase
       .from("agent_reports")
-      .select("business,brand,audience,design_system,section_map,implementation_plan,updated_at")
+      .select("*")
       .eq("thread_id", data.threadId)
       .maybeSingle();
-    return row;
+    if (error) throw new Error(error.message);
+    return report;
   });
