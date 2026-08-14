@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BlurSmearTitle } from "@/components/fx/BlurSmearTitle";
 import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
 import { PreviewQualityPicker } from "@/components/animmaster/PreviewQualityPicker";
+import { useVirtualizer } from "@tanstack/react-virtual";
+
 
 // Use MirrorItem directly
 
@@ -210,16 +212,76 @@ function LibraryIndex() {
                 nenhum componente nesta categoria
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {filtered.map((item) => (
-                  <MirrorCard key={item.id} item={item} />
-                ))}
-              </div>
+              <VirtualizedGrid items={filtered} />
             )}
+
           </div>
         </div>
       </section>
     </div>
   );
 }
+
+function VirtualizedGrid({ items }: { items: MirrorItem[] }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // Determine column count based on viewport
+  // md is 2 cols, xl is 3 cols
+  const [cols, setCols] = useState(1);
+
+  useEffect(() => {
+    const updateCols = () => {
+      const w = window.innerWidth;
+      if (w >= 1280) setCols(3);
+      else if (w >= 768) setCols(2);
+      else setCols(1);
+    };
+    updateCols();
+    window.addEventListener("resize", updateCols);
+    return () => window.removeEventListener("resize", updateCols);
+  }, []);
+
+  const rowCount = Math.ceil(items.length / cols);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => window as any,
+    estimateSize: () => 400, // Approximate height of MirrorCard + gap
+    overscan: 2,
+  });
+
+  return (
+    <div
+      ref={parentRef}
+      className="relative w-full"
+      style={{
+        height: `${virtualizer.getTotalSize()}px`,
+      }}
+    >
+      {virtualizer.getVirtualItems().map((virtualRow) => {
+        const rowItems = items.slice(
+          virtualRow.index * cols,
+          (virtualRow.index + 1) * cols
+        );
+
+        return (
+          <div
+            key={virtualRow.key}
+            className="absolute left-0 top-0 grid w-full gap-4"
+            style={{
+              height: `${virtualRow.size}px`,
+              transform: `translateY(${virtualRow.start}px)`,
+              gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+            }}
+          >
+            {rowItems.map((item) => (
+              <MirrorCard key={item.id} item={item} />
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 
