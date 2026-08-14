@@ -32,14 +32,16 @@ export const Route = createFileRoute("/animmaster/")({
   component: AnimmasterMirror,
   head: () => ({
     meta: [
-      { title: "Galeria PRO 280+ — Design Master Components" },
+      { title: "Galeria PRO 280+ — Catálogo Design Master" },
       {
         name: "description",
         content:
-          "Acesso completo ao catálogo espelhado de 280+ componentes PRO. Shaders, Sliders e Heros extraídos de projetos Awwwards.",
+          "Acesso completo ao catálogo premium com mais de 280 componentes PRO. Shaders, Sliders e Heros inspirados em projetos de elite.",
       },
       { property: "og:title", content: "Galeria PRO 280+ — Design Master" },
-      { property: "og:type", content: "article" },
+      { property: "og:description", content: "Explore centenas de componentes interativos premium para seus projetos web." },
+      { property: "og:type", content: "collection" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     scripts: [
       {
@@ -48,7 +50,24 @@ export const Route = createFileRoute("/animmaster/")({
           "@context": "https://schema.org",
           "@type": "CollectionPage",
           "name": "Galeria PRO 280+ Design Master",
-          "description": "Coleção de 280+ componentes animados premium."
+          "description": "Coleção de 280+ componentes animados premium de alto nível.",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://animemaster.lovable.app"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Galeria PRO",
+                "item": "https://animemaster.lovable.app/animmaster"
+              }
+            ]
+          }
         })
       }
     ]

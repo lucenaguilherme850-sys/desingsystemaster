@@ -25,6 +25,17 @@ function buildPrompt(asset: Asset): string {
 }
 
 export const Route = createFileRoute("/assets/$slug")({
+  head: ({ params }) => ({
+    meta: [
+      { title: `${params.slug} — Asset Legado Design Master` },
+      {
+        name: "description",
+        content: `Preview do componente clássico ${params.slug}. Documentação e código-fonte original disponível para exportação.`,
+      },
+      { property: "og:title", content: `${params.slug} — Design Master Classic` },
+      { property: "og:type", content: "article" },
+    ],
+  }),
   component: AssetDetail,
   errorComponent: ({ error, reset }) => {
     const router = useRouter();
