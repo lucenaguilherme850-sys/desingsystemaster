@@ -22,12 +22,26 @@ export default function ShaderCanvas({ frag, title, subtitle, overlay, className
     let mesh: Mesh | null = null;
     let raf = 0;
     let observer: IntersectionObserver | null = null;
+    let isDisposed = false;
+
 
     const init = () => {
-      if (renderer) return;
-      renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2), alpha: false });
+      if (renderer || isDisposed) return;
+      // Detect performance to adjust DPR
+      const mem = (navigator as any).deviceMemory || 8;
+      const cores = navigator.hardwareConcurrency || 4;
+      const dprFactor = mem < 4 || cores <= 2 ? 1 : 2;
+      
+      renderer = new Renderer({ 
+        dpr: Math.min(window.devicePixelRatio, dprFactor), 
+        alpha: false,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: false,
+        powerPreference: "high-performance"
+      });
       const gl = renderer.gl;
       wrap.appendChild(gl.canvas);
+
       program = new Program(gl, {
         vertex: VERT,
         fragment: frag,
@@ -46,13 +60,23 @@ export default function ShaderCanvas({ frag, title, subtitle, overlay, className
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       if (renderer) {
+        const gl = renderer.gl;
+        // Strict WebGL resource cleanup
+        if (mesh) {
+          gl.deleteBuffer(mesh.geometry.attributes.position.buffer);
+        }
+        if (program) {
+          gl.deleteProgram(program.program);
+        }
         renderer.gl.canvas.remove();
-        // OGL doesn't have a formal dispose() for renderer, but we remove the canvas
+        const extension = gl.getExtension('WEBGL_lose_context');
+        if (extension) extension.loseContext();
       }
       renderer = null;
       program = null;
       mesh = null;
     };
+
 
     const resize = () => {
       if (!renderer || !program || !wrap) return;
@@ -88,11 +112,13 @@ export default function ShaderCanvas({ frag, title, subtitle, overlay, className
     observer.observe(wrap);
 
     return () => {
+      isDisposed = true;
       dispose();
       ro.disconnect();
       if (observer) observer.disconnect();
       wrap.removeEventListener("mousemove", onMove);
     };
+
   }, [frag]);
   return (
     <div className={"relative min-h-[70vh] w-full overflow-hidden bg-black " + (className ?? "")}>
