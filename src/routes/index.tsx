@@ -140,31 +140,52 @@ function LibraryIndex() {
       </section>
 
       <section id="components" className="mx-auto max-w-[1400px] px-6 py-10">
-        <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-          <aside className="lg:sticky lg:top-6 lg:self-start">
-            <PreviewQualityPicker className="mb-3" />
-            <button
-              onClick={() => setOnlyLive((v) => !v)}
-              className={"mb-3 flex w-full items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-semibold transition-all " + (onlyLive ? "border-neon bg-neon text-background" : "border-neon/50 bg-neon/10 text-neon hover:bg-neon/20")}
-            >
-              <span>● só efeitos ao vivo</span>
-              <span className="font-mono text-[10px]">{(items ?? []).filter((i) => isSlugLive(i.slug)).length}</span>
-            </button>
-            <div className="flex flex-col gap-1.5">
-              {CATEGORIES.map((c) => {
-                const active = cat === c.key;
-                const n = counts[c.key] ?? 0;
-                return (
-                  <button
-                    key={c.key}
-                    onClick={() => setCat(c.key)}
-                    className={"flex items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-medium transition-all " + (active ? "border-neon bg-neon text-background shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]" : "border-border bg-card/40 text-muted-foreground hover:border-neon/50 hover:text-foreground")}
-                  >
-                    <span>{c.label}</span>
-                    <span className={"font-mono text-[10px] " + (active ? "text-background/80" : "text-muted-foreground/70")}>{n}</span>
-                  </button>
-                );
-              })}
+        <div className="grid gap-12 lg:grid-cols-[280px_1fr]">
+          <aside className="lg:sticky lg:top-24 lg:self-start space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+            <div>
+              <h4 className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                Performance
+              </h4>
+              <PreviewQualityPicker />
+            </div>
+
+            <div>
+              <h4 className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                Visibility
+              </h4>
+              <button
+                onClick={() => setOnlyLive((v) => !v)}
+                className={"flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-xs font-bold tracking-tight transition-all " + (onlyLive ? "border-neon bg-neon text-background shadow-neon" : "border-border bg-card/40 text-muted-foreground hover:border-neon/30 hover:text-foreground")}
+              >
+                <span>SÓ EFEITOS AO VIVO</span>
+                <span className={"rounded-md px-1.5 py-0.5 text-[10px] font-black " + (onlyLive ? "bg-background text-neon" : "bg-border/50 text-muted-foreground")}>
+                  {(items ?? []).filter((i) => isSlugLive(i.slug)).length}
+                </span>
+              </button>
+            </div>
+
+            <div>
+              <h4 className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                Categories
+              </h4>
+              <div className="flex flex-col gap-2">
+                {CATEGORIES.map((c) => {
+                  const active = cat === c.key;
+                  const n = counts[c.key] ?? 0;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => setCat(c.key)}
+                      className={"group flex items-center justify-between rounded-xl border px-4 py-3 text-left text-xs font-bold tracking-tight transition-all " + (active ? "border-neon bg-neon text-background shadow-neon" : "border-border bg-card/20 text-muted-foreground hover:border-neon/30 hover:bg-card/40 hover:text-foreground")}
+                    >
+                      <span>{c.label.toUpperCase()}</span>
+                      <span className={"rounded-md px-1.5 py-0.5 text-[10px] font-black transition-colors " + (active ? "bg-background text-neon" : "bg-border/30 text-muted-foreground group-hover:bg-border/50")}>
+                        {n}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </aside>
 
