@@ -7,7 +7,7 @@ import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
 import { PreviewQualityPicker } from "@/components/animmaster/PreviewQualityPicker";
 
-type Item = MirrorItem & { position: number };
+// Use MirrorItem directly
 
 const CATEGORIES: { key: string; label: string }[] = [
   { key: "all", label: "Todos" },
@@ -69,7 +69,7 @@ function LibraryIndex() {
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["animmaster-items"],
-    queryFn: async (): Promise<Item[]> => {
+    queryFn: async (): Promise<MirrorItem[]> => {
       const { data, error } = await supabase
         .from("animmaster_items")
         .select("*")

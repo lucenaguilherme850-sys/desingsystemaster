@@ -8,7 +8,7 @@ import { isSlugLive, isSlugHandcrafted } from "@/animfx/registry";
 import { MirrorCard, type MirrorItem } from "@/components/animmaster/MirrorCard";
 import { PreviewQualityPicker } from "@/components/animmaster/PreviewQualityPicker";
 
-type Item = MirrorItem & { position: number };
+// Use MirrorItem directly as it now includes position
 
 const CATEGORIES: { slug: string; label: string }[] = [
   { slug: "all", label: "Todos" },
@@ -80,7 +80,7 @@ function AnimmasterMirror() {
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["animmaster-items"],
-    queryFn: async (): Promise<Item[]> => {
+    queryFn: async (): Promise<MirrorItem[]> => {
       const { data, error } = await supabase
         .from("animmaster_items")
         .select("*")
@@ -131,6 +131,7 @@ function AnimmasterMirror() {
       </section>
 
       <section className="mx-auto max-w-[1400px] px-6 py-10">
+        <h2 className="sr-only">Explorar Componentes PRO</h2>
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside className="lg:sticky lg:top-6 lg:self-start">
             <PreviewQualityPicker className="mb-3" />
