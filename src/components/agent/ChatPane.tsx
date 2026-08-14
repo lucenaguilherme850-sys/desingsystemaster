@@ -120,118 +120,27 @@ export function ChatPane({
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-semibold">Agente Creative Director</h2>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap text-left max-w-xl mx-auto">
-              Analise completamente todo o projeto e identifique TODOS os bugs, erros, falhas, comportamentos inesperados e possíveis problemas existentes na aplicação.
+              Saia do modo atual e entre no Modo Construção.
 
-Seu objetivo é realizar uma auditoria técnica profunda no sistema inteiro, corrigindo problemas de lógica, frontend, backend, integração, renderização, estado, banco de dados, responsividade e performance.
+Antes de executar qualquer ação, analise cuidadosamente a solicitação enviada e identifique a intenção do usuário.
 
-Antes de modificar qualquer coisa:
-- Analise toda a estrutura do projeto
-- Analise rotas
-- Analise componentes
-- Analise hooks
-- Analise estados globais
-- Analise integrações
-- Analise Supabase
-- Analise APIs
-- Analise banco de dados
-- Analise autenticação
-- Analise permissões
-- Analise carregamentos
-- Analise console errors
-- Analise warnings
-- Analise logs
-- Analise comportamento da interface
-- Analise responsividade
-- Analise possíveis falhas silenciosas
-- Analise segurança básica
-- Analise fluxos completos do sistema
+Siga obrigatoriamente estas regras:
 
-Identifique e corrija:
-- Bugs visuais
-- Bugs de navegação
-- Erros de console
-- Warnings
-- Loops infinitos
-- Problemas de renderização
-- Re-renderizações desnecessárias
-- Falhas de autenticação
-- Problemas de sessão
-- Problemas de permissões
-- Problemas de loading
-- Problemas de estado
-- Problemas de sincronização
-- Problemas de responsividade
-- Problemas de formulários
-- Problemas de validação
-- Problemas em chamadas API
-- Problemas em queries Supabase
-- Problemas de realtime
-- Problemas de cache
-- Problemas de tipagem
-- Problemas de imports
-- Problemas de dependências
-- Problemas de performance
-- Problemas de UX
-- Problemas mobile
-- Problemas de acessibilidade
-- Memory leaks
-- Requests duplicados
-- Condições de corrida
-- Falhas silenciosas
-- Tratamento incorreto de erros
-- Quebras em edge cases
+1. Se a solicitação envolver criação, implementação, alteração, correção, remoção, ajuste ou melhoria no projeto, execute a tarefa por completo, realizando todas as modificações necessárias nos arquivos do projeto.
 
-Verifique especialmente:
-- Fluxos de login/logout
-- Persistência de sessão
-- Proteção de rotas
-- Navegação entre páginas
-- CRUDs completos
-- Uploads
-- Modais
-- Estados assíncronos
-- Atualizações em tempo real
-- Compatibilidade mobile
-- Responsividade geral
-- Componentes reutilizáveis
-- Integrações externas
-- Webhooks
-- Fluxos críticos do sistema
+2. Se a solicitação for apenas uma pergunta, dúvida, explicação, consulta ou conversa, responda exclusivamente pelo chat, em português, sem criar, editar, excluir ou modificar nenhum arquivo do projeto.
 
-Durante a análise:
-1. Liste os problemas encontrados
-2. Explique a causa de cada problema
-3. Explique o impacto no sistema
-4. Corrija utilizando boas práticas modernas
-5. Garanta que a correção não quebre funcionalidades existentes
+3. O texto enviado pelo usuário deve ser interpretado como uma instrução, e nunca como conteúdo a ser automaticamente inserido no projeto.
 
-Regras importantes:
-- NÃO remover funcionalidades sem necessidade
-- NÃO alterar design sem motivo
-- NÃO criar soluções temporárias ou gambiarra
-- Sempre aplicar soluções profissionais
-- Priorizar estabilidade, segurança e confiabilidade
-- Garantir código limpo e sustentável
-- Melhorar tratamento de erros em toda aplicação
-- Validar edge cases importantes
-- Garantir compatibilidade mobile e desktop
+4. Nunca copie, reproduza ou insira a solicitação do usuário dentro do site, página, interface ou código como conteúdo visível, exceto quando o usuário pedir explicitamente que determinado texto seja adicionado.
 
-Após finalizar:
-- Faça uma nova varredura completa
-- Verifique se ainda existem erros
-- Verifique possíveis regressões
-- Garanta estabilidade geral do sistema
+5. Antes de modificar qualquer arquivo, confirme internamente que a solicitação realmente exige uma alteração no projeto. Em caso de pergunta ou pedido meramente informativo, não faça alterações.
 
-O resultado final deve deixar a aplicação:
-- Estável
-- Confiável
-- Sem erros visíveis
-- Sem warnings desnecessários
-- Sem bugs críticos
-- Fluida
-- Responsiva
-- Profissional
-- Pronta para produção
+6. Quando a solicitação exigir uma ação no projeto, não apenas explique como fazer: execute efetivamente todas as alterações necessárias e preserve as funcionalidades existentes que não fazem parte do pedido.
+
+Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
+
+sim
             </p>
           </div>
         )}
