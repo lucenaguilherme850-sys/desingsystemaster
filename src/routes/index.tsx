@@ -245,21 +245,25 @@ function VirtualizedGrid({ items }: { items: MirrorItem[] }) {
 
   const virtualizer = useVirtualizer({
     count: rowCount,
-    getScrollElement: () => (typeof window !== "undefined" ? window : null),
+    getScrollElement: () => parentRef.current,
     estimateSize: () => 400, // Approximate height of MirrorCard + gap
     overscan: 2,
-    scrollMargin: parentRef.current?.offsetTop ?? 0,
   });
+
 
 
   return (
     <div
       ref={parentRef}
-      className="relative w-full"
-      style={{
-        height: `${virtualizer.getTotalSize()}px`,
-      }}
+      className="relative w-full h-[80vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neon/20"
     >
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+
       {virtualizer.getVirtualItems().map((virtualRow) => {
         const rowItems = items.slice(
           virtualRow.index * cols,
@@ -279,10 +283,9 @@ function VirtualizedGrid({ items }: { items: MirrorItem[] }) {
             {rowItems.map((item) => (
               <MirrorCard key={item.id} item={item} />
             ))}
-          </div>
-        );
-      })}
+      </div>
     </div>
+
   );
 }
 
