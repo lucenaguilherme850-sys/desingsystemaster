@@ -245,10 +245,12 @@ function VirtualizedGrid({ items }: { items: MirrorItem[] }) {
 
   const virtualizer = useVirtualizer({
     count: rowCount,
-    getScrollElement: () => window as any,
+    getScrollElement: () => (typeof window !== "undefined" ? window : null),
     estimateSize: () => 400, // Approximate height of MirrorCard + gap
     overscan: 2,
+    scrollMargin: parentRef.current?.offsetTop ?? 0,
   });
+
 
   return (
     <div
