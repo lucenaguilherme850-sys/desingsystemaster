@@ -98,55 +98,94 @@ function LibraryIndex() {
   }, [items]);
 
   return (
-    <div>
-      <section id="top" className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        <div className="absolute inset-0 hero-glow" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
-        <div className="relative mx-auto max-w-[1400px] px-8 py-32 md:py-40 text-center">
-          <BlurSmearTitle as="h1" className="mx-auto max-w-5xl text-balance text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95]">
-            {"DESIGN MASTER"}
+    <div className="min-h-screen bg-background selection:bg-neon/30 selection:text-neon">
+      {/* Premium Hero Section */}
+      <section id="top" className="relative overflow-hidden border-b border-border/40 bg-background pt-24 pb-32 md:pt-32 md:pb-48">
+        <div className="absolute inset-0 grid-bg opacity-[0.03]" />
+        <div className="absolute inset-0 hero-glow opacity-30" />
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        
+        <div className="relative mx-auto max-w-[1400px] px-6 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-neon/20 bg-neon/5 px-3 py-1 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-neon"></span>
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neon">
+              Design Engineering Library
+            </span>
+          </div>
+          
+          <BlurSmearTitle as="h1" className="mx-auto max-w-5xl text-balance text-6xl md:text-8xl lg:text-[120px] font-black uppercase tracking-tighter leading-[0.85] mb-2">
+            {"DESIGN"}
           </BlurSmearTitle>
-          <BlurSmearTitle as="span" accent stagger={45} className="mt-3 block max-w-5xl mx-auto text-5xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight leading-[0.95] drop-shadow-[0_0_40px_oklch(0.82_0.17_225/45%)]">
-            {"PREMIUM ASSET CATALOG"}
+          <BlurSmearTitle as="span" accent stagger={45} className="mt-1 block max-w-5xl mx-auto text-6xl md:text-8xl lg:text-[120px] font-black uppercase tracking-tighter leading-[0.85] text-neon drop-shadow-[0_0_50px_oklch(0.86_0.28_140/40%)]">
+            {"MASTER"}
           </BlurSmearTitle>
-          <p className="mx-auto mt-8 max-w-xl text-base text-muted-foreground">
-            A curated catalog of interactive UI assets with full technical specs and live demos.
+          
+          <p className="mx-auto mt-12 max-w-2xl text-lg md:text-xl text-muted-foreground font-medium leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+            A specialized library of 280+ high-end UI components, interactive shaders, and motion systems for creative developers.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-3">
-            <a href="#components" className="glow-cyan rounded-full bg-neon px-7 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">
-              View Components
+          
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
+            <a href="#components" className="group relative flex h-14 items-center justify-center overflow-hidden rounded-full bg-neon px-10 text-sm font-bold uppercase tracking-widest text-background transition-all hover:scale-[1.02] active:scale-[0.98]">
+              <span className="relative z-10">Explore Catalog</span>
+              <div className="absolute inset-0 translate-y-full bg-white transition-transform duration-300 group-hover:translate-y-0" />
+            </a>
+            <a href="/pricing" className="group flex h-14 items-center justify-center rounded-full border border-border bg-card/50 px-10 text-sm font-bold uppercase tracking-widest text-foreground transition-all hover:bg-card hover:border-neon/30 active:scale-[0.98]">
+              Get Full Access
             </a>
           </div>
         </div>
       </section>
 
       <section id="components" className="mx-auto max-w-[1400px] px-6 py-10">
-        <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-          <aside className="lg:sticky lg:top-6 lg:self-start">
-            <PreviewQualityPicker className="mb-3" />
-            <button
-              onClick={() => setOnlyLive((v) => !v)}
-              className={"mb-3 flex w-full items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-semibold transition-all " + (onlyLive ? "border-neon bg-neon text-background" : "border-neon/50 bg-neon/10 text-neon hover:bg-neon/20")}
-            >
-              <span>● só efeitos ao vivo</span>
-              <span className="font-mono text-[10px]">{(items ?? []).filter((i) => isSlugLive(i.slug)).length}</span>
-            </button>
-            <div className="flex flex-col gap-1.5">
-              {CATEGORIES.map((c) => {
-                const active = cat === c.key;
-                const n = counts[c.key] ?? 0;
-                return (
-                  <button
-                    key={c.key}
-                    onClick={() => setCat(c.key)}
-                    className={"flex items-center justify-between rounded-full border px-4 py-2 text-left text-xs font-medium transition-all " + (active ? "border-neon bg-neon text-background shadow-[0_0_20px_oklch(0.82_0.17_225/45%)]" : "border-border bg-card/40 text-muted-foreground hover:border-neon/50 hover:text-foreground")}
-                  >
-                    <span>{c.label}</span>
-                    <span className={"font-mono text-[10px] " + (active ? "text-background/80" : "text-muted-foreground/70")}>{n}</span>
-                  </button>
-                );
-              })}
+        <div className="grid gap-12 lg:grid-cols-[280px_1fr]">
+          <aside className="lg:sticky lg:top-24 lg:self-start space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+            <div>
+              <h4 className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                Performance
+              </h4>
+              <PreviewQualityPicker />
+            </div>
+
+            <div>
+              <h4 className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                Visibility
+              </h4>
+              <button
+                onClick={() => setOnlyLive((v) => !v)}
+                className={"flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-xs font-bold tracking-tight transition-all " + (onlyLive ? "border-neon bg-neon text-background shadow-neon" : "border-border bg-card/40 text-muted-foreground hover:border-neon/30 hover:text-foreground")}
+              >
+                <span>SÓ EFEITOS AO VIVO</span>
+                <span className={"rounded-md px-1.5 py-0.5 text-[10px] font-black " + (onlyLive ? "bg-background text-neon" : "bg-border/50 text-muted-foreground")}>
+                  {(items ?? []).filter((i) => isSlugLive(i.slug)).length}
+                </span>
+              </button>
+            </div>
+
+            <div>
+              <h4 className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                Categories
+              </h4>
+              <div className="flex flex-col gap-2">
+                {CATEGORIES.map((c) => {
+                  const active = cat === c.key;
+                  const n = counts[c.key] ?? 0;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => setCat(c.key)}
+                      className={"group flex items-center justify-between rounded-xl border px-4 py-3 text-left text-xs font-bold tracking-tight transition-all " + (active ? "border-neon bg-neon text-background shadow-neon" : "border-border bg-card/20 text-muted-foreground hover:border-neon/30 hover:bg-card/40 hover:text-foreground")}
+                    >
+                      <span>{c.label.toUpperCase()}</span>
+                      <span className={"rounded-md px-1.5 py-0.5 text-[10px] font-black transition-colors " + (active ? "bg-background text-neon" : "bg-border/30 text-muted-foreground group-hover:bg-border/50")}>
+                        {n}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </aside>
 

@@ -3,12 +3,12 @@ import { usePreviewQuality, PreviewQualityOptions, type PreviewQuality } from "@
 export function PreviewQualityPicker({ className = "" }: { className?: string }) {
   const { quality, config, setQuality } = usePreviewQuality();
   return (
-    <div className={"rounded-lg border border-border/60 bg-card/40 p-3 " + className}>
-      <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        <span>qualidade da prévia</span>
+    <div className={"rounded-2xl border border-border bg-card/30 p-5 " + className}>
+      <div className="mb-4 flex items-center justify-between font-mono text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+        <span>Preview Engine</span>
         <span className="text-neon">{config.label}</span>
       </div>
-      <div className="grid grid-cols-2 gap-1">
+      <div className="grid grid-cols-2 gap-2">
         {PreviewQualityOptions().map((o) => {
           const active = quality === o.value;
           return (
@@ -16,19 +16,19 @@ export function PreviewQualityPicker({ className = "" }: { className?: string })
               key={o.value}
               onClick={() => setQuality(o.value as PreviewQuality)}
               className={
-                "rounded-md border px-2 py-1.5 text-[11px] font-medium transition-all " +
+                "rounded-xl border px-3 py-2 text-[10px] font-black tracking-tight transition-all " +
                 (active
-                  ? "border-neon bg-neon text-background"
-                  : "border-border bg-background/40 text-muted-foreground hover:border-neon/50 hover:text-foreground")
+                  ? "border-neon bg-neon text-background shadow-neon"
+                  : "border-border bg-background/20 text-muted-foreground hover:border-neon/30 hover:text-foreground")
               }
             >
-              {o.label}
+              {o.label.toUpperCase()}
             </button>
           );
         })}
       </div>
-      <p className="mt-2 text-[10px] leading-tight text-muted-foreground/80">
-        Ajusta autoplay, preload e concorrência para acelerar o carregamento em conexões lentas.
+      <p className="mt-4 text-[9px] font-medium leading-relaxed text-muted-foreground/60">
+        Controla o carregamento adaptativo, autoplay e economia de dados.
       </p>
     </div>
   );
