@@ -3,14 +3,16 @@ import { useState, useEffect } from "react";
 export function GoogleDriveImage({
   src,
   alt,
-  className,
-  fallback,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-  fallback?: string;
-}) {
+   className,
+   fallback,
+   loading = "lazy",
+ }: {
+   src: string;
+   alt: string;
+   className?: string;
+   fallback?: string;
+   loading?: "lazy" | "eager";
+ }) {
   const [status, setStatus] = useState<"loading" | "loaded" | "error">("loading");
   const [retryCount, setRetryCount] = useState(0);
   const [currentSrc, setCurrentSrc] = useState(src);
@@ -48,7 +50,7 @@ export function GoogleDriveImage({
         className={`h-full w-full object-cover transition-opacity duration-300 ${
           status === "loaded" ? "opacity-100" : "opacity-0"
         }`}
-        loading="lazy"
+        loading={loading}
         decoding="async"
       />
       

@@ -143,8 +143,9 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
         {poster ? (
           <GoogleDriveImage
             src={poster}
-            alt={item.name}
+            alt={item.type_name || item.name || item.slug}
             className="absolute inset-0 h-full w-full"
+            loading={item.position < 6 ? "eager" : "lazy"}
           />
         ) : null}
         {visible && videoUrl && (
