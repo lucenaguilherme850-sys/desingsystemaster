@@ -49,6 +49,7 @@ export function GoogleDriveImage({
           status === "loaded" ? "opacity-100" : "opacity-0"
         }`}
         loading="lazy"
+        decoding="async"
       />
       
       {status === "error" && !fallback && (

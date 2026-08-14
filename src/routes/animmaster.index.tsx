@@ -102,7 +102,7 @@ function AnimmasterMirror() {
             design master mirror · 280 components
           </div>
           <h1 className="mt-3 text-4xl md:text-6xl font-extrabold uppercase tracking-tight leading-[0.95]">
-            300 PRO-Level Animated Components
+            300+ Premium UI Components
           </h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
             Biblioteca completa espelhada de designmaster.com.br — passe o cursor
