@@ -38,11 +38,13 @@ export const Route = createFileRoute("/animmaster/$slug")({
   component: AnimmasterDetail,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} — Design Master Mirror` },
+      { title: `${params.slug} — Componente Premium Design Master` },
       {
         name: "description",
-        content: `Preview em tela cheia do componente animado ${params.slug}.`,
+        content: `Veja a demonstração e documentação técnica do componente animado ${params.slug}. Shaders, animações e Prompt Mestre para IA.`,
       },
+      { property: "og:title", content: `${params.slug} — Preview Design Master` },
+      { property: "og:type", content: "product" },
     ],
   }),
 });
@@ -139,6 +141,22 @@ function AnimmasterDetail() {
     [item, slug],
   );
 
+  const jsonLd = useMemo(() => {
+    if (!item) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": heading,
+      "description": `Componente premium ${heading} da categoria ${item.category}.`,
+      "image": posterSrc,
+      "sku": item.slug,
+      "brand": {
+        "@type": "Brand",
+        "name": "Design Master"
+      }
+    };
+  }, [item, heading, posterSrc]);
+
   const LiveFx = useMemo(() => (item ? loadLiveFx(item.slug) : null), [item]);
 
   const goFullscreen = () => {
@@ -171,6 +189,12 @@ function AnimmasterDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <div className="mx-auto max-w-[1400px] px-6 py-8">
         <Link
           to="/animmaster"

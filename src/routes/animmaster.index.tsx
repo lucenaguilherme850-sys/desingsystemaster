@@ -32,13 +32,26 @@ export const Route = createFileRoute("/animmaster/")({
   component: AnimmasterMirror,
   head: () => ({
     meta: [
-      { title: "Design Master Mirror — 300 componentes animados" },
+      { title: "Galeria PRO 280+ — Design Master Components" },
       {
         name: "description",
         content:
-          "Espelho da biblioteca Design Master: 280 componentes animados PRO — rolagem, WebGL, sliders, hero, menus e mais.",
+          "Acesso completo ao catálogo espelhado de 280+ componentes PRO. Shaders, Sliders e Heros extraídos de projetos Awwwards.",
       },
+      { property: "og:title", content: "Galeria PRO 280+ — Design Master" },
+      { property: "og:type", content: "article" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Galeria PRO 280+ Design Master",
+          "description": "Coleção de 280+ componentes animados premium."
+        })
+      }
+    ]
   }),
 });
 
@@ -89,7 +102,7 @@ function AnimmasterMirror() {
             design master mirror · 280 components
           </div>
           <h1 className="mt-3 text-4xl md:text-6xl font-extrabold uppercase tracking-tight leading-[0.95]">
-            300 PRO-Level Animated Components
+            300+ Premium UI Components
           </h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
             Biblioteca completa espelhada de designmaster.com.br — passe o cursor

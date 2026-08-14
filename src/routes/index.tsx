@@ -29,6 +29,17 @@ const CATEGORIES: { key: string; label: string }[] = [
 
 export const Route = createFileRoute("/")({
   component: LibraryIndex,
+  head: () => ({
+    meta: [
+      { title: "Design Master — Efeitos & Componentes Premium para Web" },
+      {
+        name: "description",
+        content: "Descubra uma biblioteca curada de efeitos de mouse, animações de rolagem e Shaders WebGL prontos para o seu projeto.",
+      },
+      { property: "og:title", content: "Design Master — Catálogo de Efeitos Premium" },
+      { property: "og:description", content: "Componentes interativos de alto nível inspirados nas maiores referências do design web global." },
+    ]
+  })
 });
 
 import { useEcoMode } from "@/hooks/use-eco-mode";
