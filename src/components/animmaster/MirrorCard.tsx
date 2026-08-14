@@ -158,21 +158,25 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
         ensureMirrored();
       }}
       onMouseLeave={() => setHovered(false)}
-      className="group block overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-neon/60 hover:shadow-[0_0_40px_oklch(0.82_0.17_225/20%)]"
+      className="group relative block overflow-hidden rounded-2xl border border-border bg-card/40 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-neon/40 hover:shadow-neon"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-black">
+      <div className="relative aspect-[4/3] overflow-hidden">
+        {/* Component Shell Background */}
+        <div className="absolute inset-0 grid-bg opacity-[0.05] pointer-events-none" />
+        
         {poster ? (
           <GoogleDriveImage
             src={poster}
             alt={item.type_name || item.name || item.slug}
-            className="absolute inset-0 h-full w-full"
+            className={`absolute inset-0 h-full w-full object-cover transition-transform duration-700 ${hovered ? 'scale-110 blur-sm opacity-50' : 'scale-100'}`}
             loading={item.position < 6 ? "eager" : "lazy"}
           />
         ) : null}
+
         {visible && videoUrl && (
           <video
             ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover will-change-transform"
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${hovered ? 'opacity-100' : 'opacity-0'}`}
             muted
             loop
             playsInline
@@ -182,33 +186,45 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
             src={videoUrl}
           />
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3">
-          <h3 className="truncate text-base font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-            {item.type_name || item.name}
-          </h3>
-          <div className="truncate font-mono text-[10px] uppercase tracking-widest text-white/80">
-            {item.slug}
+
+        {/* Action Overlay */}
+        <div className={`absolute inset-0 flex items-center justify-center gap-3 bg-black/40 transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="rounded-full bg-neon px-4 py-2 text-[10px] font-black uppercase tracking-widest text-background shadow-neon transition-transform duration-300 hover:scale-105">
+            View Source
           </div>
         </div>
-        {isSlugHandcrafted(item.slug) ? (
-          <span className="absolute right-2 top-2 rounded-full border border-[#ff00c8] bg-[#ff00c8] px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-black shadow-[0_0_16px_#ff00c8aa]">
-            ● handcrafted
-          </span>
-        ) : isSlugLive(item.slug) ? (
-          <span className="absolute right-2 top-2 rounded-full border border-neon bg-neon px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-background shadow-[0_0_16px_oklch(0.82_0.17_225/60%)]">
-            ● live
-          </span>
-        ) : null}
-      </div>
-      <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-sm font-semibold">{item.type_name || item.name}</h3>
-          <div className="truncate font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{item.slug}</div>
+
+        {/* Badges */}
+        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+          {isSlugHandcrafted(item.slug) && (
+            <span className="rounded-md border border-neon-purple/50 bg-neon-purple/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter text-neon-purple backdrop-blur-md">
+              Handcrafted
+            </span>
+          )}
+          {isSlugLive(item.slug) && (
+            <span className="rounded-md border border-neon/50 bg-neon/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter text-neon backdrop-blur-md">
+              Live Effect
+            </span>
+          )}
         </div>
-        <span className="shrink-0 rounded-full border border-neon/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-neon">
-          {item.category}
-        </span>
+      </div>
+
+      <div className="relative border-t border-border/40 p-5 transition-colors duration-300 group-hover:bg-card/60">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h3 className="truncate text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-neon">
+              {item.type_name || item.name}
+            </h3>
+            <p className="mt-1 truncate font-mono text-[9px] font-medium uppercase tracking-[0.15em] text-muted-foreground/60">
+              {item.slug}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+             <span className="shrink-0 rounded-md border border-border bg-background/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              {item.category.split(' ')[0]}
+            </span>
+          </div>
+        </div>
       </div>
     </Link>
   );
