@@ -1272,7 +1272,7 @@ export const Route = createFileRoute("/api/chat-director")({
             inputSchema: z.object({
               query: z.string().optional(),
               category: z.string().optional(),
-              limit: z.number().default(12),
+              limit: z.number().int().min(1).max(50).default(12),
             }),
             execute: async ({ query, category, limit }) => {
               const safeLimit = Math.min(Math.max(Number(limit) || 12, 1), 30);
@@ -1292,7 +1292,7 @@ export const Route = createFileRoute("/api/chat-director")({
           }),
           getComponentDetails: tool({
             description: "Detalhes de um componente AnimMaster específico pelo slug.",
-            inputSchema: z.object({ slug: z.string() }),
+            inputSchema: z.object({ slug: z.string().regex(/^[a-z0-9-]+$/) }),
             execute: async ({ slug }) => {
               const { data } = await supabase
                 .from("animmaster_items")
@@ -1315,21 +1315,25 @@ export const Route = createFileRoute("/api/chat-director")({
             description:
               "Persiste o relatório estruturado da thread. Chame quando as fases 1–10 estiverem completas ou toda vez que houver atualização relevante.",
             inputSchema: z.object({
-              business: z.object({}).passthrough().optional(),
-              brand: z.object({}).passthrough().optional(),
-              audience: z.object({}).passthrough().optional(),
-              designSystem: z.object({}).passthrough().optional(),
+              business: z.record(z.any()).optional(),
+              brand: z.record(z.any()).optional(),
+              audience: z.record(z.any()).optional(),
+              designSystem: z.record(z.any()).optional(),
               sectionMap: z
                 .array(
                   z.object({
-                    section: z.string(),
-                    componentSlug: z.string().optional(),
-                    reason: z.string(),
+                    section: z.string().max(100),
+                    componentSlug: z.string().regex(/^[a-z0-9-]+$/).optional(),
+                    reason: z.string().max(500),
                   }),
                 )
                 .default([]),
               implementationPlan: z
-                .array(z.object({ step: z.number(), title: z.string(), details: z.string() }))
+                .array(z.object({ 
+                  step: z.number().int(), 
+                  title: z.string().max(100), 
+                  details: z.string().max(1000) 
+                }))
                 .default([]),
             }),
             execute: async (input) => {
