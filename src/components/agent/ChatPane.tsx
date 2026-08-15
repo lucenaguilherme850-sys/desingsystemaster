@@ -140,7 +140,9 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-mas nele nao possui nehum componente
+Verificar se a mensagem de boas-vindas no Agente Creative Director reflete a nova frase final.
+
+Testar a cópia de um Prompt Mestre em qualquer componente para validar o novo encerramento do prompt.
             </p>
           </div>
         )}
