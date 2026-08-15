@@ -47,7 +47,7 @@ export function SiteHeader() {
           )}
         </nav>
 
-        {!loading && (isAdmin || isPlus || isAdmin !== undefined) ? (
+        {!loading && user ? (
           <button
             onClick={logout}
             className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-neon hover:text-neon"
