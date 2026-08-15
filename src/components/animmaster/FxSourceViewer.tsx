@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-user-tier";
 import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
+import { supabase } from "@/integrations/supabase/client";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
   const previewUrl = `https://designmaster.com.br/animmaster/${slug}`;
@@ -49,14 +50,37 @@ export default function FxSourceViewer({ slug, name }: { slug: string; name: str
 
   const { tier, loading: tierLoading, isAdmin, isPlus, isPro } = useUserTier();
   
+  // Ref para rastrear se já tentamos o fallback de auth
+  const [authRetry, setAuthRetry] = useState(0);
+
   const hasAccess = isAdmin || isPlus || isPro;
 
-  // Log for debugging (only in development if needed)
+  // Log de diagnóstico persistente no console
   useEffect(() => {
     if (user && !tierLoading) {
-      console.log(`[FxSourceViewer] User: ${user.email}, Tier: ${tier}, HasAccess: ${hasAccess}`);
+      console.log(`[FxSourceViewer] USER_CHECK:`, {
+        email: user.email,
+        tier,
+        isAdmin,
+        isPlus,
+        isPro,
+        hasAccess
+      });
     }
-  }, [user, tier, tierLoading, hasAccess]);
+  }, [user, tier, tierLoading, isAdmin, isPlus, isPro, hasAccess]);
+
+  // Se estiver logado mas sem acesso, tenta forçar um refetch da sessão se for o dono
+  useEffect(() => {
+    if (user && !hasAccess && authRetry < 1) {
+      const email = user.email?.toLowerCase();
+      if (email === 'lucenaguilherme850@gmail.com' || email === 'lucenaguilherme999@gmail.com') {
+        console.warn("[FxSourceViewer] Admin/Pro user detected with no access. Refreshing session...");
+        supabase.auth.refreshSession().then(() => {
+          setAuthRetry(prev => prev + 1);
+        });
+      }
+    }
+  }, [user, hasAccess, authRetry]);
 
   if (tierLoading) return null;
 

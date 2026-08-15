@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
+import { useMemo, useEffect } from "react";
 
 export type Tier = "anon" | "free" | "pro" | "plus" | "admin";
 
@@ -24,16 +25,28 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
       return (data ?? []) as unknown as { role: string }[];
     },
   });
+
   const loading = authLoading || (!!user && isLoading);
-  if (!user) return { tier: "anon", loading, isPro: false, isPlus: false, isAdmin: false };
-  const roles = new Set((data ?? []).map((r) => r.role.toLowerCase().trim()));
+  
+  const roles = useMemo(() => {
+    if (!data) return new Set<string>();
+    return new Set(data.map((r) => r.role.toLowerCase().trim()));
+  }, [data]);
+
   const isAdmin = roles.has("admin");
   const isPlus = isAdmin || roles.has("plus") || roles.has("agent_plus") || roles.has("agent plus");
   const isPro = isPlus || roles.has("pro");
+
   // Log roles for debugging in browser console
-  if (user) {
-    console.debug(`[useUserTier] User: ${user.email}, Roles in DB:`, Array.from(roles), { isAdmin, isPlus, isPro });
-  }
+  useEffect(() => {
+    if (user && !loading) {
+      console.debug(`[useUserTier] User: ${user.email}, Roles in DB:`, Array.from(roles), { isAdmin, isPlus, isPro });
+    }
+  }, [user, roles, isAdmin, isPlus, isPro, loading]);
+
+  if (!user) return { tier: "anon", loading, isPro: false, isPlus: false, isAdmin: false };
+  
   const tier: Tier = isAdmin ? "admin" : isPlus ? "plus" : isPro ? "pro" : "free";
+  
   return { tier, loading, isPro, isPlus, isAdmin };
 }
