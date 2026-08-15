@@ -26,10 +26,10 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
   });
   const loading = authLoading || (!!user && isLoading);
   if (!user) return { tier: "anon", loading, isPro: false, isPlus: false, isAdmin: false };
-  const roles = new Set((data ?? []).map((r) => r.role));
+  const roles = new Set((data ?? []).map((r) => r.role.toLowerCase().trim()));
   const isAdmin = roles.has("admin");
-  const isPlus = isAdmin || roles.has("plus");
-  const isPro = isPlus || roles.has("pro");
+  const isPlus = isAdmin || roles.has("plus") || roles.has("agent_plus") || roles.has("agent plus");
+  const isPro = isPlus || roles.has("pro") || roles.has("plus");
   const tier: Tier = isAdmin ? "admin" : isPlus ? "plus" : isPro ? "pro" : "free";
   return { tier, loading, isPro, isPlus, isAdmin };
 }

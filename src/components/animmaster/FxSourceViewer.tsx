@@ -49,16 +49,16 @@ export default function FxSourceViewer({ slug, name }: { slug: string; name: str
 
   const { tier, loading: tierLoading, isAdmin, isPlus, isPro } = useUserTier();
   
+  const hasAccess = isAdmin || isPlus || isPro;
+
   // Log for debugging (only in development if needed)
   useEffect(() => {
     if (user && !tierLoading) {
-      console.log(`[FxSourceViewer] User: ${user.email}, Tier: ${tier}, HasAccess: ${isAdmin || isPlus || isPro}`);
+      console.log(`[FxSourceViewer] User: ${user.email}, Tier: ${tier}, HasAccess: ${hasAccess}`);
     }
-  }, [user, tier, tierLoading, isAdmin, isPlus, isPro]);
+  }, [user, tier, tierLoading, hasAccess]);
 
   if (tierLoading) return null;
-
-  const hasAccess = isAdmin || isPlus || isPro;
 
   if (!hasAccess) {
     return (
