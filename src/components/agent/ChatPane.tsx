@@ -139,6 +139,8 @@ Siga obrigatoriamente estas regras:
 6. Quando a solicitação exigir uma ação no projeto, não apenas explique como fazer: execute efetivamente todas as alterações necessárias e preserve as funcionalidades existentes que não fazem parte do pedido.
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
+
+o problema dos componentes estar nesta tela aind apersiste
             </p>
           </div>
         )}
