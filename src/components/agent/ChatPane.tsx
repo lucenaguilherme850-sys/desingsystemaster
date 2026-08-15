@@ -140,7 +140,7 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-cotinua o mesmo problema quem esta liberado nao aparece o cod,
+o problema ainda persiste
             </p>
           </div>
         )}
