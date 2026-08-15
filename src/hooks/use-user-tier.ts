@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
+import { useMemo, useEffect } from "react";
 
 export type Tier = "anon" | "free" | "pro" | "plus" | "admin";
 
