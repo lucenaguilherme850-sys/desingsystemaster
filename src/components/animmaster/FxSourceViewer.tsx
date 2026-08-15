@@ -47,11 +47,13 @@ export default function FxSourceViewer({ slug, name }: { slug: string; name: str
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState<"code" | "prompt" | null>(null);
 
-  const { tier, loading: tierLoading } = useUserTier();
+  const { tier, loading: tierLoading, isAdmin, isPlus, isPro } = useUserTier();
 
   if (tierLoading) return null;
 
-  if (tier === "anon" || tier === "free") {
+  const hasAccess = isAdmin || isPlus || isPro;
+
+  if (!hasAccess) {
     return (
       <div className="rounded-xl border border-dashed border-border/60 bg-card/40 p-8 text-center">
         <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-neon/10 text-neon">
