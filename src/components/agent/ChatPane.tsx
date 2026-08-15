@@ -140,9 +140,7 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-Verificar se a mensagem de boas-vindas no Agente Creative Director reflete a nova frase final.
-
-Testar a cópia de um Prompt Mestre em qualquer componente para validar o novo encerramento do prompt.
+Adicionar um teste automatizado de conformidade para eu validar que as regras do “Modo Construção” e o bloco de encerramento aparecem corretamente no prompt gerado.Implementar um botão de “copiar Prompt Mestre” com pré-validação para eu conferir rapidamente se o encerramento das instruções está correto em qualquer componente.Adicionar uma tela de pré-visualização para eu ver a mensagem de boas-vindas atualizada do Agente Creative Director antes de usar.
             </p>
           </div>
         )}
