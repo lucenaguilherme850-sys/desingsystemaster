@@ -140,7 +140,7 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-quando eu acesso o adm fica nisso ai
+oque sgnifica esse source, e v pq pro user adm e quem esta liberado, esta com esse ero ai de nao aparecer o codigo e ficar desse jeito como se ao tivesse liberado
             </p>
           </div>
         )}
