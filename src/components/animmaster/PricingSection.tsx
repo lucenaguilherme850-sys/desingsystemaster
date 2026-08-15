@@ -69,7 +69,11 @@ const plans = [
   },
 ];
 
+import { useUserTier } from "@/hooks/use-user-tier";
+
 export function PricingSection() {
+  const { isPro, isPlus, loading } = useUserTier();
+
   return (
     <section id="pricing" className="border-t border-border/60 bg-background">
       <div className="mx-auto max-w-[1400px] px-6 py-24">
@@ -134,7 +138,19 @@ export function PricingSection() {
                 </ul>
 
                 <div className="mt-6">
-                  {p.cta ? (
+                  {p.name === "Free" ? (
+                    <div className="rounded-full border border-border py-3 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                      já ativo ao criar a conta
+                    </div>
+                  ) : p.name === "PRO" && isPro ? (
+                    <div className="flex items-center justify-center gap-2 rounded-full border border-neon bg-neon/10 py-3 text-sm font-semibold text-neon">
+                      <Check className="size-4" /> Plano PRO Ativo
+                    </div>
+                  ) : p.name === "Agent Plus" && isPlus ? (
+                    <div className="flex items-center justify-center gap-2 rounded-full border border-neon-purple bg-neon-purple/10 py-3 text-sm font-semibold text-neon-purple">
+                      <Check className="size-4" /> Agent Plus Ativo
+                    </div>
+                  ) : p.cta ? (
                     <a
                       href={p.cta.href}
                       target="_blank"
@@ -150,11 +166,7 @@ export function PricingSection() {
                     >
                       <MessageCircle className="size-4" /> {p.cta.label}
                     </a>
-                  ) : (
-                    <div className="rounded-full border border-border py-3 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                      já ativo ao criar a conta
-                    </div>
-                  )}
+                  ) : null}
                 </div>
               </article>
             );

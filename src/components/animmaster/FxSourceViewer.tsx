@@ -86,7 +86,7 @@ export default function FxSourceViewer({ slug, name }: { slug: string; name: str
 
   if (!hasAccess) {
     return (
-      <div className="rounded-xl border border-dashed border-border/60 bg-card/40 p-8 text-center">
+      <div className="rounded-xl border border-dashed border-border/60 bg-card/40 p-8 text-center animate-in fade-in duration-500">
         <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-neon/10 text-neon">
           <Sparkles className="size-6" />
         </div>
@@ -152,7 +152,7 @@ export default function FxSourceViewer({ slug, name }: { slug: string; name: str
   };
 
   return (
-    <div className="mt-10 space-y-6">
+    <div className="mt-10 space-y-6 animate-in slide-in-from-bottom-4 duration-700">
       <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
         <div className="flex items-center justify-between border-b border-border/60 bg-background/60 px-4 py-2">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-neon">
