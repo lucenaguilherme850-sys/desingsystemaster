@@ -63,7 +63,7 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
 
   const isAdmin = roles.has("admin");
   const isPlus = isAdmin || roles.has("plus") || roles.has("agent_plus") || roles.has("agent plus");
-  const isPro = isPlus || roles.has("pro");
+  const isPro = isAdmin || isPlus || roles.has("pro");
 
   // Log roles for debugging in browser console
   useEffect(() => {
