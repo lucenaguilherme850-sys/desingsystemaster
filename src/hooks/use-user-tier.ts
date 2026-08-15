@@ -9,13 +9,17 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
   const { data, isLoading } = useQuery({
     queryKey: ["user-roles", user?.id],
     enabled: !!user,
-    staleTime: 60_000,
+    staleTime: 0, // Disable cache to force fresh checks when debugging access
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user!.id);
-      if (error) return [] as { role: string }[];
+      if (error) {
+        console.error("Error fetching user roles:", error);
+        return [] as { role: string }[];
+      }
       return (data ?? []) as unknown as { role: string }[];
     },
   });
