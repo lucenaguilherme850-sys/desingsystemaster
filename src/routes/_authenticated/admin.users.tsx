@@ -62,7 +62,7 @@ function AdminUsers() {
     );
   }
 
-  const rows = (q.data ?? []).filter((u) =>
+  const rows = (Array.isArray(q.data) ? q.data : []).filter((u) =>
     filter ? (u.email ?? "").toLowerCase().includes(filter.toLowerCase()) : true,
   );
 
