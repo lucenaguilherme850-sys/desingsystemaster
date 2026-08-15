@@ -120,7 +120,7 @@ export function ChatPane({
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-semibold">Agente Creative Director</h2>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap text-left max-w-xl mx-auto">
-              Saia do modo atual e entre no Modo Construção.
+Saia do modo atual e entre no Modo Construção.
 
 Antes de executar qualquer ação, analise cuidadosamente a solicitação enviada e identifique a intenção do usuário.
 
@@ -140,7 +140,7 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-ainda percsiste quero  que vc analise pq isso aind aocorre e coriija
+o problema ainda persise, mas antes de tetar resolver de novo vamsos faer assim quero que vc organize a questão de quando eu \"adm\" libero o plano pro ou agente pra algum user ative automaticamente se eu liberar somente o pano pro para um user, esse user na conta dele ao aparecera para liberar o plano pro e sim somente o agente que aind anao foi liberado e visse versa do agente, e assim que eu \"adm\" liberar o plano pro ou o agente quer que apareça o cod para esse user que aparece tbm a seção do agente se caso eu liberei pra ele tbm, e principlamente se ele é plano pro tem que aparecer o codigo dos componentes + o prompt mestre
             </p>
           </div>
         )}
