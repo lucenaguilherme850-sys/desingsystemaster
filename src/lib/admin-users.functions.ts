@@ -8,7 +8,7 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
     .eq("user_id", ctx.userId)
     .eq("role", "admin")
     .maybeSingle();
-  if (!data) throw new Response("Forbidden", { status: 403 });
+  if (!data) throw new Error("Forbidden: admin role required");
 }
 
 export type AdminUserRow = {
