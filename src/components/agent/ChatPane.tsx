@@ -140,7 +140,7 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-v alggumas contas que estao liberadas  nao estao mostrando o cod nem o prompt
+cotinua o mesmo problema quem esta liberado nao aparece o cod,
             </p>
           </div>
         )}

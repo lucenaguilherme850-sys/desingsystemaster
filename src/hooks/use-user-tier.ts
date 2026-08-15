@@ -15,7 +15,8 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user!.id);
+        .eq("user_id", user!.id)
+        .order('role', { ascending: true }); // Ensure deterministic order for stable tiers
       if (error) {
         console.error("Error fetching user roles:", error);
         return [] as { role: string }[];
