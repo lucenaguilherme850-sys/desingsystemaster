@@ -12,7 +12,7 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
     staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("user_roles" as never)
+        .from("user_roles")
         .select("role")
         .eq("user_id", user!.id);
       if (error) return [] as { role: string }[];

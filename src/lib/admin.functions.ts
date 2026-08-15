@@ -5,7 +5,7 @@ export const isAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
-      .from("user_roles" as never)
+      .from("user_roles")
       .select("role")
       .eq("user_id", context.userId)
       .eq("role", "admin")
