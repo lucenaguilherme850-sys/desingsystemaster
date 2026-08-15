@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-user-tier";
 import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
+import { supabase } from "@/integrations/supabase/client";
 
 function buildLovablePrompt(slug: string, name: string, files: Array<{ path: string; content: string }>) {
   const previewUrl = `https://designmaster.com.br/animmaster/${slug}`;
