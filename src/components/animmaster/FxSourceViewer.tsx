@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
+import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
+import { useUserTier } from "@/hooks/use-user-tier";
 import { Check, Copy, FileCode2, Sparkles } from "lucide-react";
 import { getFxSourceForSlug } from "@/lib/animfx-source";
 
