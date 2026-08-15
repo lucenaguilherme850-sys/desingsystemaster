@@ -139,8 +139,6 @@ Siga obrigatoriamente estas regras:
 6. Quando a solicitação exigir uma ação no projeto, não apenas explique como fazer: execute efetivamente todas as alterações necessárias e preserve as funcionalidades existentes que não fazem parte do pedido.
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
-
-o problema ainda persise, mas antes de tetar resolver de novo vamsos faer assim quero que vc organize a questão de quando eu \"adm\" libero o plano pro ou agente pra algum user ative automaticamente se eu liberar somente o pano pro para um user, esse user na conta dele ao aparecera para liberar o plano pro e sim somente o agente que aind anao foi liberado e visse versa do agente, e assim que eu \"adm\" liberar o plano pro ou o agente quer que apareça o cod para esse user que aparece tbm a seção do agente se caso eu liberei pra ele tbm, e principlamente se ele é plano pro tem que aparecer o codigo dos componentes + o prompt mestre
             </p>
           </div>
         )}
