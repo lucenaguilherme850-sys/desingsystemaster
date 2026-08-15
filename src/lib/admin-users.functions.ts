@@ -1,14 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function assertAdmin(ctx: { supabase: any; userId: string }) {
-  const { data } = await ctx.supabase
+async function assertAdmin(ctx: { supabase: unknown; userId: string }) {
+  // userId comes from a verified bearer token, so it's safe to check the role
+  // with the service client (RLS/grants on user_roles can hide the row otherwise).
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
     .from("user_roles")
     .select("role")
     .eq("user_id", ctx.userId)
     .eq("role", "admin")
     .maybeSingle();
-  if (!data) throw new Error("Forbidden: admin role required");
+  if (error || !data) throw new Error("Forbidden: admin role required");
 }
 
 export type AdminUserRow = {
