@@ -45,10 +45,26 @@ export default function FxSourceViewer({ slug, name }: { slug: string; name: str
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState<"code" | "prompt" | null>(null);
 
-  if (!user) {
+  const { tier, loading: tierLoading } = useUserTier();
+
+  if (tierLoading) return null;
+
+  if (tier === "anon" || tier === "free") {
     return (
-      <div className="rounded-xl border border-dashed border-border/60 bg-card/40 p-6 text-sm text-center text-muted-foreground">
-        Você precisa estar logado para visualizar o código fonte e o prompt mestre.
+      <div className="rounded-xl border border-dashed border-border/60 bg-card/40 p-8 text-center">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-neon/10 text-neon">
+          <Sparkles className="size-6" />
+        </div>
+        <h3 className="text-lg font-bold text-foreground">CÓDIGO + PROMPT MESTRE BLOQUEADOS</h3>
+        <p className="mx-auto mt-2 max-w-xs text-xs text-muted-foreground">
+          Este é um componente premium. Adquira um plano para liberar o acesso total.
+        </p>
+        <Link
+          to="/pricing"
+          className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-neon px-6 text-[10px] font-black uppercase tracking-widest text-background transition-transform hover:scale-105"
+        >
+          Ver planos
+        </Link>
       </div>
     );
   }
