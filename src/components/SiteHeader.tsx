@@ -1,23 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { isAdmin } from "@/lib/admin.functions";
+import { useUserTier } from "@/hooks/use-user-tier";
 import logo from "@/assets/dm-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "@tanstack/react-router";
 
+
 export function SiteHeader() {
-  const check = useServerFn(isAdmin);
-  const { user } = useAuth();
+  const { isAdmin, isPlus, loading } = useUserTier();
   const navigate = useNavigate();
-  const { data: admin } = useQuery({
-    queryKey: ["is-admin"],
-    queryFn: () => check().catch(() => false),
-    staleTime: 60_000,
-    retry: false,
-    enabled: !!user,
-  });
+
   const logout = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
@@ -40,19 +33,19 @@ export function SiteHeader() {
           <Link to="/pricing" className="hover:text-foreground transition-colors">
             Planos
           </Link>
-          {admin && (
-            <>
-              <Link to="/agent" className="hover:text-foreground transition-colors">
-                Agent <span className="text-neon-purple">AI</span>
-              </Link>
-              <Link to="/admin/users" className="hover:text-foreground transition-colors">
-                Admin
-              </Link>
-            </>
+          {(isAdmin || isPlus) && (
+            <Link to="/agent" className="hover:text-foreground transition-colors">
+              Agent <span className="text-neon-purple">AI</span>
+            </Link>
+          )}
+          {isAdmin && (
+            <Link to="/admin/users" className="hover:text-foreground transition-colors">
+              Admin
+            </Link>
           )}
         </nav>
 
-        {user ? (
+        {!loading && (isAdmin || isPlus || isAdmin !== undefined) ? (
           <button
             onClick={logout}
             className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-neon hover:text-neon"
