@@ -29,7 +29,11 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
   const roles = new Set((data ?? []).map((r) => r.role.toLowerCase().trim()));
   const isAdmin = roles.has("admin");
   const isPlus = isAdmin || roles.has("plus") || roles.has("agent_plus") || roles.has("agent plus");
-  const isPro = isPlus || roles.has("pro") || roles.has("plus");
+  const isPro = isPlus || roles.has("pro");
+  // Log roles for debugging in browser console
+  if (user) {
+    console.debug(`[useUserTier] User: ${user.email}, Roles in DB:`, Array.from(roles), { isAdmin, isPlus, isPro });
+  }
   const tier: Tier = isAdmin ? "admin" : isPlus ? "plus" : isPro ? "pro" : "free";
   return { tier, loading, isPro, isPlus, isAdmin };
 }
