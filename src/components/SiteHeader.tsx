@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useUserTier } from "@/hooks/use-user-tier";
@@ -9,6 +10,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 export function SiteHeader() {
   const { isAdmin, isPlus, loading } = useUserTier();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const logout = async () => {
