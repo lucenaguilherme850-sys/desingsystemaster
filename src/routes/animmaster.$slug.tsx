@@ -184,7 +184,15 @@ function AnimmasterDetail() {
     };
   }, [item, heading, posterSrc]);
 
-  const LiveFx = useMemo(() => (item ? loadLiveFx(item.slug) : null), [item]);
+  const LiveFx = useMemo(() => {
+    if (!item) return null;
+    try {
+      return loadLiveFx(item.slug);
+    } catch (e) {
+      console.error(`[Detail] Failed to load live fx for ${item.slug}:`, e);
+      return null;
+    }
+  }, [item]);
 
   const goFullscreen = () => {
     const v = videoRef.current;
