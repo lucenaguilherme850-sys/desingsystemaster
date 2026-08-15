@@ -26,12 +26,12 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/agent" },
+          options: { emailRedirectTo: window.location.origin + "/" },
         });
         if (error) throw error;
         toast.success("Conta criada — verifique seu e-mail se necessário.");
       }
-      navigate({ to: "/agent" });
+      navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Falha na autenticação");
     } finally {
