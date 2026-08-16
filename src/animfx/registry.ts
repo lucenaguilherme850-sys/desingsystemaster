@@ -183,20 +183,14 @@ export function hasLiveFx(slug: string): boolean {
 const handcrafted = handcraftedFx;
 
 export function loadLiveFx(slug: string): ComponentType | null {
-  try {
-    if (slug in handcraftedFx) return lazy(handcraftedFx[slug]);
-    const { category, n } = seedFromSlug(slug);
-    const loader = TEMPLATES[category];
-    if (!loader) return null;
-    
-    const Lazy = lazy(loader);
-    const Wrapper: ComponentType = (props) => createElement(Lazy, { ...props, seed: n } as any);
-    Wrapper.displayName = `FxTemplate(${category}#${n})`;
-    return Wrapper;
-  } catch (e) {
-    console.error(`[loadLiveFx] Critical error loading ${slug}:`, e);
-    return null;
-  }
+  if (slug in handcraftedFx) return lazy(handcraftedFx[slug]);
+  const { category, n } = seedFromSlug(slug);
+  const loader = TEMPLATES[category];
+  if (!loader) return null;
+  const Lazy = lazy(loader);
+  const Wrapper: ComponentType = () => createElement(Lazy, { seed: n } as { seed?: number });
+  Wrapper.displayName = `FxTemplate(${category}#${n})`;
+  return Wrapper;
 }
 
 // For UI: all slugs that resolve to something live.

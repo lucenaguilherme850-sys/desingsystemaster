@@ -140,7 +140,7 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-o erro ainda persiste
+o problema dos componentes estar nesta tela aind apersiste
             </p>
           </div>
         )}
