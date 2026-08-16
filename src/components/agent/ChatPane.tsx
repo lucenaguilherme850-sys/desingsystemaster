@@ -140,7 +140,7 @@ Siga obrigatoriamente estas regras:
 
 Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-o problema dos componentes estar nesta tela aind apersiste
+quando eu clico em qualquer componente so direcionado para uma pag de erro e nao para a pag que aparece o componentes juntamente  com o codigo para quem esta liberado
             </p>
           </div>
         )}
