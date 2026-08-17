@@ -29,30 +29,45 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
     },
   });
 
-  // Realtime subscription for roles
+  // Realtime subscription for roles (unique channel per mount to avoid
+  // "cannot add postgres_changes callbacks after subscribe()" crashes)
   useEffect(() => {
     if (!user) return;
-    const channel = supabase
-      .channel(`user-roles-${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "user_roles",
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          console.debug("[useUserTier] Role change detected, invalidating cache...");
-          qc.invalidateQueries({ queryKey: ["user-roles", user.id] });
-        }
-      )
-      .subscribe();
+    const userId = user.id;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase.channel(
+        `user-roles-${userId}-${Math.random().toString(36).slice(2)}`,
+      );
+      channel
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "user_roles",
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            qc.invalidateQueries({ queryKey: ["user-roles", userId] });
+          },
+        )
+        .subscribe();
+    } catch (err) {
+      // Realtime is an optimization only — never break the page for it.
+      console.warn("[useUserTier] realtime unavailable:", err);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch {
+          /* noop */
+        }
+      }
     };
-  }, [user, qc]);
+  }, [user?.id, qc]);
 
   const loading = authLoading || (!!user && isLoading);
   
