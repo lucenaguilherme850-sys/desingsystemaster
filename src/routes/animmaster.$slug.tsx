@@ -384,7 +384,11 @@ function AnimmasterDetail() {
             no Lovable — ele vai perguntar em qual página do seu app você quer
             montar antes de instalar.
           </p>
-          <LockedGate requires="pro" label="Código + prompt mestre bloqueados">
+          <LockedGate
+            requires="pro"
+            slug={item.slug}
+            label="Código + prompt mestre bloqueados"
+          >
             <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-card/40" />}>
               {item.drive_zip_id ? (
                 <DriveCodeBrowser slug={item.slug} />
