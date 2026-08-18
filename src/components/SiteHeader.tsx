@@ -6,6 +6,7 @@ import { useUserTier } from "@/hooks/use-user-tier";
 import logo from "@/assets/dm-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
+import { FreeSamplesBadge } from "@/components/FreeSamplesBadge";
 
 
 export function SiteHeader() {
@@ -48,12 +49,15 @@ export function SiteHeader() {
         </nav>
 
         {!loading && user ? (
-          <button
-            onClick={logout}
-            className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-neon hover:text-neon"
-          >
-            Sair
-          </button>
+          <div className="flex items-center gap-3">
+            <FreeSamplesBadge className="hidden sm:inline-flex" />
+            <button
+              onClick={logout}
+              className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-neon hover:text-neon"
+            >
+              Sair
+            </button>
+          </div>
         ) : (
           <Link
             to="/pricing"
