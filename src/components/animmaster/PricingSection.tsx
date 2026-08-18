@@ -1,4 +1,5 @@
 import { Check, MessageCircle } from "lucide-react";
+import { FreeSamplesBadge } from "@/components/FreeSamplesBadge";
 
 const WHATSAPP = "https://wa.me/5564076035684";
 
@@ -90,6 +91,7 @@ export function PricingSection() {
             O plano <strong className="text-foreground">Agent Plus</strong> adiciona um AI Creative Director que monta a direção
             visual do seu projeto do zero.
           </p>
+          <FreeSamplesBadge className="mt-6" />
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
