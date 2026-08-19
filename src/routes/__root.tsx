@@ -161,8 +161,8 @@ function RootComponent() {
   const isAgent = pathname.startsWith("/agent");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const PUBLIC = ["/auth", "/pricing"];
-  const isPublic = PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const PUBLIC = ["/", "/auth", "/pricing", "/animmaster", "/assets"];
+  const isPublic = PUBLIC.some((p) => pathname === "/" ? pathname === p : (pathname === p || pathname.startsWith(p + "/")));
 
   useEffect(() => {
     if (loading) return;
