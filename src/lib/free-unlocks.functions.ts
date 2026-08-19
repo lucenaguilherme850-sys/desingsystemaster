@@ -17,10 +17,12 @@ export const claimFreeUnlock = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
 
     // 0. Verifica se o e-mail está confirmado.
-    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
+    // Usamos context.supabase que já está autenticado como o usuário.
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user?.email_confirmed_at) {
       throw new Error("email_not_confirmed");
     }
+
 
 
     // 1. Vincula o dispositivo à conta (idempotente).
