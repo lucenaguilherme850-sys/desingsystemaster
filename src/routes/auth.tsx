@@ -14,6 +14,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,19 +22,51 @@ function AuthPage() {
     try {
       if (mode === "in") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          // Conta criada mas ainda não confirmada pelo link do e-mail.
+          if (/confirm/i.test(error.message)) {
+            setPendingEmail(email);
+            toast.error("Confirme seu e-mail para ativar a conta antes de entrar.");
+            return;
+          }
+          throw error;
+        }
+        navigate({ to: "/" });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin + "/" },
         });
         if (error) throw error;
-        toast.success("Conta criada — verifique seu e-mail se necessário.");
+        if (data.session) {
+          toast.success("Conta criada com sucesso.");
+          navigate({ to: "/" });
+          return;
+        }
+        setPendingEmail(email);
+        toast.success("Confirme seu e-mail para ativar a conta.");
       }
-      navigate({ to: "/" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Falha na autenticação");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resend = async () => {
+    if (!pendingEmail) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: pendingEmail,
+        options: { emailRedirectTo: window.location.origin + "/" },
+      });
+      if (error) throw error;
+      toast.success("Link de confirmação reenviado.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível reenviar.");
     } finally {
       setBusy(false);
     }
@@ -51,6 +84,21 @@ function AuthPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Acesse o Agente Creative Director.
         </p>
+        {pendingEmail && (
+          <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-500">
+            Enviamos um link de confirmação para{" "}
+            <span className="font-semibold">{pendingEmail}</span>. Clique nele para
+            ativar a conta — só e-mails reais conseguem confirmar.
+            <button
+              type="button"
+              onClick={resend}
+              disabled={busy}
+              className="mt-2 block underline underline-offset-2 disabled:opacity-60"
+            >
+              Reenviar e-mail de confirmação
+            </button>
+          </div>
+        )}
         <label className="mt-6 block text-sm">E-mail</label>
         <input
           type="email"
