@@ -19,9 +19,16 @@ export const claimFreeUnlock = createServerFn({ method: "POST" })
     // 0. Verifica se o e-mail está confirmado.
     // Usamos context.supabase que já está autenticado como o usuário.
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user?.email_confirmed_at) {
-      throw new Error("email_not_confirmed");
+    
+    // Se não houver erro mas o e-mail não estiver confirmado, bloqueamos apenas a liberação.
+    if (user && !user.email_confirmed_at) {
+       throw new Error("email_not_confirmed");
     }
+    
+    if (userError) {
+      throw new Error("auth_failed");
+    }
+
 
 
 
