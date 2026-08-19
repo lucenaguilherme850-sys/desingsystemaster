@@ -38,7 +38,7 @@ export function LockedGate({
   /** Necessário para permitir a liberação por amostra grátis. */
   slug?: string;
 }) {
-  const { isPro, isPlus, isAdmin, loading } = useUserTier();
+  const { isPro, isPlus, isAdmin, loading, user } = useUserTier();
   const {
     loading: unlocksLoading,
     remaining,
@@ -48,6 +48,8 @@ export function LockedGate({
     expiresAt,
     unlock,
   } = useFreeUnlocks();
+
+  const isEmailConfirmed = !!user?.email_confirmed_at;
 
   if (loading || unlocksLoading) return null;
 
@@ -104,7 +106,13 @@ export function LockedGate({
             apenas no plano <span className="font-semibold text-foreground">{planName}</span>.
           </p>
 
-          {canSample && (
+          {isAuthenticated && !isEmailConfirmed && (
+            <div className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-500 border border-amber-500/20">
+              Verifique seu e-mail para liberar as amostras grátis.
+            </div>
+          )}
+
+          {canSample && isEmailConfirmed && (
             <button
               type="button"
               onClick={handleUnlock}
