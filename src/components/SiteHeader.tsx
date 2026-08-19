@@ -49,22 +49,37 @@ export function SiteHeader() {
         </nav>
 
         {!loading && user ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Conta</span>
+              <span className="text-xs font-semibold text-foreground truncate max-w-[120px]" title={user.email}>
+                {user.email}
+              </span>
+            </div>
+            <div className="h-8 w-px bg-border/40" />
             <FreeSamplesBadge className="hidden sm:inline-flex" />
             <button
               onClick={logout}
-              className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-neon hover:text-neon"
+              className="rounded-full border border-border/50 bg-background/50 px-4 py-2 text-xs font-semibold text-muted-foreground transition-all hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/10"
             >
               Sair
             </button>
           </div>
         ) : (
-          <Link
-            to="/pricing"
-            className="glow-cyan rounded-full bg-neon px-5 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]"
-          >
-            Unlock PRO
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/auth"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Entrar
+            </Link>
+            <Link
+              to="/pricing"
+              className="glow-cyan rounded-full bg-neon px-5 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]"
+            >
+              Unlock PRO
+            </Link>
+          </div>
         )}
       </div>
     </header>
