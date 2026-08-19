@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export type Tier = "anon" | "free" | "pro" | "plus" | "admin";
 
-export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; isPlus: boolean; isAdmin: boolean } {
+export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; isPlus: boolean; isAdmin: boolean; user: any } {
   const { user, loading: authLoading } = useAuth();
   const qc = useQueryClient();
 
@@ -87,9 +87,9 @@ export function useUserTier(): { tier: Tier; loading: boolean; isPro: boolean; i
     }
   }, [user, roles, isAdmin, isPlus, isPro, loading]);
 
-  if (!user) return { tier: "anon", loading, isPro: false, isPlus: false, isAdmin: false };
+  if (!user) return { tier: "anon", loading, isPro: false, isPlus: false, isAdmin: false, user: null };
   
   const tier: Tier = isAdmin ? "admin" : isPlus ? "plus" : isPro ? "pro" : "free";
   
-  return { tier, loading, isPro, isPlus, isAdmin };
+  return { tier, loading, isPro, isPlus, isAdmin, user };
 }
