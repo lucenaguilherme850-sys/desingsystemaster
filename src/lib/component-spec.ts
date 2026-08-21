@@ -138,17 +138,51 @@ function masterPrompt(input: ComponentSpecInput, d: Detected): string {
 > Link Referência: ${url}
 
 ## 🎯 OBJETIVO
-Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua missão é **transplantar** este componente para o projeto do usuário, mantendo 100% da fidelidade visual e interativa, adaptando apenas o conteúdo e o design system (cores/fontes). Adicionar uma etapa na autenticação após o clique do e-mail para o usuário confirmar que “sou eu” antes de liberar o acesso às amostras.
+Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua missão é **transplantar** este componente para o projeto do usuário, mantendo 100% da fidelidade visual e interativa, adaptando apenas o conteúdo e o design system (cores/fontes).
 
-Implementar virtualização e paginação na galeria para carregar só os componentes visíveis e reduzir o peso da página.
+## Funcionalidade: Autenticação Reforçada e Otimização de Performance na Galeria
 
-Otimizar as prévias para renderizar como GIF (ou placeholder) e usar cache para evitar recomputar/animar componentes pesados o tempo todo.
+### 1. Autenticação Reforçada
 
-Aplicar lazy-loading, memoização e limites de re-render nas rotas e componentes de prévia para diminuir uso de RAM e melhorar a performance no mobile. quando eu clico em qualquer componente so direcionado para uma pag de erro e nao para a pag que aparece o componentes juntamente  com o codigo para quem esta liberado
+*   **Descrição:** Implementar uma etapa adicional de confirmação após o clique no link de autenticação por e-mail. O usuário deverá confirmar explicitamente "sou eu" antes de ter acesso liberado às amostras.
+
+*   **Requisito:** Garantir que o acesso às amostras só ocorra após a confirmação explícita do usuário.
+
+### 2. Otimização da Galeria
+
+*   **Descrição:** Implementar virtualização e paginação na galeria de componentes. O objetivo é carregar apenas os componentes visíveis na tela, reduzindo significativamente o peso da página e melhorando o tempo de carregamento inicial.
+
+*   **Requisitos Técnicos:**
+
+    *   Virtualização de lista/grid.
+    *   Paginação de dados.
+    *   Carregamento sob demanda dos componentes.
+
+### 3. Otimização de Pré-visualizações
+
+*   **Descrição:** Otimizar a renderização das pré-visualizações de componentes. As pré-visualizações devem ser renderizadas como GIFs animados ou placeholders estáticos e utilizar cache para evitar recomputação ou animação constante de componentes pesados.
+
+*   **Requisitos Técnicos:**
+
+    *   Geração de pré-visualizações em formato GIF ou placeholder.
+    *   Implementação de mecanismo de cache para pré-visualizações.
+    *   Evitar recomputação/animação de componentes pesados em cada interação.
+
+### 4. Otimização de Performance Geral (Rotas e Componentes de Prévia)
+
+*   **Descrição:** Aplicar técnicas de otimização de performance em rotas e componentes de prévia, incluindo lazy-loading, memoização e limites de re-renderização. O objetivo é diminuir o uso de memória RAM e melhorar a experiência do usuário em dispositivos móveis.
+
+*   **Requisitos Técnicos:**
+
+    *   Lazy-loading para rotas e componentes.
+    *   Memoização de componentes e/ou dados.
+    *   Implementação de limites de re-renderização (ex: \`React.memo\`, \`useMemo\`, \`useCallback\`).
+    *   Foco na redução do consumo de RAM e melhoria da performance em mobile.
 
 ## 🛠️ STACK TÉCNICA
 As seguintes tecnologias foram detectadas e devem ser garantidas no projeto de destino:
 ${d.tech.map((t) => `- ${t}`).join("\n")}
+
 
 ## 📋 PROTOCOLO DE IMPLEMENTAÇÃO (PASSO A PASSO)
 

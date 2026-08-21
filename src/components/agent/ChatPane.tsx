@@ -120,13 +120,44 @@ export function ChatPane({
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-semibold">Agente Creative Director</h2>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap text-left max-w-xl mx-auto">
-Adicionar uma etapa na autenticação após o clique do e-mail para o usuário confirmar que “sou eu” antes de liberar o acesso às amostras.
+## Funcionalidade: Autenticação Reforçada e Otimização de Performance na Galeria
 
-Implementar virtualização e paginação na galeria para carregar só os componentes visíveis e reduzir o peso da página.
+### 1. Autenticação Reforçada
 
-Otimizar as prévias para renderizar como GIF (ou placeholder) e usar cache para evitar recomputar/animar componentes pesados o tempo todo.
+*   **Descrição:** Implementar uma etapa adicional de confirmação após o clique no link de autenticação por e-mail. O usuário deverá confirmar explicitamente "sou eu" antes de ter acesso liberado às amostras.
 
-Aplicar lazy-loading, memoização e limites de re-render nas rotas e componentes de prévia para diminuir uso de RAM e melhorar a performance no mobile.
+*   **Requisito:** Garantir que o acesso às amostras só ocorra após a confirmação explícita do usuário.
+
+### 2. Otimização da Galeria
+
+*   **Descrição:** Implementar virtualização e paginação na galeria de componentes. O objetivo é carregar apenas os componentes visíveis na tela, reduzindo significativamente o peso da página e melhorando o tempo de carregamento inicial.
+
+*   **Requisitos Técnicos:**
+
+    *   Virtualização de lista/grid.
+    *   Paginação de dados.
+    *   Carregamento sob demanda dos componentes.
+
+### 3. Otimização de Pré-visualizações
+
+*   **Descrição:** Otimizar a renderização das pré-visualizações de componentes. As pré-visualizações devem ser renderizadas como GIFs animados ou placeholders estáticos e utilizar cache para evitar recomputação ou animação constante de componentes pesados.
+
+*   **Requisitos Técnicos:**
+
+    *   Geração de pré-visualizações em formato GIF ou placeholder.
+    *   Implementação de mecanismo de cache para pré-visualizações.
+    *   Evitar recomputação/animação de componentes pesados em cada interação.
+
+### 4. Otimização de Performance Geral (Rotas e Componentes de Prévia)
+
+*   **Descrição:** Aplicar técnicas de otimização de performance em rotas e componentes de prévia, incluindo lazy-loading, memoização e limites de re-renderização. O objetivo é diminuir o uso de memória RAM e melhorar a experiência do usuário em dispositivos móveis.
+
+*   **Requisitos Técnicos:**
+
+    *   Lazy-loading para rotas e componentes.
+    *   Memoização de componentes e/ou dados.
+    *   Implementação de limites de re-renderização (ex: `React.memo`, `useMemo`, `useCallback`).
+    *   Foco na redução do consumo de RAM e melhoria da performance em mobile.
             </p>
           </div>
         )}
