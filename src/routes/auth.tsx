@@ -36,7 +36,7 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/" },
+          options: { emailRedirectTo: window.location.origin + "/auth/callback" },
         });
         if (error) throw error;
         if (data.session) {
@@ -61,7 +61,7 @@ function AuthPage() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: pendingEmail,
-        options: { emailRedirectTo: window.location.origin + "/" },
+        options: { emailRedirectTo: window.location.origin + "/auth/callback" },
       });
       if (error) throw error;
       toast.success("Link de confirmação reenviado.");
