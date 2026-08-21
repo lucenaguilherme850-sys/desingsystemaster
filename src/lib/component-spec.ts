@@ -176,8 +176,10 @@ Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua m
 
     *   Lazy-loading para rotas e componentes.
     *   Memoização de componentes e/ou dados.
-    *   Implementação de limites de re-renderização (ex: `React.memo`, `useMemo`, `useCallback`).
+    *   Implementação de limites de re-renderização (ex: \`React.memo\`, \`useMemo\`, \`useCallback\`).
     *   Foco na redução do consumo de RAM e melhoria da performance em mobile.
+`;
+
 
 
 ## 🛠️ STACK TÉCNICA
