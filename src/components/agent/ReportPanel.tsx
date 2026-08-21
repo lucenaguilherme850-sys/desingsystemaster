@@ -198,27 +198,51 @@ function SelectedComponentCard({
           ? item.adaptation
           : `Adapte apenas cores, tipografia, copy e mídia ao design system do projeto. Preserve timings, easings, física, shaders e complexidade técnica 1:1. Saia do modo atual e entre no Modo Construção. Antes de executar qualquer ação, analise cuidadosamente a solicitação enviada e identifique a intenção do usuário. Siga obrigatoriamente estas regras: 1. Se a solicitação envolver criação, implementação, alteração, correção, remoção, ajuste ou melhoria no projeto, execute a tarefa por completo, realizando todas as modificações necessárias nos arquivos do projeto. 2. Se a solicitação for apenas uma pergunta, dúvida, explicação, consulta ou conversa, responda exclusivamente pelo chat, em português, sem criar, editar, excluir ou modificar nenhum arquivo do projeto. 3. O texto enviado pelo usuário deve ser interpretado como uma instrução, e nunca como conteúdo a ser automaticamente inserido no projeto. 4. Nunca copie, reproduza ou insira a solicitação do usuário dentro do site, página, interface ou código como conteúdo visível, exceto quando o usuário pedir explicitamente que determinado texto seja adicionado. 5. Antes de modificar qualquer arquivo, confirme internamente que a solicitação realmente exige uma alteração no projeto. Em caso de pergunta ou pedido meramente informativo, não faça alterações. 6. Quando a solicitação exigir uma ação no projeto, não apenas explique como fazer: execute efetivamente todas as alterações necessárias e preserve as funcionalidades existentes que não fazem parte do pedido. Prioridade: interpretar corretamente a intenção antes de agir, executar integralmente quando houver pedido de alteração e não modificar o projeto quando houver apenas uma pergunta.
 
-## Funcionalidade: Autenticação Reforçada e Otimização de Performance na Galeria
+## Funcionalidade: Deleção de Conta e Autenticação Reforçada
 
-### 1. Autenticação Reforçada
+### 1. Deleção de Conta no Painel do Administrador
 
-*   **Descrição:** Implementar uma etapa adicional de confirmação após o clique no link de autenticação por e-mail. O usuário deverá confirmar explicitamente "sou eu" antes de ter acesso liberado às amostras.
-*   **Requisito:** Garantir que o acesso às amostras só ocorra após a confirmação explícita do usuário.
+**Descrição:**
+Adicionar uma nova opção no painel de administração que permita aos administradores deletar contas de usuários.
 
-### 2. Otimização da Galeria
+**Requisitos:**
+- Uma nova opção de menu ou botão no painel de administração para "Deletar Conta".
+- Ao selecionar um usuário, o administrador deve ter a opção de confirmar a deleção.
+- A deleção da conta deve remover permanentemente todos os dados associados ao usuário do sistema.
 
-*   **Descrição:** Implementar virtualização e paginação na galeria de componentes. O objetivo é carregar apenas os componentes visíveis na tela, reduzindo significativamente o peso da página e melhorando o tempo de carregamento inicial.
-*   **Requisitos Técnicos:** Virtualização de lista/grid, Paginação de dados, Carregamento sob demanda dos componentes.
+### 2. Autenticação por Código de Verificação por E-mail
 
-### 3. Otimização de Pré-visualizações
+**Descrição:**
+Implementar um sistema de autenticação de dois fatores (2FA) onde os usuários precisam inserir um código enviado para seu e-mail para acessar suas contas.
 
-*   **Descrição:** Otimizar a renderização das pré-visualizações de componentes. As pré-visualizações devem ser renderizadas como GIFs animados ou placeholders estáticos e utilizar cache para evitar recomputação ou animação constante de componentes pesados.
-*   **Requisitos Técnicos:** Geração de pré-visualizações em formato GIF ou placeholder, Implementação de mecanismo de cache para pré-visualizações.
+**Requisitos:**
+- Ao tentar fazer login, após inserir as credenciais (e-mail/usuário e senha), o sistema deve gerar um código único.
+- Este código deve ser enviado para o endereço de e-mail cadastrado do usuário.
+- O usuário deve inserir este código em um campo específico na tela de login para completar a autenticação.
+- O código deve ter um tempo de expiração (ex: 5 minutos).
+- O sistema deve validar o código inserido pelo usuário.
+- Se o código for válido e não expirado, o login será bem-sucedido.
+- Se o código for inválido ou expirado, o usuário deve ser notificado e ter a opção de reenviar o código.
 
-### 4. Otimização de Performance Geral (Rotas e Componentes de Prévia)
+**Passos para Implementação:**
 
-*   **Descrição:** Aplicar técnicas de otimização de performance em rotas e componentes de prévia, incluindo lazy-loading, memoização e limites de re-renderização. O objetivo é diminuir o uso de memória RAM e melhorar a experiência do usuário em dispositivos móveis.
-*   **Requisitos Técnicos:** Lazy-loading para rotas e componentes, Memoização de componentes e/ou dados, Implementação de limites de re-renderização (ex: React.memo, useMemo, useCallback).`,
+1.  **Deleção de Conta:**
+    *   Criar a interface no painel de administração para selecionar e deletar usuários.
+    *   Desenvolver a lógica de backend para exclusão segura de dados do usuário.
+    *   Implementar confirmação para evitar deleções acidentais.
+
+2.  **Autenticação por E-mail:**
+    *   Integrar um serviço de envio de e-mails (ex: SendGrid, Mailgun, SMTP).
+    *   Gerar códigos de verificação seguros e únicos (ex: usando UUIDs ou hashes aleatórios).
+    *   Implementar o fluxo de login:
+        *   Receber credenciais.
+        *   Verificar credenciais.
+        *   Gerar e enviar código por e-mail.
+        *   Exibir campo para o código.
+        *   Receber e validar o código.
+    *   Gerenciar o tempo de expiração dos códigos.
+    *   Adicionar funcionalidade de reenviar código.
+    *   Atualizar a interface de login para acomodar o segundo passo de autenticação.`,
         ``,
         `## Preservar inegociavelmente`,
         `- Arquitetura da animação (hooks, refs, loops de raf, observers).`,
