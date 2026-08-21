@@ -122,6 +122,12 @@ function AuthPage() {
         >
           {busy ? "Aguarde..." : mode === "in" ? "Entrar" : "Criar conta"}
         </button>
+        {/* Visual edit: Changed text instance to match request while keeping structure */}
+        <div className="mt-4 flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">
+          <div className="h-px flex-1 bg-border" />
+          <span>continuar</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
         <button
           type="button"
           onClick={() => setMode(mode === "in" ? "up" : "in")}

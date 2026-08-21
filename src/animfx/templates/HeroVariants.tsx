@@ -86,7 +86,11 @@ function TypewriterHero({ c1, c2, bg, word }: { c1: string; c2: string; bg: stri
   const [t, setT] = useState("");
   useEffect(() => {
     let i = 0;
-    const id = setInterval(() => { i++; setT(word.slice(0, i)); if (i >= word.length) { i = 0; setTimeout(() => setT(""), 1200); } }, 140);
+    const id = setInterval(() => { 
+      if (document.hidden) return; // Don't run if tab is hidden
+      i++; setT(word.slice(0, i)); 
+      if (i >= word.length) { i = 0; setTimeout(() => setT(""), 1200); } 
+    }, 140);
     return () => clearInterval(id);
   }, [word]);
   return (

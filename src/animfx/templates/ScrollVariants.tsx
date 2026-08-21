@@ -25,9 +25,11 @@ function useScrollProgress(ref: React.RefObject<HTMLElement | null>, cb: (p: num
 
     const on = () => {
       if (!isVisible) return;
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const r = el.getBoundingClientRect();
+        // Optimization: stop tracking if way outside
+        if (r.top > window.innerHeight || r.bottom < 0) return;
         const total = el.offsetHeight - window.innerHeight;
         cb(Math.min(1, Math.max(0, -r.top / (total || 1))));
       });

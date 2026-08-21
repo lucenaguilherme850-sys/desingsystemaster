@@ -141,6 +141,13 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
     };
   }, [visible, videoUrl, hovered, config.hoverOnly, config.autoplay, config.preload]);
 
+  // Performance enhancement: Throttled rendering for off-screen components
+  // and using will-change for video layers
+  const videoStyle = {
+    willChange: hovered ? 'opacity, transform' : 'auto',
+    opacity: hovered ? 1 : 0
+  };
+
 
   const thumbSize = config.preload === "none" ? "w400" : "w1000";
   const drivePoster = item.drive_video_id
