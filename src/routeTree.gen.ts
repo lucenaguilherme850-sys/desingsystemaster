@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnimmasterIndexRouteImport } from './routes/animmaster.index'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
 import { Route as ApiChatDirectorRouteImport } from './routes/api/chat-director'
 import { Route as AnimmasterSlugRouteImport } from './routes/animmaster.$slug'
@@ -46,6 +47,11 @@ const AnimmasterIndexRoute = AnimmasterIndexRouteImport.update({
   id: '/animmaster/',
   path: '/animmaster/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AssetsSlugRoute = AssetsSlugRouteImport.update({
   id: '/assets/$slug',
@@ -91,11 +97,12 @@ const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/pricing': typeof PricingRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
   '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/animmaster/': typeof AnimmasterIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
@@ -105,11 +112,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/pricing': typeof PricingRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
   '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/animmaster': typeof AnimmasterIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
@@ -121,11 +129,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/pricing': typeof PricingRoute
   '/animmaster/$slug': typeof AnimmasterSlugRoute
   '/api/chat-director': typeof ApiChatDirectorRoute
   '/assets/$slug': typeof AssetsSlugRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/animmaster/': typeof AnimmasterIndexRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/agent/$threadId': typeof AuthenticatedAgentThreadIdRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/animmaster/$slug'
     | '/api/chat-director'
     | '/assets/$slug'
+    | '/auth/callback'
     | '/animmaster/'
     | '/admin/users'
     | '/agent/$threadId'
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/animmaster/$slug'
     | '/api/chat-director'
     | '/assets/$slug'
+    | '/auth/callback'
     | '/animmaster'
     | '/admin/users'
     | '/agent/$threadId'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/animmaster/$slug'
     | '/api/chat-director'
     | '/assets/$slug'
+    | '/auth/callback'
     | '/animmaster/'
     | '/_authenticated/admin/users'
     | '/_authenticated/agent/$threadId'
@@ -182,7 +194,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   PricingRoute: typeof PricingRoute
   AnimmasterSlugRoute: typeof AnimmasterSlugRoute
   ApiChatDirectorRoute: typeof ApiChatDirectorRoute
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/animmaster/'
       preLoaderRoute: typeof AnimmasterIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/assets/$slug': {
       id: '/assets/$slug'
@@ -302,6 +321,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 interface ApiPublicRegistryRouteChildren {
   ApiPublicRegistryNameRoute: typeof ApiPublicRegistryNameRoute
 }
@@ -316,7 +345,7 @@ const ApiPublicRegistryRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   PricingRoute: PricingRoute,
   AnimmasterSlugRoute: AnimmasterSlugRoute,
   ApiChatDirectorRoute: ApiChatDirectorRoute,
