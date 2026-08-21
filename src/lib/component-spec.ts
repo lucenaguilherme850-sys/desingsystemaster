@@ -140,44 +140,51 @@ function masterPrompt(input: ComponentSpecInput, d: Detected): string {
 ## 🎯 OBJETIVO
 Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua missão é **transplantar** este componente para o projeto do usuário, mantendo 100% da fidelidade visual e interativa, adaptando apenas o conteúdo e o design system (cores/fontes).
 
-## Funcionalidade: Autenticação Reforçada e Otimização de Performance na Galeria
+## Funcionalidade: Deleção de Conta e Autenticação Reforçada
 
-### 1. Autenticação Reforçada
+### 1. Deleção de Conta no Painel do Administrador
 
-*   **Descrição:** Implementar uma etapa adicional de confirmação após o clique no link de autenticação por e-mail. O usuário deverá confirmar explicitamente "sou eu" antes de ter acesso liberado às amostras.
+**Descrição:**
+Adicionar uma nova opção no painel de administração que permita aos administradores deletar contas de usuários.
 
-*   **Requisito:** Garantir que o acesso às amostras só ocorra após a confirmação explícita do usuário.
+**Requisitos:**
+- Uma nova opção de menu ou botão no painel de administração para "Deletar Conta".
+- Ao selecionar um usuário, o administrador deve ter a opção de confirmar a deleção.
+- A deleção da conta deve remover permanentemente todos os dados associados ao usuário do sistema.
 
-### 2. Otimização da Galeria
+### 2. Autenticação por Código de Verificação por E-mail
 
-*   **Descrição:** Implementar virtualização e paginação na galeria de componentes. O objetivo é carregar apenas os componentes visíveis na tela, reduzindo significativamente o peso da página e melhorando o tempo de carregamento inicial.
+**Descrição:**
+Implementar um sistema de autenticação de dois fatores (2FA) onde os usuários precisam inserir um código enviado para seu e-mail para acessar suas contas.
 
-*   **Requisitos Técnicos:**
+**Requisitos:**
+- Ao tentar fazer login, após inserir as credenciais (e-mail/usuário e senha), o sistema deve gerar um código único.
+- Este código deve ser enviado para o endereço de e-mail cadastrado do usuário.
+- O usuário deve inserir este código em um campo específico na tela de login para completar a autenticação.
+- O código deve ter um tempo de expiração (ex: 5 minutos).
+- O sistema deve validar o código inserido pelo usuário.
+- Se o código for válido e não expirado, o login será bem-sucedido.
+- Se o código for inválido ou expirado, o usuário deve ser notificado e ter a opção de reenviar o código.
 
-    *   Virtualização de lista/grid.
-    *   Paginação de dados.
-    *   Carregamento sob demanda dos componentes.
+**Passos para Implementação:**
 
-### 3. Otimização de Pré-visualizações
+1.  **Deleção de Conta:**
+    *   Criar a interface no painel de administração para selecionar e deletar usuários.
+    *   Desenvolver a lógica de backend para exclusão segura de dados do usuário.
+    *   Implementar confirmação para evitar deleções acidentais.
 
-*   **Descrição:** Otimizar a renderização das pré-visualizações de componentes. As pré-visualizações devem ser renderizadas como GIFs animados ou placeholders estáticos e utilizar cache para evitar recomputação ou animação constante de componentes pesados.
-
-*   **Requisitos Técnicos:**
-
-    *   Geração de pré-visualizações em formato GIF ou placeholder.
-    *   Implementação de mecanismo de cache para pré-visualizações.
-    *   Evitar recomputação/animação de componentes pesados em cada interação.
-
-### 4. Otimização de Performance Geral (Rotas e Componentes de Prévia)
-
-*   **Descrição:** Aplicar técnicas de otimização de performance em rotas e componentes de prévia, incluindo lazy-loading, memoização e limites de re-renderização. O objetivo é diminuir o uso de memória RAM e melhorar a experiência do usuário em dispositivos móveis.
-
-*   **Requisitos Técnicos:**
-
-    *   Lazy-loading para rotas e componentes.
-    *   Memoização de componentes e/ou dados.
-    *   Implementação de limites de re-renderização (ex: \`React.memo\`, \`useMemo\`, \`useCallback\`).
-    *   Foco na redução do consumo de RAM e melhoria da performance em mobile.
+2.  **Autenticação por E-mail:**
+    *   Integrar um serviço de envio de e-mails (ex: SendGrid, Mailgun, SMTP).
+    *   Gerar códigos de verificação seguros e únicos (ex: usando UUIDs ou hashes aleatórios).
+    *   Implementar o fluxo de login:
+        *   Receber credenciais.
+        *   Verificar credenciais.
+        *   Gerar e enviar código por e-mail.
+        *   Exibir campo para o código.
+        *   Receber e validar o código.
+    *   Gerenciar o tempo de expiração dos códigos.
+    *   Adicionar funcionalidade de reenviar código.
+    *   Atualizar a interface de login para acomodar o segundo passo de autenticação.
 
 ## 🛠️ STACK TÉCNICA
 As seguintes tecnologias foram detectadas e devem ser garantidas no projeto de destino:
