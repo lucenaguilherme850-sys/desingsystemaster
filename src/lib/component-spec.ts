@@ -178,13 +178,11 @@ Você é um Engenheiro de Software Sênior especializado em UI/UX Premium. Sua m
     *   Memoização de componentes e/ou dados.
     *   Implementação de limites de re-renderização (ex: \`React.memo\`, \`useMemo\`, \`useCallback\`).
     *   Foco na redução do consumo de RAM e melhoria da performance em mobile.
-`;
-
-
 
 ## 🛠️ STACK TÉCNICA
 As seguintes tecnologias foram detectadas e devem ser garantidas no projeto de destino:
 ${d.tech.map((t) => `- ${t}`).join("\n")}
+
 
 ## 📋 PROTOCOLO DE IMPLEMENTAÇÃO (PASSO A PASSO)
 
