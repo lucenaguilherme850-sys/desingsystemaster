@@ -23,6 +23,7 @@ function Scramble({ c1, bg }: { c1: string; bg: string }) {
       const queue = target.split("").map(() => ({ start: (Math.random() * 20) | 0, end: ((Math.random() * 20) | 0) + 20, char: "" }));
       let f = 0;
       const tick = () => {
+        if (stop) return;
         let out = ""; let cpl = 0;
         target.split("").forEach((t, i) => {
           const q = queue[i];
