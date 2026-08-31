@@ -56,10 +56,18 @@ function AuthPage() {
       setCooldown(45);
       if (!silent) toast.success("Código enviado para " + target);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Não foi possível enviar o código.",
-      );
+      const raw = err instanceof Error ? err.message : "";
+      const lower = raw.toLowerCase();
+      const friendly = lower.includes("rate")
+        ? "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo."
+        : lower.includes("invalid") && lower.includes("email")
+          ? "E-mail inválido. Verifique o endereço digitado."
+          : lower.includes("signups")
+            ? "Cadastros estão desativados no momento."
+            : raw || "Não foi possível enviar o código. Tente novamente.";
+      toast.error(friendly);
     } finally {
+
       setBusy(false);
     }
   };
