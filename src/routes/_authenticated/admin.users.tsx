@@ -76,6 +76,58 @@ function AdminUsers() {
     }
   };
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (creating) return;
+    setCreating(true);
+    try {
+      await createUser({
+        data: {
+          email: newEmail,
+          password: newPassword,
+          ...(newRole ? { role: newRole } : {}),
+        },
+      });
+      toast.success("Conta criada e autorizada.");
+      setNewEmail("");
+      setNewPassword("");
+      setNewRole("");
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao criar conta");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleBlock = async (userId: string, blocked: boolean) => {
+    setBusy(`${userId}:block`);
+    try {
+      await setBlock({ data: { userId, blocked } });
+      toast.success(blocked ? "Conta bloqueada" : "Conta desbloqueada");
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleDelete = async (userId: string, email: string | null) => {
+    if (!window.confirm(`Excluir definitivamente a conta ${email ?? userId}?`)) return;
+    setBusy(`${userId}:delete`);
+    try {
+      await deleteUser({ data: { userId } });
+      toast.success("Conta excluída");
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+
   if (q.isError) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-24 text-center">
