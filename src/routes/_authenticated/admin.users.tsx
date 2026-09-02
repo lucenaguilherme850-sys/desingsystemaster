@@ -27,8 +27,16 @@ function AdminUsers() {
   const list = useServerFn(adminListUsers);
   const grant = useServerFn(adminGrantRole);
   const revoke = useServerFn(adminRevokeRole);
+  const createUser = useServerFn(adminCreateUser);
+  const setBlock = useServerFn(adminSetBlock);
+  const deleteUser = useServerFn(adminDeleteUser);
   const [busy, setBusy] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRole, setNewRole] = useState<"" | "pro" | "plus" | "admin">("");
+  const [creating, setCreating] = useState(false);
+
 
   // A sessão do Supabase vive no localStorage e pode não estar hidratada no
   // primeiro render; sem ela o serverFn é chamado sem Authorization e falha.
