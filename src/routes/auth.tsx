@@ -180,15 +180,18 @@ function AuthPage() {
         );
         return;
       }
-      if (!data.session) {
+      const target = email.trim().toLowerCase();
+      if (!data.session || !data.user?.email_confirmed_at) {
+        // Sem confirmação não existe acesso completo — sempre para a tela de verificação.
         toast.success("Conta criada. Confirme o e-mail para ativar o acesso.");
-        setMode("login");
+        navigate({ to: "/verify-email", search: { email: target } });
         return;
       }
       applyRememberMe(remember);
       void logSecurityEvent("signup", {});
       toast.success("Conta criada com sucesso.");
       navigate({ to: "/" });
+
     } finally {
       setBusy(false);
     }
