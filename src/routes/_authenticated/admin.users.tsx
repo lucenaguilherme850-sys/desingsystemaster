@@ -244,6 +244,22 @@ function AdminUsers() {
               return (
                 <tr key={u.id} className="border-t border-border/60 hover:bg-card/40">
                   <td className="px-4 py-3 font-mono text-xs">{u.email ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={
+                        "rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest " +
+                        (u.blocked
+                          ? "bg-destructive/20 text-destructive"
+                          : u.email_confirmed_at
+                            ? "bg-neon/20 text-neon"
+                            : "border border-border text-muted-foreground")
+                      }
+                      title={u.block_reason ?? undefined}
+                    >
+                      {u.blocked ? "bloqueado" : u.email_confirmed_at ? "confirmado" : "pendente"}
+                    </span>
+                  </td>
+
                   <td className="px-4 py-3 text-xs text-muted-foreground">
                     {new Date(u.created_at).toLocaleDateString("pt-BR")}
                   </td>
