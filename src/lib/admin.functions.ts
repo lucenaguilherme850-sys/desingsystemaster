@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireVerifiedUser } from "@/lib/verified-auth";
 
 export const isAdmin = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireVerifiedUser])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("user_roles")

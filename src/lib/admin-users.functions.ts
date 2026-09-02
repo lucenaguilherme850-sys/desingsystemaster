@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireVerifiedUser } from "@/lib/verified-auth";
 
 async function assertAdmin(ctx: { supabase: unknown; userId: string }) {
   // userId comes from a verified bearer token, so it's safe to check the role
@@ -23,7 +23,7 @@ export type AdminUserRow = {
 };
 
 export const adminListUsers = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireVerifiedUser])
   .handler(async ({ context }): Promise<AdminUserRow[]> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -51,7 +51,7 @@ export const adminListUsers = createServerFn({ method: "GET" })
   });
 
 export const adminGrantRole = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireVerifiedUser])
   .inputValidator((d: { userId: string; role: "pro" | "plus" | "admin" }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
@@ -64,7 +64,7 @@ export const adminGrantRole = createServerFn({ method: "POST" })
   });
 
 export const adminRevokeRole = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireVerifiedUser])
   .inputValidator((d: { userId: string; role: "pro" | "plus" | "admin" }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
