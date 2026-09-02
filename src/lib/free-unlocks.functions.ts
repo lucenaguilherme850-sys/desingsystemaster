@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireVerifiedUser } from "@/lib/verified-auth";
 
 const schema = z.object({
   slug: z.string().min(1).max(200),
@@ -11,7 +11,7 @@ const schema = z.object({
 export const MAX_ACCOUNTS_PER_DEVICE = 2;
 
 export const claimFreeUnlock = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireVerifiedUser])
   .inputValidator((input: unknown) => schema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;

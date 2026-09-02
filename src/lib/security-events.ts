@@ -10,6 +10,8 @@ export type SecurityEventType =
   | "signup"
   | "logout"
   | "password_reset_requested"
+  | "password_reset_completed"
+  | "email_verification_sent"
   | "password_changed"
   | "mfa_enrolled"
   | "mfa_disabled"
@@ -23,6 +25,8 @@ export const SECURITY_EVENT_LABEL: Record<SecurityEventType, string> = {
   signup: "Conta criada",
   logout: "Sessão encerrada",
   password_reset_requested: "Recuperação de senha solicitada",
+  password_reset_completed: "Senha redefinida",
+  email_verification_sent: "E-mail de verificação enviado",
   password_changed: "Senha alterada",
   mfa_enrolled: "2FA ativado",
   mfa_disabled: "2FA desativado",
