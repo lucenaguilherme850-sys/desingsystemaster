@@ -24,12 +24,19 @@ function AuthCallbackPage() {
       }
 
       if (data?.session) {
-        toast.success("E-mail confirmado com sucesso! Bem-vindo.");
-        navigate({ to: "/" });
+        // Só consideramos confirmado se o Supabase marcou o e-mail como validado.
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user?.email_confirmed_at) {
+          toast.success("E-mail confirmado com sucesso! Bem-vindo.");
+          navigate({ to: "/" });
+        } else {
+          navigate({ to: "/verify-email", search: { email: userData.user?.email ?? "" } });
+        }
       } else {
         // Pode ser um link expirado ou já usado
         navigate({ to: "/auth" });
       }
+
     };
 
     void handleCallback();
