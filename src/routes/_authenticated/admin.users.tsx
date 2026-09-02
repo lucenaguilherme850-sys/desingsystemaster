@@ -24,11 +24,22 @@ function AdminUsers() {
   const [busy, setBusy] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
 
+  // A sessão do Supabase vive no localStorage e pode não estar hidratada no
+  // primeiro render; sem ela o serverFn é chamado sem Authorization e falha.
+  const session = useQuery({
+    queryKey: ["auth-session"],
+    queryFn: async () => (await supabase.auth.getSession()).data.session,
+    staleTime: 30_000,
+    retry: false,
+  });
+
   const q = useQuery<AdminUserRow[]>({
     queryKey: ["admin-users"],
     queryFn: () => list(),
+    enabled: Boolean(session.data?.access_token),
     retry: false,
   });
+
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-users"] });
 
