@@ -62,7 +62,7 @@ export async function logSecurityEvent(
 }
 
 /** Remove chaves potencialmente sensíveis antes de persistir. */
-function sanitizeDetails(details: Record<string, unknown>): Record<string, unknown> {
+function sanitizeDetails(details: Record<string, unknown>): Record<string, string | number | boolean | null> {
   const BLOCKED = /pass|senha|token|secret|key|otp|code/i;
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(details)) {
