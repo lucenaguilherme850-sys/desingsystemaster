@@ -225,14 +225,14 @@ function AdminUsers() {
           <tbody>
             {q.isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
+                <td colSpan={6} className="px-4 py-16 text-center text-muted-foreground">
                   carregando…
                 </td>
               </tr>
             )}
             {!q.isLoading && rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-16 text-center text-muted-foreground">
+                <td colSpan={6} className="px-4 py-16 text-center text-muted-foreground">
                   nenhum usuário
                 </td>
               </tr>
