@@ -318,7 +318,24 @@ function AdminUsers() {
                         onClick={() => toggle(u.id, "admin", isAdm)}
                         tone="danger"
                       />
+                      <button
+                        disabled={busy === `${u.id}:block`}
+                        onClick={() => handleBlock(u.id, !u.blocked)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted/40 disabled:opacity-50"
+                      >
+                        <Ban className="size-3" />
+                        {u.blocked ? "desbloquear" : "bloquear"}
+                      </button>
+                      <button
+                        disabled={busy === `${u.id}:delete`}
+                        onClick={() => handleDelete(u.id, u.email)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-destructive/40 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                      >
+                        <Trash2 className="size-3" />
+                        excluir
+                      </button>
                     </div>
+
                   </td>
                 </tr>
               );
