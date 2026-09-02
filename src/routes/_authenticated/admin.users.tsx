@@ -3,14 +3,18 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Crown, Sparkles, ShieldCheck, X, Search } from "lucide-react";
+import { Crown, Sparkles, ShieldCheck, X, Search, Ban, Trash2, UserPlus, Loader2 } from "lucide-react";
 import {
   adminGrantRole,
   adminListUsers,
   adminRevokeRole,
+  adminCreateUser,
+  adminSetBlock,
+  adminDeleteUser,
   type AdminUserRow,
 } from "@/lib/admin-users.functions";
 import { supabase } from "@/integrations/supabase/client";
+
 
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
