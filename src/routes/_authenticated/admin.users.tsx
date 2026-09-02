@@ -168,6 +168,47 @@ function AdminUsers() {
         </div>
       </div>
 
+      <form
+        onSubmit={handleCreate}
+        className="mt-6 grid gap-3 rounded-2xl border border-border bg-card/40 p-4 sm:grid-cols-[1fr_1fr_150px_auto]"
+      >
+        <input
+          type="email"
+          required
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          placeholder="e-mail autorizado"
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+        />
+        <input
+          type="text"
+          required
+          minLength={8}
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="senha inicial (mín. 8)"
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+        />
+        <select
+          value={newRole}
+          onChange={(e) => setNewRole(e.target.value as typeof newRole)}
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+        >
+          <option value="">sem plano</option>
+          <option value="pro">PRO</option>
+          <option value="plus">Agent Plus</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button
+          disabled={creating}
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+        >
+          {creating ? <Loader2 className="size-4 animate-spin" /> : <UserPlus className="size-4" />}
+          Cadastrar
+        </button>
+      </form>
+
+
       <div className="mt-6 overflow-hidden rounded-2xl border border-border">
         <table className="w-full text-sm">
           <thead className="bg-card/60 text-left font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
