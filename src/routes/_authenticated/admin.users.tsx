@@ -10,6 +10,8 @@ import {
   adminRevokeRole,
   type AdminUserRow,
 } from "@/lib/admin-users.functions";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   head: () => ({ meta: [{ title: "Admin — Usuários" }] }),
