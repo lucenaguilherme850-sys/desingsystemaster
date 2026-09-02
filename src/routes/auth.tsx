@@ -101,8 +101,15 @@ function AuthPage() {
     writeAttempts({ count: until ? 0 : count, until });
   };
 
-  /** Após senha correta, verifica se a conta exige o segundo fator. */
+  /** Após senha correta, verifica confirmação de e-mail e segundo fator. */
   const finishSignIn = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData.user && !userData.user.email_confirmed_at) {
+      // Sessão existe, mas a conta não está ativada: nada de acesso completo.
+      navigate({ to: "/verify-email", search: { email: userData.user.email ?? email } });
+      return;
+    }
+
     const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aal && aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
       const { data: factors } = await supabase.auth.mfa.listFactors();
@@ -119,6 +126,7 @@ function AuthPage() {
     toast.success("Bem-vindo de volta.");
     navigate({ to: "/" });
   };
+
 
   const handleLogin = async () => {
     if (lockLeft > 0) {
