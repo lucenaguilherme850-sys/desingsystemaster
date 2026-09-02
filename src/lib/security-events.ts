@@ -10,6 +10,8 @@ export type SecurityEventType =
   | "signup"
   | "logout"
   | "password_reset_requested"
+  | "password_reset_completed"
+  | "email_verification_sent"
   | "password_changed"
   | "mfa_enrolled"
   | "mfa_disabled"
