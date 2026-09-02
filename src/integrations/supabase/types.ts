@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_blocks: {
+        Row: {
+          blocked_by: string | null
+          created_at: string
+          id: string
+          reason: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blocked_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blocked_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       agent_messages: {
         Row: {
           created_at: string
@@ -414,6 +441,7 @@ export type Database = {
             Returns: boolean
           }
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
+      is_account_blocked: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user" | "pro" | "plus"
