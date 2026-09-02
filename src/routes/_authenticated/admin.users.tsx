@@ -214,10 +214,12 @@ function AdminUsers() {
           <thead className="bg-card/60 text-left font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Cadastrado</th>
               <th className="px-4 py-3">Último login</th>
               <th className="px-4 py-3">Planos ativos</th>
-              <th className="px-4 py-3 text-right">Liberar</th>
+              <th className="px-4 py-3 text-right">Ações</th>
+
             </tr>
           </thead>
           <tbody>
