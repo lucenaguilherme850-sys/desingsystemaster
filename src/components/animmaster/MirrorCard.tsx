@@ -120,6 +120,11 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
 
     if (shouldPlay) {
       isPlaying = true;
+      // The src may have been wiped by a prior unload; restore it before playing.
+      if (videoUrl && !v.currentSrc && !v.src) {
+        v.src = videoUrl;
+        v.load();
+      }
       void v.play().catch(() => {
         isPlaying = false;
       });
@@ -131,14 +136,9 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
         v.load();
       }
     }
-
-    return () => {
-      if (v) {
-        v.pause();
-        v.src = "";
-        v.load();
-      }
-    };
+    // No cleanup that touches v.src here: with `hovered` in the dep list the
+    // cleanup would wipe the src on every hover toggle and React would never
+    // restore it, permanently breaking the preview.
   }, [visible, videoUrl, hovered, config.hoverOnly, config.autoplay, config.preload]);
 
   // Performance enhancement: Throttled rendering for off-screen components

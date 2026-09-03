@@ -119,52 +119,11 @@ export function ChatPane({
         {messages.length === 0 && (
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-semibold">Agente Creative Director</h2>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap text-left max-w-xl mx-auto">
-## Funcionalidade: Deleção de Conta e Autenticação Reforçada
-
-### 1. Deleção de Conta no Painel do Administrador
-
-**Descrição:**
-Adicionar uma nova opção no painel de administração que permita aos administradores deletar contas de usuários.
-
-**Requisitos:**
-- Uma nova opção de menu ou botão no painel de administração para "Deletar Conta".
-- Ao selecionar um usuário, o administrador deve ter a opção de confirmar a deleção.
-- A deleção da conta deve remover permanentemente todos os dados associados ao usuário do sistema.
-
-### 2. Autenticação por Código de Verificação por E-mail
-
-**Descrição:**
-Implementar um sistema de autenticação de dois fatores (2FA) onde os usuários precisam inserir um código enviado para seu e-mail para acessar suas contas.
-
-**Requisitos:**
-- Ao tentar fazer login, após inserir as credenciais (e-mail/usuário e senha), o sistema deve gerar um código único.
-- Este código deve ser enviado para o endereço de e-mail cadastrado do usuário.
-- O usuário deve inserir este código em um campo específico na tela de login para completar a autenticação.
-- O código deve ter um tempo de expiração (ex: 5 minutos).
-- O sistema deve validar o código inserido pelo usuário.
-- Se o código for válido e não expirado, o login será bem-sucedido.
-- Se o código for inválido ou expirado, o usuário deve ser notificado e ter a opção de reenviar o código.
-
-**Passos para Implementação:**
-
-1.  **Deleção de Conta:**
-    *   Criar a interface no painel de administração para selecionar e deletar usuários.
-    *   Desenvolver a lógica de backend para exclusão segura de dados do usuário.
-    *   Implementar confirmação para evitar deleções acidentais.
-
-2.  **Autenticação por E-mail:**
-    *   Integrar um serviço de envio de e-mails (ex: SendGrid, Mailgun, SMTP).
-    *   Gerar códigos de verificação seguros e únicos (ex: usando UUIDs ou hashes aleatórios).
-    *   Implementar o fluxo de login:
-        *   Receber credenciais.
-        *   Verificar credenciais.
-        *   Gerar e enviar código por e-mail.
-        *   Exibir campo para o código.
-        *   Receber e validar o código.
-    *   Gerenciar o tempo de expiração dos códigos.
-    *   Adicionar funcionalidade de reenviar código.
-    *   Atualizar a interface de login para acomodar o segundo passo de autenticação.
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground max-w-xl mx-auto">
+              Descreva o projeto que você quer criar — estilo, referências, público — e eu
+              defino a direção criativa, seleciono os componentes ideais do catálogo e
+              monto o plano de implementação. Você também pode anexar imagens ou arquivos
+              para eu analisar.
             </p>
           </div>
         )}
