@@ -840,53 +840,27 @@ async function buildLocalDirectorReply({
       : `\n## ⚠️ Leitura do Site\n\n- **URL:** ${siteSummary.url}\n- **Status:** ${siteSummary.status ?? "indisponível"}\n- **Problema:** ${siteSummary.error || "não foi possível carregar a página."}\n- **Ação:** envie uma URL pública funcionando ou descreva o projeto em 3-5 linhas.\n`
     : "";
 
-  const text = `## 📋 Resumo Executivo
+  const text = `## Resumo
 
-Modo local sem consumo de créditos ativado. A análise abaixo usa regras estratégicas + o catálogo AnimMaster salvo no projeto.
+Modo local ativo — sem consumo de créditos externos.
 ${siteBlock}
-${renderPipelineMarkdown(pipeline)}
-${renderDirectionMarkdown(direction)}
-${renderCollectionMarkdown(collection)}
-## 🧠 Estratégia
+## Direção recomendada
 
-- Priorizar componentes que reforçam a primeira impressão, leitura e conversão.
-- Usar motion como hierarquia visual: entrada → exploração → prova → ação.
-- Evitar efeitos decorativos sem função clara na jornada.
+- **Objetivo visual:** ${direction.profile.name} — ${direction.profile.description}
+- **Prioridade:** clareza, hierarquia e conversão; usar motion apenas quando reforçar a experiência.
 
-## 🧩 Componentes Recomendados
+## Componentes recomendados
 
-| Seção | Componente AnimMaster | Prioridade | Motivo |
-|-------|----------------------|------------|--------|
+| Seção | Componente | Prioridade | Motivo |
+|---|---|---|---|
 ${componentRows || "| Hero | catálogo indisponível | Alta | Não encontrei componentes locais para recomendar. |"}
 
-## 🗺️ Ordem de Implementação
+## Próximo passo
 
-1. Definir a seção principal onde o efeito entra: Hero, CTA, cards, pricing ou navegação.
-2. Abrir o componente recomendado e copiar o código/documentação completa.
-3. Adaptar tokens, tipografia e espaçamentos ao design system do projeto alvo.
-4. Validar em mobile antes de adicionar efeitos secundários.
+Escolha uma seção para aprofundar ou peça um plano de implementação. O documento lateral mantém o briefing, a coleção e o plano; não é necessário repetir tudo a cada mensagem.
 
-## 💡 Recomendações
-
-- Para páginas comerciais, combine **1 efeito forte no Hero** + **microinterações em cards/CTA**.
-- Para portfólios ou SaaS premium, use animações de rolagem com parcimônia para guiar o olhar.
-- Para performance, mantenha vídeos/previews comprimidos e pause efeitos fora da viewport.
-
-## ⚠️ Pontos de Atenção
-
-- Esta resposta não usa IA externa; portanto, ela não consome créditos.
-- A leitura de URL no modo local é simples: se o site depender muito de JavaScript, descreva o projeto manualmente para melhorar a seleção.
-- Categorias disponíveis no catálogo: ${categories.slice(0, 12).join(", ")}${categories.length > 12 ? "…" : ""}.
-
-## 🚀 Próximos Passos
-
-Envie a seção onde quer aplicar o primeiro componente ou peça: “monte um plano para minha landing”.
-
-## 📦 Componentes Selecionados
-
-| Status | Seção | Componente | Prioridade | Motivo |
-|--------|-------|------------|------------|--------|
-${selectedRows || "| 🟡 Planejado | Hero | catálogo indisponível | Alta | Aguardando catálogo local. |"}`;
+> Limitação: a leitura de sites no modo local é simples e pode não capturar páginas que dependem fortemente de JavaScript. Se necessário, descreva o projeto manualmente.
+`;
   return { text, siteSummary, recommendations, direction, pipeline, collection };
 }
 
