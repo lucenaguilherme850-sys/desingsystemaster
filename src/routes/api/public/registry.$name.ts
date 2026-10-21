@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getDemoSource } from "@/lib/demo-source";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { getFxSourceForSlug } from "@/lib/animfx-source";
 
 // GET /api/public/registry/:name(.json)
 // Formato compatível com shadcn-style registry consumers.
@@ -58,7 +57,7 @@ export const Route = createFileRoute("/api/public/registry/$name")({
             headers: jsonHeaders,
           });
         }
-        const fx = getFxSourceForSlug(row.slug);
+        // Public registry exposes metadata and previews only. Premium source must never be returned by this unauthenticated route.
         const payload = {
           $schema: "lovable-fx.v1",
           name: row.slug,
