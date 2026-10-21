@@ -40,6 +40,25 @@ const GENERIC_CREDENTIALS_ERROR = "E-mail ou senha incorretos.";
 const ATTEMPTS_KEY = "dm.auth.attempts";
 const MAX_ATTEMPTS = 5;
 const LOCK_SECONDS = 60;
+const AUTH_TIMEOUT_MS = 20000;
+
+/** Evita que uma chamada de autenticação deixe a interface presa indefinidamente. */
+function withAuthTimeout<T>(promise: Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => reject(new Error("AUTH_TIMEOUT")), AUTH_TIMEOUT_MS);
+    promise.then(
+      (value) => { clearTimeout(timeoutId); resolve(value); },
+      (error: unknown) => { clearTimeout(timeoutId); reject(error); },
+    );
+  });
+}
+
+function authErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message === "AUTH_TIMEOUT") {
+    return "O serviço de autenticação demorou demais para responder. Verifique sua conexão e tente novamente.";
+  }
+  return "Não foi possível concluir a solicitação. Verifique sua conexão e tente novamente.";
+}
 
 function readAttempts(): { count: number; until: number } {
   if (typeof window === "undefined") return { count: 0, until: 0 };
@@ -104,16 +123,16 @@ function AuthPage() {
 
   /** Após senha correta, verifica confirmação de e-mail e segundo fator. */
   const finishSignIn = async () => {
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData } = await withAuthTimeout(supabase.auth.getUser());
     if (userData.user && !userData.user.email_confirmed_at) {
       // Sessão existe, mas a conta não está ativada: nada de acesso completo.
       navigate({ to: "/verify-email", search: { email: userData.user.email ?? email } });
       return;
     }
 
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const { data: aal } = await withAuthTimeout(supabase.auth.mfa.getAuthenticatorAssuranceLevel());
     if (aal && aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
-      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const { data: factors } = await withAuthTimeout(supabase.auth.mfa.listFactors());
       const factor = factors?.totp?.[0];
       if (factor) {
         setMfaFactorId(factor.id);
@@ -136,10 +155,10 @@ function AuthPage() {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await withAuthTimeout(supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
-      });
+      }));
       if (error) {
         registerFailure();
         const msg = error.message.toLowerCase();
@@ -150,7 +169,9 @@ function AuthPage() {
         );
         return;
       }
-      await finishSignIn();
+      await withAuthTimeout(finishSignIn());
+    } catch (error) {
+      toast.error(authErrorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -168,11 +189,11 @@ function AuthPage() {
     }
     setBusy(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await withAuthTimeout(supabase.auth.signUp({
         email: normalizedEmail,
         password,
         options: { emailRedirectTo: window.location.origin + "/auth/callback" },
-      });
+      }));
       if (error) {
         const msg = error.message.toLowerCase();
         toast.error(
@@ -198,6 +219,8 @@ function AuthPage() {
       toast.success("Conta criada com sucesso.");
       navigate({ to: "/" });
 
+    } catch (error) {
+      toast.error(authErrorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -206,14 +229,16 @@ function AuthPage() {
   const handleForgot = async () => {
     setBusy(true);
     try {
-      await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      await withAuthTimeout(supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
         redirectTo: window.location.origin + "/reset-password",
-      });
+      }));
       // Resposta sempre igual — evita enumeração de usuários.
       toast.success(
         "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
       );
       setMode("login");
+    } catch (error) {
+      toast.error(authErrorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -223,11 +248,11 @@ function AuthPage() {
     if (!mfaFactorId) return;
     setBusy(true);
     try {
-      const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({
+      const { data: challenge, error: cErr } = await withAuthTimeout(supabase.auth.mfa.challenge({
         factorId: mfaFactorId,
-      });
+      }));
       if (cErr || !challenge) throw new Error("challenge_failed");
-      const { error } = await supabase.auth.mfa.verify({
+      const { error } = await withAuthTimeout(supabase.auth.mfa.verify({
         factorId: mfaFactorId,
         challengeId: challenge.id,
         code: mfaCode.replace(/\D/g, ""),
@@ -251,9 +276,9 @@ function AuthPage() {
   const handleGoogle = async () => {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
+      const result = await withAuthTimeout(lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin + "/auth/callback",
-      });
+      }));
       if (result.error) {
         toast.error("Não foi possível entrar com o Google.");
         return;
@@ -262,6 +287,8 @@ function AuthPage() {
       applyRememberMe(remember);
       void logSecurityEvent("login_success", { method: "google" });
       navigate({ to: "/" });
+    } catch (error) {
+      toast.error(authErrorMessage(error));
     } finally {
       setBusy(false);
     }
