@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const inputSchema = z.object({ slug: z.string().min(1).max(200) });
-const SIGNED_TTL = 60 * 60 * 24 * 365 * 5;
+const SIGNED_TTL = 60 * 60 * 24 * 7; // Preview links are short-lived; never issue multi-year URLs.
 const GATEWAY = "https://connector-gateway.lovable.dev/google_drive/drive/v3";
 
 async function driveDownload(fileId: string): Promise<{ body: ArrayBuffer; contentType: string }> {
@@ -56,22 +56,6 @@ export const mirrorAnimmasterDrive = createServerFn({ method: "POST" })
       return signed.signedUrl;
     }
 
-    async function ensureZip(): Promise<string | null> {
-      if (!row!.drive_zip_id) return null;
-      const path = `drive-code/${row!.slug}.zip`;
-      const { data: existing } = await bucket.list("drive-code", { search: `${row!.slug}.zip` });
-      if (!existing?.some((f) => f.name === `${row!.slug}.zip`)) {
-        const { body } = await driveDownload(row!.drive_zip_id);
-        const { error: upErr } = await bucket.upload(path, new Uint8Array(body), {
-          contentType: "application/zip",
-          upsert: true,
-        });
-        if (upErr) throw new Error(upErr.message);
-      }
-      const { data: signed, error: sErr } = await bucket.createSignedUrl(path, SIGNED_TTL);
-      if (sErr) throw new Error(sErr.message);
-      return signed.signedUrl;
-    }
 
     async function ensureInstruction(): Promise<string | null> {
       if (row!.instruction_text) return row!.instruction_text;
@@ -85,9 +69,8 @@ export const mirrorAnimmasterDrive = createServerFn({ method: "POST" })
       return text;
     }
 
-    const [video, zipUrl, instruction] = await Promise.all([
+    const [video, instruction] = await Promise.all([
       ensureVideo(),
-      ensureZip(),
       ensureInstruction(),
     ]);
 
@@ -96,5 +79,6 @@ export const mirrorAnimmasterDrive = createServerFn({ method: "POST" })
       .update({ video_local: video, mirrored: !!video })
       .eq("id", row.id);
 
-    return { video, zipUrl, instruction };
+    // Source ZIPs are served only by the authenticated, plan-checked code endpoint.
+    return { video, zipUrl: null, instruction };
   });
