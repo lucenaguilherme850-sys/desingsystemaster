@@ -20,6 +20,8 @@ export function unlockErrorMessage(err: unknown): string {
     return "Faça login para liberar uma amostra.";
   if (raw.includes("email_not_confirmed"))
     return "Confirme seu e-mail para liberar as amostras grátis.";
+  if (raw.includes("disposable_email_not_allowed"))
+    return "E-mails temporários não podem receber amostras grátis. Use um e-mail permanente.";
   return "Não foi possível liberar agora. Tente novamente.";
 }
 
