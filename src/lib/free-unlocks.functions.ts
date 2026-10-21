@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireVerifiedUser } from "@/lib/verified-auth";
+import { isDisposableEmail } from "@/lib/email-risk";
 
 const schema = z.object({
   slug: z.string().min(1).max(200),
@@ -27,6 +28,9 @@ export const claimFreeUnlock = createServerFn({ method: "POST" })
     
     if (userError) {
       throw new Error("auth_failed");
+    }
+    if (user && isDisposableEmail(user.email)) {
+      throw new Error("disposable_email_not_allowed");
     }
 
 
