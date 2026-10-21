@@ -9,36 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VerifyEmailRouteImport } from './routes/verify-email'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as AnimmasterIndexRouteImport } from './routes/animmaster.index'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
-import { Route as ApiChatDirectorRouteImport } from './routes/api/chat-director'
 import { Route as AnimmasterSlugRouteImport } from './routes/animmaster.$slug'
-import { Route as AuthenticatedAgentIndexRouteImport } from './routes/_authenticated/agent.index'
-import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
-import { Route as AuthenticatedAgentThreadIdRouteImport } from './routes/_authenticated/agent.$threadId'
+import { Route as ApiChatDirectorRouteImport } from './routes/api/chat-director'
+import { Route as AssetsSlugRouteImport } from './routes/assets.$slug'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedAgentIndexRouteImport } from './routes/_authenticated/agent.index'
+import { Route as AuthenticatedAgentThreadIdRouteImport } from './routes/_authenticated/agent.$threadId'
+import { Route as ApiPublicRegistryRouteImport } from './routes/api/public/registry'
 import { Route as ApiPublicRegistryNameRouteImport } from './routes/api/public/registry.$name'
 
-const VerifyEmailRoute = VerifyEmailRouteImport.update({
-  id: '/verify-email',
-  path: '/verify-email',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -46,13 +40,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnimmasterIndexRoute = AnimmasterIndexRouteImport.update({
@@ -60,14 +60,9 @@ const AnimmasterIndexRoute = AnimmasterIndexRouteImport.update({
   path: '/animmaster/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AssetsSlugRoute = AssetsSlugRouteImport.update({
-  id: '/assets/$slug',
-  path: '/assets/$slug',
+const AnimmasterSlugRoute = AnimmasterSlugRouteImport.update({
+  id: '/animmaster/$slug',
+  path: '/animmaster/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatDirectorRoute = ApiChatDirectorRouteImport.update({
@@ -75,20 +70,25 @@ const ApiChatDirectorRoute = ApiChatDirectorRouteImport.update({
   path: '/api/chat-director',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AnimmasterSlugRoute = AnimmasterSlugRouteImport.update({
-  id: '/animmaster/$slug',
-  path: '/animmaster/$slug',
+const AssetsSlugRoute = AssetsSlugRouteImport.update({
+  id: '/assets/$slug',
+  path: '/assets/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAgentIndexRoute = AuthenticatedAgentIndexRouteImport.update({
   id: '/agent/',
   path: '/agent/',
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const ApiPublicRegistryRoute = ApiPublicRegistryRouteImport.update({
-  id: '/api/public/registry',
-  path: '/api/public/registry',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAgentThreadIdRoute =
   AuthenticatedAgentThreadIdRouteImport.update({
@@ -96,10 +96,10 @@ const AuthenticatedAgentThreadIdRoute =
     path: '/agent/$threadId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const ApiPublicRegistryRoute = ApiPublicRegistryRouteImport.update({
+  id: '/api/public/registry',
+  path: '/api/public/registry',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicRegistryNameRoute = ApiPublicRegistryNameRouteImport.update({
   id: '/$name',
@@ -231,32 +231,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/verify-email': {
-      id: '/verify-email'
-      path: '/verify-email'
-      fullPath: '/verify-email'
-      preLoaderRoute: typeof VerifyEmailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -266,11 +245,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/animmaster/': {
@@ -280,18 +280,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnimmasterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/assets/$slug': {
-      id: '/assets/$slug'
-      path: '/assets/$slug'
-      fullPath: '/assets/$slug'
-      preLoaderRoute: typeof AssetsSlugRouteImport
+    '/animmaster/$slug': {
+      id: '/animmaster/$slug'
+      path: '/animmaster/$slug'
+      fullPath: '/animmaster/$slug'
+      preLoaderRoute: typeof AnimmasterSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat-director': {
@@ -301,12 +294,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatDirectorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/animmaster/$slug': {
-      id: '/animmaster/$slug'
-      path: '/animmaster/$slug'
-      fullPath: '/animmaster/$slug'
-      preLoaderRoute: typeof AnimmasterSlugRouteImport
+    '/assets/$slug': {
+      id: '/assets/$slug'
+      path: '/assets/$slug'
+      fullPath: '/assets/$slug'
+      preLoaderRoute: typeof AssetsSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/agent/': {
       id: '/_authenticated/agent/'
@@ -315,13 +322,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/registry': {
-      id: '/api/public/registry'
-      path: '/api/public/registry'
-      fullPath: '/api/public/registry'
-      preLoaderRoute: typeof ApiPublicRegistryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/agent/$threadId': {
       id: '/_authenticated/agent/$threadId'
       path: '/agent/$threadId'
@@ -329,12 +329,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentThreadIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin/users': {
-      id: '/_authenticated/admin/users'
-      path: '/admin/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/api/public/registry': {
+      id: '/api/public/registry'
+      path: '/api/public/registry'
+      fullPath: '/api/public/registry'
+      preLoaderRoute: typeof ApiPublicRegistryRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/registry/$name': {
       id: '/api/public/registry/$name'
