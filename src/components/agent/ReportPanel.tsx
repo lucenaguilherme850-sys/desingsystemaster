@@ -39,7 +39,7 @@ const TABS = [
   { id: "plan", label: "Plano" },
 ] as const;
 
-type TabId = (typeof TABS)[number]["id"];
+type TabId = "dashboard" | "direction" | "collection" | "brief" | "competencies" | "plan";
 
 export function ReportPanel({
   report,
