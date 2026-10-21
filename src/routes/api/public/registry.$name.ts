@@ -69,10 +69,10 @@ export const Route = createFileRoute("/api/public/registry/$name")({
             poster: row.poster_local ?? row.poster_url,
             video: row.video_local ?? row.video_url,
           },
-          hasCode: fx !== null,
-          kind: fx?.kind ?? null,
-          dependencies: fx ? ["react", ...(fx.kind === "handcrafted" && /\bogl\b/.test(fx.files[0].content) ? ["ogl"] : [])] : ["react"],
-          files: fx?.files ?? [],
+          hasCode: false,
+          kind: null,
+          dependencies: ["react"],
+          files: [],
         };
         return new Response(JSON.stringify(payload, null, 2), { headers: jsonHeaders });
       },
