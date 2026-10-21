@@ -13,60 +13,61 @@ function waLink(plan: string, price: string) {
 const plans = [
   {
     name: "Free",
-    price: "$0",
+    price: "R$ 0",
     cadence: "para sempre",
     highlight: false,
-    tagline: "Explore o catálogo",
-    delivers: "Você vê as prévias em vídeo de todos os 300+ componentes, navega pelas categorias e conhece cada demo. O código, o prompt mestre e os arquivos ficam bloqueados.",
+    tagline: "Conheça antes de desbloquear",
+    delivers: "Explore os componentes e as demonstrações disponíveis antes de pagar. O código-fonte premium e os arquivos de implementação não são liberados neste plano.",
     features: [
-      "300+ prévias em vídeo",
-      "Filtros por categoria",
-      "Preview em tela cheia",
-      "Sem código-fonte",
-      "Sem prompt mestre",
+      "Navegação pelo catálogo e categorias",
+      "Pré-visualizações disponíveis",
+      "Demonstrações dos componentes",
+      "3 amostras grátis para recursos elegíveis",
+      "Código-fonte premium não incluído",
+      "Downloads premium não incluídos",
     ],
     cta: null as null | { label: string; href: string },
   },
   {
     name: "PRO",
-    price: "$36,99",
+    price: "R$ 36,99",
     cadence: "único · acesso vitalício",
     highlight: true,
     badge: "Mais popular",
-    tagline: "💎 Toda a biblioteca desbloqueada",
+    tagline: "Biblioteca premium para seus projetos",
     delivers:
-      "Você recebe o código-fonte completo de cada componente, o Prompt Mestre pronto para colar no Lovable/Cursor/ChatGPT (a IA vai perguntar em qual página do seu app usar), os arquivos do Drive e o download do .zip original.",
+      "Desbloqueia o acesso PRO aos componentes premium disponíveis. Código-fonte, instruções e downloads são fornecidos nos itens em que esses materiais estão disponibilizados. O Prompt Mestre ajuda você a orientar uma ferramenta de IA na adaptação ao seu projeto; o plano não inclui desenvolvimento feito por uma equipe.",
     features: [
-      "300+ componentes PRO",
-      "Código-fonte completo",
-      "Prompt Mestre para IA",
-      "Download dos arquivos .zip",
-      "Instruções do autor",
-      "Acesso vitalício",
-      "Atualizações futuras",
+      "Acesso aos componentes marcados como PRO",
+      "Código-fonte nos itens que o disponibilizam",
+      "Prompt Mestre para orientar a IA",
+      "Downloads quando disponíveis por componente",
+      "Instruções de implementação disponíveis",
+      "Pagamento único e acesso vitalício ao PRO",
+      "Atualizações futuras conforme forem publicadas",
     ],
-    cta: { label: "Pagar via WhatsApp", href: waLink("PRO", "$36,99 único") },
+    cta: { label: "Pagar via WhatsApp", href: waLink("PRO", "R$ 36,99 pagamento único") },
   },
   {
     name: "Agent Plus",
-    price: "$69,99",
+    price: "R$ 69,99",
     cadence: "por mês",
     highlight: false,
     accent: true,
-    tagline: "🧠 Creative Director AI",
+    tagline: "Assistente de direção visual com IA",
     delivers:
-      "Tudo do PRO + o Agente Creative Director: ele consegue ver sites, analisar referências (aceita fotos e arquivos), define a direção visual completa (paleta, tipografia, motion, layout) e personaliza componentes especificamente para esse site, gerando o Prompt Mestre adaptado.",
+      "Inclui os recursos PRO e acesso ao Agente Creative Director para trabalhar por conversas e projetos. Use-o para estruturar a direção visual, organizar as referências fornecidas e elaborar recomendações e prompts alinhados ao contexto. Ele não publica nem implementa automaticamente o site inteiro.",
     features: [
-      "Tudo do PRO incluído",
-      "Agente Creative Director",
-      "Pipeline de 7 fases",
-      "Análise de imagens & arquivos",
-      "Direção visual auto-gerada",
-      "Coleções coerentes de UI",
-      "Prompts adaptados ao projeto",
-      "Painel de threads privadas",
+      "Todos os recursos do plano PRO",
+      "Acesso ao Agente Creative Director",
+      "Conversas separadas por projeto",
+      "Orientação para direção visual e identidade",
+      "Ajuda para organizar referências fornecidas",
+      "Prompts adaptados ao contexto do projeto",
+      "Assinatura recorrente de R$ 69,99 por mês",
+      "Acesso ao agente enquanto a assinatura estiver ativa",
     ],
-    cta: { label: "Assinar via WhatsApp", href: waLink("Agent Plus", "$69,99/mês") },
+    cta: { label: "Assinar via WhatsApp", href: waLink("Agent Plus", "R$ 69,99/mês") },
   },
 ];
 
@@ -86,10 +87,7 @@ export function PricingSection() {
             O que o <span className="text-neon-purple">Design Master</span> entrega
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Uma biblioteca curada de <strong className="text-foreground">300+ componentes</strong> premium (heroes, sliders, shaders WebGL, scroll animations,
-            menus, transições, texto animado) — cada um com código, prompt mestre e arquivo baixável.
-            O plano <strong className="text-foreground">Agent Plus</strong> adiciona um AI Creative Director que monta a direção
-            visual do seu projeto do zero.
+            Compare o que cada plano libera na prática. O acesso gratuito permite explorar; o PRO desbloqueia os recursos premium disponíveis na biblioteca; e o Agent Plus acrescenta o agente de direção visual com IA. Código, arquivos e downloads dependem do material disponibilizado em cada componente.
           </p>
           <FreeSamplesBadge className="mt-6" />
         </div>
@@ -180,10 +178,7 @@ export function PricingSection() {
             como funciona o pagamento
           </div>
           <p className="mt-2">
-            Clique em <strong className="text-foreground">Pagar via WhatsApp</strong> — você é enviado direto
-            para o número <strong className="text-foreground">+55 64 07603-5684</strong> com uma mensagem já pronta
-            identificando o plano escolhido. Após a confirmação, sua conta é liberada
-            manualmente pelo administrador (você recebe uma resposta no mesmo chat).
+            Clique em <strong className="text-foreground">Pagar via WhatsApp</strong> para iniciar a solicitação. O pagamento não é processado automaticamente pelo site: o acesso é liberado manualmente após a confirmação do administrador. O Agent Plus é recorrente e requer renovação para manter o acesso ao agente.
           </p>
         </div>
       </div>
