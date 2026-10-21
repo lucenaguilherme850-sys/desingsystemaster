@@ -231,7 +231,7 @@ function AuthPage() {
         factorId: mfaFactorId,
         challengeId: challenge.id,
         code: mfaCode.replace(/\D/g, ""),
-      }));
+      });
       if (error) {
         toast.error("Código inválido ou expirado.");
         return;
