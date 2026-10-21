@@ -41,21 +41,21 @@ function AgentThread() {
     refetchInterval: 4000,
   });
 
-  const [reportOpen, setReportOpen] = useState(true);
+  const [reportOpen, setReportOpen] = useState(() => typeof window === "undefined" || window.innerWidth >= 1280);
   const containerRef = useRef<HTMLDivElement>(null);
   const [leftW, setLeftW] = useState<number>(() => {
     if (typeof window === "undefined") return 240;
-    return Number(localStorage.getItem("agent:leftW")) || 240;
+    try { return Number(localStorage.getItem("agent:leftW")) || 240; } catch { return 240; }
   });
   const [rightW, setRightW] = useState<number>(() => {
-    if (typeof window === "undefined") return 440;
-    return Number(localStorage.getItem("agent:rightW")) || 440;
+    if (typeof window === "undefined") return 340;
+    try { return Number(localStorage.getItem("agent:rightW")) || 340; } catch { return 340; }
   });
   useEffect(() => {
-    localStorage.setItem("agent:leftW", String(leftW));
+    try { localStorage.setItem("agent:leftW", String(leftW)); } catch { /* storage can be disabled */ }
   }, [leftW]);
   useEffect(() => {
-    localStorage.setItem("agent:rightW", String(rightW));
+    try { localStorage.setItem("agent:rightW", String(rightW)); } catch { /* storage can be disabled */ }
   }, [rightW]);
 
   const startDrag = useCallback(
@@ -103,19 +103,19 @@ function AgentThread() {
     <div
       ref={containerRef}
       className="grid h-[calc(100vh-64px)] gap-0 border-t border-border/40 bg-background"
-      style={{ gridTemplateColumns: `${leftW}px 6px minmax(0,1fr) 6px ${rightCol}px` }}
+      style={{ gridTemplateColumns: `minmax(180px, ${leftW}px) 6px minmax(0, 1fr) 6px ${rightCol}px` }}
     >
       <ThreadList
         threads={threadsQ.data ?? []}
         activeId={threadId}
         onNew={async () => {
-          const r = await create({ data: {} });
+          const r = await create({ data: { title: "Novo projeto" } });
           qc.invalidateQueries({ queryKey: ["agent-threads"] });
           navigate({ to: "/agent/$threadId", params: { threadId: r.id } });
         }}
         onSelect={(id) => navigate({ to: "/agent/$threadId", params: { threadId: id } })}
         onDelete={async (id) => {
-          await del({ data: { id } });
+          await del({ data: { threadId: id } });
           const rest = (threadsQ.data ?? []).filter((t) => t.id !== id);
           qc.invalidateQueries({ queryKey: ["agent-threads"] });
           if (id === threadId) {
@@ -124,7 +124,7 @@ function AgentThread() {
           }
         }}
         onRename={async (id, title) => {
-          await rename({ data: { id, title } });
+          await rename({ data: { threadId: id, title } });
           qc.invalidateQueries({ queryKey: ["agent-threads"] });
         }}
       />

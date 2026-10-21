@@ -32,7 +32,7 @@ export function ThreadList({
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-4">
         {threads.length === 0 && (
-          <p className="px-2 text-xs text-muted-foreground">Nenhum projeto ainda.</p>
+          <p className="px-2 text-xs text-muted-foreground">Nenhum projeto ainda. Clique em Novo para começar.</p>
         )}
         {threads.map((t) => (
           <div

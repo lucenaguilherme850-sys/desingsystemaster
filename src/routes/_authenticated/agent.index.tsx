@@ -20,7 +20,7 @@ function AgentIndex() {
     if (q.data.length > 0) {
       navigate({ to: "/agent/$threadId", params: { threadId: q.data[0].id } });
     } else {
-      create({ data: {} }).then((r) =>
+      create({ data: { title: "Novo projeto" } }).then((r) =>
         navigate({ to: "/agent/$threadId", params: { threadId: r.id } }),
       );
     }

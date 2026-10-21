@@ -120,10 +120,10 @@ export function ChatPane({
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-semibold">Agente Creative Director</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground max-w-xl mx-auto">
-              Descreva o projeto que você quer criar — estilo, referências, público — e eu
-              defino a direção criativa, seleciono os componentes ideais do catálogo e
-              monto o plano de implementação. Você também pode anexar imagens ou arquivos
-              para eu analisar.
+              Vamos definir a direção do seu projeto sem complicar. Conte o que está criando,
+              qual é o objetivo e para quem é. Se já tiver um site ou referências visuais,
+              envie a URL ou anexe imagens. Vou organizar as recomendações, os componentes
+              e o plano de implementação no documento ao lado.
             </p>
           </div>
         )}
@@ -227,7 +227,7 @@ export function ChatPane({
               }
             }}
             rows={2}
-            placeholder="Ex: Preciso de um site premium… (ou arraste imagens/PDFs aqui)"
+            placeholder="Descreva o projeto, objetivo e público… (Enter para enviar; Shift+Enter para nova linha)"
             className="min-h-[60px] flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <button
