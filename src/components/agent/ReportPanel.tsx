@@ -35,11 +35,8 @@ export type Report = {
 
 const TABS = [
   { id: "dashboard", label: "Resumo" },
-  { id: "direction", label: "🎨 Direção" },
   { id: "collection", label: "Componentes" },
-  { id: "brief", label: "📝 Briefing" },
-  { id: "competencies", label: "Especialistas" },
-  { id: "plan", label: "🚀 Plano" },
+  { id: "plan", label: "Plano" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -112,8 +109,7 @@ export function ReportPanel({
       <div className="flex-1 overflow-y-auto p-4 text-sm">
         {!report ? (
           <p className="text-xs text-muted-foreground">
-            Ainda não há relatório. Comece a conversa — o agente vai preencher automaticamente ao
-            longo das 10 fases.
+            Ainda não há resumo. Conte sua ideia no chat para começar.
           </p>
         ) : tab === "dashboard" ? (
           <div className="space-y-6">
@@ -125,10 +121,6 @@ export function ReportPanel({
               collection={collection}
               onTabChange={setTab}
             />
-            <div className="pt-4 border-t border-border/40">
-              <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-4">Pipeline de Execução</h4>
-              <PipelineView pipeline={pipeline} emotion={emotion} />
-            </div>
           </div>
         ) : tab === "direction" ? (
           <DirectionView direction={direction} emotion={emotion} />
