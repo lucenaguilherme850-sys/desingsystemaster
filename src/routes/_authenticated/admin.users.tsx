@@ -172,8 +172,6 @@ function AdminUsers() {
         </div>
       </div>
 
-      <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card/30">
-        <div className="border-b border-border/70 px-5 py-4"><h2 className="text-sm font-semibold">Criar conta manualmente</h2><p className="mt-1 text-xs text-muted-foreground">Use apenas para cadastros autorizados pela administração.</p></div>
       <section aria-label="Resumo de usuários" className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard icon={<Users className="size-4" />} label="Total de contas" value={q.isLoading ? "—" : allUsers.length} detail="Contas registradas" />
         <SummaryCard icon={<UserCheck className="size-4" />} label="Ativas e confirmadas" value={q.isLoading ? "—" : confirmedCount} detail="E-mail confirmado e sem bloqueio" tone="green" />
@@ -181,6 +179,8 @@ function AdminUsers() {
         <SummaryCard icon={<ShieldAlert className="size-4" />} label="Bloqueadas" value={q.isLoading ? "—" : blockedCount} detail={`${privilegedCount} conta(s) com plano ou privilégio` } tone="red" />
       </section>
 
+      <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card/30">
+        <div className="border-b border-border/70 px-5 py-4"><h2 className="text-sm font-semibold">Criar conta manualmente</h2><p className="mt-1 text-xs text-muted-foreground">Use apenas para cadastros autorizados pela administração.</p></div>
       <form
         onSubmit={handleCreate}
         className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_150px_auto] sm:p-5"
