@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { unzipSync, strFromU8 } from "fflate";
 import { buildComponentSpec } from "@/lib/component-spec";
+import { requireVerifiedUser } from "@/lib/verified-auth";
 
 const inputSchema = z.object({ slug: z.string().min(1).max(200) });
 const promptInputSchema = z.object({ slug: z.string().min(1).max(200) });
@@ -107,15 +108,27 @@ async function loadFilesForSlug(slug: string) {
 }
 
 export const getAnimmasterDriveCode = createServerFn({ method: "POST" })
+  .middleware([requireVerifiedUser])
   .inputValidator((data: unknown) => inputSchema.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles, error: roleError } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.user.id);
+    if (roleError) throw new Error("access_check_failed");
+    const allowed = (roles ?? []).some((r) => ["admin", "pro", "plus", "agent_plus", "agent plus"].includes(String(r.role).toLowerCase().trim()));
+    if (!allowed) throw new Error("pro_required");
     const { files } = await loadFilesForSlug(data.slug);
     return { files };
   });
 
 export const getAnimmasterDriveMasterPrompt = createServerFn({ method: "POST" })
+  .middleware([requireVerifiedUser])
   .inputValidator((data: unknown) => promptInputSchema.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles, error: roleError } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.user.id);
+    if (roleError) throw new Error("access_check_failed");
+    const allowed = (roles ?? []).some((r) => ["admin", "pro", "plus", "agent_plus", "agent plus"].includes(String(r.role).toLowerCase().trim()));
+    if (!allowed) throw new Error("pro_required");
     const { row, files } = await loadFilesForSlug(data.slug);
     if (!row || !files.length) return { prompt: "" };
     const spec = buildComponentSpec({
