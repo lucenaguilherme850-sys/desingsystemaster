@@ -34,11 +34,11 @@ export type Report = {
 } | null;
 
 const TABS = [
-  { id: "dashboard", label: "📊 Dashboard" },
+  { id: "dashboard", label: "Resumo" },
   { id: "direction", label: "🎨 Direção" },
-  { id: "collection", label: "🧩 Coleção" },
+  { id: "collection", label: "Componentes" },
   { id: "brief", label: "📝 Briefing" },
-  { id: "competencies", label: "🧠 Competências" },
+  { id: "competencies", label: "Especialistas" },
   { id: "plan", label: "🚀 Plano" },
 ] as const;
 
@@ -96,7 +96,7 @@ export function ReportPanel({
           {copied ? "Copiado" : "Copiar JSON"}
         </button>
       </div>
-      <div className="flex gap-1 border-b border-border/40 p-2">
+      <div className="flex flex-wrap gap-1 border-b border-border/40 p-2">
         {TABS.map((t) => (
           <button
             key={t.id}
