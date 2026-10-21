@@ -42,7 +42,7 @@ export const Route = createFileRoute("/assets/$slug")({
     return (
       <div className="mx-auto max-w-3xl px-6 py-24 text-center">
         <h1 className="text-2xl font-semibold">Could not load this asset</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error instanceof Error ? error.message : String(error)}</p>
         <Button
           className="mt-4"
           onClick={() => {

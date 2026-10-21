@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2 } from "lucide-react";
 import { getAnimmasterDriveCode } from "@/lib/animmaster-drive-code.functions";
+import { supabase } from "@/integrations/supabase/client";
 import ComponentSpec from "./ComponentSpec";
 
 type Props = {
@@ -19,7 +20,13 @@ export default function ComponentSpecDrive(props: Props) {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    fetchCode({ data: { slug: props.slug } })
+    // Só chama o servidor quando há sessão — evita 401 sem cabeçalho de autorização.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!data.session?.access_token) return { files: [] };
+        return fetchCode({ data: { slug: props.slug } });
+      })
       .then((r) => {
         if (!alive) return;
         setFiles(r.files.map((f) => ({ path: f.path, content: f.content, language: f.language })));
