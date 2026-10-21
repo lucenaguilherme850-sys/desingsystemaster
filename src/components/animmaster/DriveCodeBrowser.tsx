@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Copy, Check, FileCode } from "lucide-react";
 import { getAnimmasterDriveCode } from "@/lib/animmaster-drive-code.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 type File = { path: string; content: string; size: number; language: string };
 
@@ -16,7 +17,13 @@ export default function DriveCodeBrowser({ slug }: { slug: string }) {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    fetchCode({ data: { slug } })
+    // Sem sessão não há token: não chama o servidor (evita 401).
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!data.session?.access_token) throw new Error("faça login para ver o código");
+        return fetchCode({ data: { slug } });
+      })
       .then((r) => {
         if (!alive) return;
         setFiles(r.files);
