@@ -8,6 +8,7 @@ import logo from "@/assets/dm-logo.png.asset.json";
 import { logSecurityEvent } from "@/lib/security-events";
 import { applyRememberMe } from "@/lib/session-persistence";
 import { cn } from "@/lib/utils";
+import { isDisposableEmail } from "@/lib/email-risk";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -156,6 +157,11 @@ function AuthPage() {
   };
 
   const handleSignup = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (isDisposableEmail(normalizedEmail)) {
+      toast.error("Use um e-mail permanente. Endereços temporários não podem criar uma conta.");
+      return;
+    }
     if (password.length < 8) {
       toast.error("A senha precisa ter pelo menos 8 caracteres.");
       return;
@@ -163,7 +169,7 @@ function AuthPage() {
     setBusy(true);
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password,
         options: { emailRedirectTo: window.location.origin + "/auth/callback" },
       });
