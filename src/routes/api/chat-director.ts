@@ -87,7 +87,7 @@ O que fazer agora.
 
 ═══ LISTA VIVA DE COMPONENTES DO PROJETO ═══
 
-Sempre que recomendar/substituir/remover um componente, RE-EMITA no final da resposta a tabela atualizada:
+Emita a tabela completa de componentes somente quando houver uma seleção nova ou alteração real. Em respostas de acompanhamento sem mudanças na seleção, não repita a tabela; responda diretamente à pergunta e mantenha o relatório estruturado atualizado:
 
 ## 📦 Componentes Selecionados (Coleção Coerente)
 
