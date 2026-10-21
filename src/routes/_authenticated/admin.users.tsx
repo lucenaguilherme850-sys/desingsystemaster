@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Crown, Sparkles, ShieldCheck, X, Search, Ban, Trash2, UserPlus, Loader2 } from "lucide-react";
+import { Crown, Sparkles, ShieldCheck, X, Search, Ban, Trash2, UserPlus, Loader2, Users, UserCheck, Clock3, ShieldAlert, RefreshCw } from "lucide-react";
 import {
   adminGrantRole,
   adminListUsers,
@@ -139,25 +139,29 @@ function AdminUsers() {
     );
   }
 
-  const rows = (Array.isArray(q.data) ? q.data : []).filter((u) =>
-    filter ? (u.email ?? "").toLowerCase().includes(filter.toLowerCase()) : true,
-  );
+  const allUsers = Array.isArray(q.data) ? q.data : [];
+  const rows = allUsers.filter((u) => filter ? (u.email ?? "").toLowerCase().includes(filter.trim().toLowerCase()) : true);
+  const confirmedCount = allUsers.filter((u) => Boolean(u.email_confirmed_at) && !u.blocked).length;
+  const pendingCount = allUsers.filter((u) => !u.email_confirmed_at).length;
+  const blockedCount = allUsers.filter((u) => u.blocked).length;
+  const privilegedCount = allUsers.filter((u) => u.roles.some((role) => ["pro", "plus", "admin"].includes(role))).length;
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-neon">
             painel de administração
           </div>
-          <h1 className="mt-2 text-3xl font-extrabold uppercase">Usuários cadastrados</h1>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Gestão de usuários</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Libere manualmente os planos <span className="text-neon font-semibold">PRO</span> e{" "}
             <span className="text-neon-purple font-semibold">Agent Plus</span> após confirmação
             do pagamento no WhatsApp.
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1.5">
+        <button type="button" onClick={() => { void qc.invalidateQueries({ queryKey: ["admin-users"] }); }} disabled={q.isFetching} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted/50 disabled:opacity-50"><RefreshCw className={`size-4 ${q.isFetching ? "animate-spin" : ""}`} />Atualizar lista</button>
+        <div className="hidden items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1.5">
           <Search className="size-3.5 text-muted-foreground" />
           <input
             value={filter}
@@ -168,9 +172,18 @@ function AdminUsers() {
         </div>
       </div>
 
+      <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card/30">
+        <div className="border-b border-border/70 px-5 py-4"><h2 className="text-sm font-semibold">Criar conta manualmente</h2><p className="mt-1 text-xs text-muted-foreground">Use apenas para cadastros autorizados pela administração.</p></div>
+      <section aria-label="Resumo de usuários" className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard icon={<Users className="size-4" />} label="Total de contas" value={q.isLoading ? "—" : allUsers.length} detail="Contas registradas" />
+        <SummaryCard icon={<UserCheck className="size-4" />} label="Ativas e confirmadas" value={q.isLoading ? "—" : confirmedCount} detail="E-mail confirmado e sem bloqueio" tone="green" />
+        <SummaryCard icon={<Clock3 className="size-4" />} label="Confirmação pendente" value={q.isLoading ? "—" : pendingCount} detail="Ainda não confirmaram o e-mail" tone="amber" />
+        <SummaryCard icon={<ShieldAlert className="size-4" />} label="Bloqueadas" value={q.isLoading ? "—" : blockedCount} detail={`${privilegedCount} conta(s) com plano ou privilégio` } tone="red" />
+      </section>
+
       <form
         onSubmit={handleCreate}
-        className="mt-6 grid gap-3 rounded-2xl border border-border bg-card/40 p-4 sm:grid-cols-[1fr_1fr_150px_auto]"
+        className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_150px_auto] sm:p-5"
       >
         <input
           type="email"
@@ -181,7 +194,8 @@ function AdminUsers() {
           className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
         />
         <input
-          type="text"
+          type="password"
+          autoComplete="new-password"
           required
           minLength={8}
           value={newPassword}
@@ -207,10 +221,15 @@ function AdminUsers() {
           Cadastrar
         </button>
       </form>
+      </section>
 
-
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border">
-        <table className="w-full text-sm">
+      <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card/20">
+        <div className="flex flex-col gap-4 border-b border-border/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div><h2 className="text-sm font-semibold">Contas cadastradas</h2><p className="mt-1 text-xs text-muted-foreground">{q.isLoading ? "Carregando registros…" : `${rows.length} de ${allUsers.length} conta(s)${filter ? " encontradas" : ""}`}</p></div>
+          <label className="flex w-full items-center gap-2 rounded-xl border border-border bg-background/80 px-3 py-2 sm:max-w-sm"><Search className="size-4 shrink-0 text-muted-foreground" /><input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Buscar por e-mail…" aria-label="Buscar usuários por e-mail" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60" />{filter && <button type="button" onClick={() => setFilter("")} className="text-xs text-muted-foreground hover:text-foreground">Limpar</button>}</label>
+        </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[1080px] text-sm">
           <thead className="bg-card/60 text-left font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Email</th>
@@ -343,8 +362,15 @@ function AdminUsers() {
           </tbody>
         </table>
       </div>
+      </div>
+      </section>
     </div>
   );
+}
+
+function SummaryCard({ icon, label, value, detail, tone = "default" }: { icon: React.ReactNode; label: string; value: string | number; detail: string; tone?: "default" | "green" | "amber" | "red" }) {
+  const tones = { default: "border-border/70 bg-card/60 text-foreground", green: "border-neon/20 bg-neon/5 text-neon", amber: "border-amber-500/20 bg-amber-500/5 text-amber-400", red: "border-destructive/20 bg-destructive/5 text-destructive" };
+  return <div className={`rounded-2xl border p-4 ${tones[tone]}`}><div className="flex items-center justify-between gap-3"><span className="text-xs font-medium text-muted-foreground">{label}</span><span className="grid size-8 place-items-center rounded-xl bg-background/70">{icon}</span></div><div className="mt-3 text-3xl font-bold tracking-tight tabular-nums">{value}</div><p className="mt-1 text-[11px] leading-4 text-muted-foreground">{detail}</p></div>;
 }
 
 function RoleBtn({
