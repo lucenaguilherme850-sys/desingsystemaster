@@ -2,47 +2,51 @@ import { useEffect, useRef } from "react";
 
 /**
  * CursorGlow
- * -------------------------------------------------------
- * Halo cyan radial de baixa opacidade que segue o cursor com
- * lerp. Fixado no viewport, atrás de todo o conteúdo. Recria
- * a "névoa" azulada que o designmaster.com.br tem ao mover o mouse.
- * Desativa em prefers-reduced-motion e em toque.
+ * Moves the glow smoothly while the pointer is moving, then stops the
+ * animation loop instead of consuming a frame on every idle screen.
  */
 export function CursorGlow() {
   const dotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const reduced =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const coarse =
-      typeof window !== "undefined" &&
-      window.matchMedia("(pointer: coarse)").matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
     if (reduced || coarse) return;
 
     const el = dotRef.current;
     if (!el) return;
+
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
     let x = mx;
     let y = my;
     let raf = 0;
 
-    const onMove = (e: PointerEvent) => {
-      mx = e.clientX;
-      my = e.clientY;
-    };
     const tick = () => {
-      x += (mx - x) * 0.08;
-      y += (my - y) * 0.08;
+      x += (mx - x) * 0.12;
+      y += (my - y) * 0.12;
       el.style.transform = `translate3d(${x - 400}px, ${y - 400}px, 0)`;
-      raf = requestAnimationFrame(tick);
+
+      if (Math.abs(mx - x) > 0.5 || Math.abs(my - y) > 0.5) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        raf = 0;
+      }
     };
+
+    const onMove = (event: PointerEvent) => {
+      mx = event.clientX;
+      my = event.clientY;
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+
+    // Position the glow once, then only animate in response to pointer movement.
+    el.style.transform = `translate3d(${x - 400}px, ${y - 400}px, 0)`;
     window.addEventListener("pointermove", onMove, { passive: true });
-    raf = requestAnimationFrame(tick);
+
     return () => {
       window.removeEventListener("pointermove", onMove);
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 

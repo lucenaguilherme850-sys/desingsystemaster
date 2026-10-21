@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 
 export type PreviewQuality = "auto" | "low" | "medium" | "high";
 
@@ -35,38 +35,63 @@ const PRESETS: Record<Exclude<PreviewQuality, "auto">, PreviewQualityConfig> = {
   high: {
     autoplay: true,
     preload: "auto",
-    maxConcurrent: 8,
+    maxConcurrent: 4,
     hoverOnly: false,
     label: "720p · auto",
   },
 };
 
 function detectAuto(): Exclude<PreviewQuality, "auto"> {
-  if (typeof navigator === "undefined") return "high";
-  const conn = (navigator as unknown as { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
-  if (conn?.saveData) return "low";
-  const t = conn?.effectiveType;
-  if (t === "slow-2g" || t === "2g") return "low";
-  if (t === "3g") return "medium";
-  return "high";
+  if (typeof navigator === "undefined") return "medium";
+
+  const nav = navigator as Navigator & {
+    connection?: { effectiveType?: string; saveData?: boolean };
+    deviceMemory?: number;
+  };
+  const connection = nav.connection;
+
+  if (connection?.saveData) return "low";
+
+  const networkType = connection?.effectiveType;
+  if (networkType === "slow-2g" || networkType === "2g") return "low";
+  if (networkType === "3g") return "medium";
+
+  // Avoid autoplaying multiple videos by default on constrained devices.
+  if (
+    (typeof nav.deviceMemory === "number" && nav.deviceMemory < 4) ||
+    (typeof nav.hardwareConcurrency === "number" && nav.hardwareConcurrency <= 4)
+  ) {
+    return "low";
+  }
+
+  // Prefer poster-first previews unless the user explicitly selects High.
+  return "medium";
 }
 
 const listeners = new Set<() => void>();
 let current: PreviewQuality = "auto";
 
 if (typeof window !== "undefined") {
-  const stored = window.localStorage.getItem(STORAGE_KEY) as PreviewQuality | null;
-  if (stored === "auto" || stored === "low" || stored === "medium" || stored === "high") {
-    current = stored;
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY) as PreviewQuality | null;
+    if (stored === "auto" || stored === "low" || stored === "medium" || stored === "high") {
+      current = stored;
+    }
+  } catch {
+    // Storage may be unavailable in private or restricted browsing contexts.
   }
 }
 
 export function setPreviewQuality(q: PreviewQuality) {
   current = q;
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEY, q);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, q);
+    } catch {
+      // Keep the in-memory preference even if storage is unavailable.
+    }
   }
-  listeners.forEach((l) => l());
+  listeners.forEach((listener) => listener());
 }
 
 export function usePreviewQuality(): {
@@ -75,12 +100,12 @@ export function usePreviewQuality(): {
   setQuality: (q: PreviewQuality) => void;
 } {
   const quality = useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
+    (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
     },
     () => current,
-    () => "high" as PreviewQuality // Default high during SSR
+    () => "medium" as PreviewQuality,
   );
 
   const resolved: Exclude<PreviewQuality, "auto"> =
