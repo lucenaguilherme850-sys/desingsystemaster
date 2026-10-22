@@ -4,4 +4,4 @@ Disallow: /agent/
 Disallow: /admin/
 Disallow: /auth/
 
-Sitemap: https://animemaster.lovable.app/sitemap.xml
+Sitemap: https://desingsystemaster.lovable.app/sitemap.xml
