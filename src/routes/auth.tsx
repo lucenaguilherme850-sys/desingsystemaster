@@ -94,6 +94,8 @@ function AuthPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formError, setFormError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -114,6 +116,21 @@ function AuthPage() {
     return () => clearInterval(id);
   }, []);
 
+  const switchMode = (next: Mode) => {
+    if (busy) return;
+    setFormError("");
+    setPassword("");
+    setConfirmPassword("");
+    setMfaCode("");
+    setShowPassword(false);
+    setMode(next);
+  };
+
+  const reportError = (message: string) => {
+    setFormError(message);
+    toast.error(message);
+  };
+
   const registerFailure = () => {
     const current = readAttempts();
     const count = current.until > Date.now() ? current.count : current.count + 1;
@@ -123,16 +140,19 @@ function AuthPage() {
 
   /** Após senha correta, verifica confirmação de e-mail e segundo fator. */
   const finishSignIn = async () => {
-    const { data: userData } = await withAuthTimeout(supabase.auth.getUser());
+    const { data: userData, error: userError } = await withAuthTimeout(supabase.auth.getUser());
+    if (userError || !userData.user) throw new Error("SESSION_INVALID");
     if (userData.user && !userData.user.email_confirmed_at) {
       // Sessão existe, mas a conta não está ativada: nada de acesso completo.
       navigate({ to: "/verify-email", search: { email: userData.user.email ?? email } });
       return;
     }
 
-    const { data: aal } = await withAuthTimeout(supabase.auth.mfa.getAuthenticatorAssuranceLevel());
+    const { data: aal, error: aalError } = await withAuthTimeout(supabase.auth.mfa.getAuthenticatorAssuranceLevel());
+    if (aalError) throw aalError;
     if (aal && aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
-      const { data: factors } = await withAuthTimeout(supabase.auth.mfa.listFactors());
+      const { data: factors, error: factorsError } = await withAuthTimeout(supabase.auth.mfa.listFactors());
+      if (factorsError) throw factorsError;
       const factor = factors?.totp?.[0];
       if (factor) {
         setMfaFactorId(factor.id);
@@ -153,6 +173,7 @@ function AuthPage() {
       toast.error(`Muitas tentativas. Tente novamente em ${lockLeft}s.`);
       return;
     }
+    setFormError("");
     setBusy(true);
     try {
       const { error } = await withAuthTimeout(supabase.auth.signInWithPassword({
@@ -183,10 +204,15 @@ function AuthPage() {
       toast.error("Use um e-mail permanente. Endereços temporários não podem criar uma conta.");
       return;
     }
+    if (password !== confirmPassword) {
+      reportError("As senhas não coincidem.");
+      return;
+    }
     if (password.length < 8) {
       toast.error("A senha precisa ter pelo menos 8 caracteres.");
       return;
     }
+    setFormError("");
     setBusy(true);
     try {
       const { data, error } = await withAuthTimeout(supabase.auth.signUp({
@@ -227,16 +253,18 @@ function AuthPage() {
   };
 
   const handleForgot = async () => {
+    setFormError("");
     setBusy(true);
     try {
-      await withAuthTimeout(supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      const { error } = await withAuthTimeout(supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
         redirectTo: window.location.origin + "/reset-password",
       }));
+      if (error) throw error;
       // Resposta sempre igual — evita enumeração de usuários.
       toast.success(
         "Se existir uma conta associada a este e-mail, enviaremos as instruções de recuperação.",
       );
-      setMode("login");
+      switchMode("login");
     } catch (error) {
       toast.error(authErrorMessage(error));
     } finally {
@@ -297,6 +325,7 @@ function AuthPage() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
+    setFormError("");
     if (mode === "login") void handleLogin();
     else if (mode === "signup") void handleSignup();
     else if (mode === "forgot") void handleForgot();
@@ -322,10 +351,10 @@ function AuthPage() {
           : "Entre para acessar sua conta.";
 
   return (
-    <main className="grid min-h-[85vh] place-items-center px-4 py-10">
+    <main className="relative grid min-h-[85vh] place-items-center overflow-hidden px-4 py-12 before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_50%_15%,hsl(var(--primary)/0.09),transparent_65%)]">
       <form
         onSubmit={submit}
-        className="w-full max-w-md rounded-2xl border border-border bg-card/70 p-6 backdrop-blur-xl sm:p-8"
+        className="relative w-full max-w-[440px] rounded-3xl border border-border/80 bg-card/95 p-6 shadow-2xl shadow-black/10 backdrop-blur-xl sm:p-9"
       >
         <div className="flex flex-col items-center text-center">
           <img
@@ -337,6 +366,13 @@ function AuthPage() {
           <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
 
+        {mode !== "mfa" && mode !== "forgot" && (
+          <div className="mt-7 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/50 p-1" role="tablist" aria-label="Acesso à conta">
+            <button type="button" role="tab" aria-selected={mode === "login"} disabled={busy} onClick={() => switchMode("login")} className={cn("rounded-lg px-3 py-2 text-sm font-medium transition-colors", mode === "login" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>Entrar</button>
+            <button type="button" role="tab" aria-selected={mode === "signup"} disabled={busy} onClick={() => switchMode("signup")} className={cn("rounded-lg px-3 py-2 text-sm font-medium transition-colors", mode === "signup" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>Criar conta</button>
+          </div>
+        )}
+        {formError && <p role="alert" className="mt-5 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{formError}</p>}
         {mode === "mfa" ? (
           <>
             <label className="mt-6 block text-sm text-foreground" htmlFor="mfa-code">
@@ -363,6 +399,9 @@ function AuthPage() {
               type="email"
               required
               autoComplete="email"
+              disabled={busy}
+              maxLength={254}
+              placeholder="voce@exemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
@@ -378,7 +417,9 @@ function AuthPage() {
                     id="auth-password"
                     type={showPassword ? "text" : "password"}
                     required
-                    minLength={8}
+                    minLength={mode === "signup" ? 8 : undefined}
+                    disabled={busy}
+                    placeholder={mode === "signup" ? "Mínimo de 8 caracteres" : "Sua senha"}
                     autoComplete={mode === "signup" ? "new-password" : "current-password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -394,6 +435,14 @@ function AuthPage() {
                   </button>
                 </div>
 
+                {mode === "signup" && (
+                  <>
+                    <label className="mt-4 block text-sm text-foreground" htmlFor="confirm-password">Confirmar senha</label>
+                    <input id="confirm-password" type="password" autoComplete="new-password" required minLength={8} disabled={busy} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Digite a senha novamente" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground" />
+                    {confirmPassword && password !== confirmPassword && <p className="mt-1 text-xs text-destructive">As senhas precisam ser iguais.</p>}
+                    <p className="mt-2 text-xs text-muted-foreground">Use um e-mail válido: você precisará confirmá-lo antes de acessar sua conta.</p>
+                  </>
+                )}
                 {mode === "signup" && password.length > 0 && (
                   <div className="mt-2">
                     <div className="flex gap-1" aria-hidden>
@@ -430,7 +479,7 @@ function AuthPage() {
         )}
 
         <button
-          disabled={busy || (mode === "login" && lockLeft > 0)}
+          disabled={busy || (mode === "login" && lockLeft > 0) || (mode === "signup" && (password.length < 8 || password !== confirmPassword))}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-primary py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
         >
           {busy && <Loader2 className="size-4 animate-spin" />}
@@ -487,7 +536,8 @@ function AuthPage() {
             <>
               <button
                 type="button"
-                onClick={() => setMode("forgot")}
+                onClick={() => switchMode("forgot")}
+                disabled={busy}
                 className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
                 Esqueceu sua senha?
@@ -496,7 +546,8 @@ function AuthPage() {
                 Não possui uma conta?{" "}
                 <button
                   type="button"
-                  onClick={() => setMode("signup")}
+                  onClick={() => switchMode("signup")}
+                  disabled={busy}
                   className="font-semibold text-primary underline underline-offset-4"
                 >
                   Criar conta
@@ -507,7 +558,8 @@ function AuthPage() {
           {(mode === "signup" || mode === "forgot" || mode === "mfa") && (
             <button
               type="button"
-              onClick={() => setMode("login")}
+              onClick={() => switchMode("login")}
+              disabled={busy}
               className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Voltar para o login
