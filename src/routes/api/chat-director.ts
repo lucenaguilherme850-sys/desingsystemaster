@@ -27,25 +27,20 @@ import {
 } from "@/lib/creative-direction";
 import { findVisualMatches, decodeAttachmentToBuffer } from "@/lib/image-match.server";
 
-const SYSTEM_BASE = `Você é o Creative Director da AnimMaster. Ajude o usuário a transformar uma ideia em uma direção visual clara e um plano de execução prático.
+const SYSTEM_BASE = `Você é o Creative Director da AnimMaster. Responda em português e acompanhe o contexto da conversa.
 
-REGRAS:
-- Responda em português, com clareza e brevidade. Evite textos longos, jargões e repetir informações.
-- Faça uma pergunta objetiva por vez quando faltar algo essencial. Não interrogue o usuário sobre tudo antes de ajudar.
-- Entenda objetivo, público e estilo; depois recomende somente o que for relevante.
-- Nunca invente componentes ou slugs. Pesquise no catálogo com searchAnimasterLibrary e confirme detalhes com getComponentDetails antes de recomendar.
-- Se o usuário fornecer uma URL, use fetchUrl. Se o site não puder ser lido, explique isso em uma frase e peça uma alternativa.
-- Preserve o contexto do projeto entre mensagens. Não refaça o briefing nem repita recomendações já apresentadas sem motivo.
-- Atualize o relatório com as decisões confirmadas. Salve-o com saveReport quando houver informações suficientes.
-- Só mostre tabela completa de componentes quando a seleção mudar. Nos acompanhamentos, responda diretamente.
-- Termine com um próximo passo concreto quando isso ajudar.
-
-FORMATO PADRÃO:
-1. Resumo curto.
-2. Recomendações essenciais, com o motivo de cada uma.
-3. Próxima ação.
-
-Use apenas as seções necessárias. Não force um relatório longo em perguntas simples. `;
+REGRAS DE RESPOSTA:
+- Responda primeiro ao pedido mais recente, sem repetir briefing, diagnóstico, histórico ou decisões já tomadas.
+- Por padrão, use 1 a 3 frases curtas (até 70 palavras). Se precisar, use no máximo 3 tópicos breves.
+- Perguntas simples recebem respostas simples. Se o usuário pedir detalhes, código, comparação ou plano, aprofunde apenas o necessário.
+- Faça no máximo uma pergunta quando faltar uma informação indispensável.
+- Não gere relatórios, tabelas, listas de componentes ou planos completos no chat sem solicitação explícita. Use o relatório lateral para informações estruturadas.
+- Preserve preferências e decisões anteriores; não reinicie a análise a cada mensagem.
+- Recomende apenas componentes pertinentes e reais, confirmados no catálogo.
+- Não invente resultados de análise, URLs acessadas ou ações executadas.
+- Se houver erro, explique em uma frase o problema e o próximo passo.
+- Não use introduções genéricas, despedidas, resumos redundantes ou seções fixas.
+`;
 
 const RateLimitSchema = z.object({
   messages: z.array(z.any()),
@@ -769,27 +764,21 @@ async function buildLocalDirectorReply({
       : `\n## ⚠️ Leitura do Site\n\n- **URL:** ${siteSummary.url}\n- **Status:** ${siteSummary.status ?? "indisponível"}\n- **Problema:** ${siteSummary.error || "não foi possível carregar a página."}\n- **Ação:** envie uma URL pública funcionando ou descreva o projeto em 3-5 linhas.\n`
     : "";
 
-  const text = `## Resumo
-
-Modo local ativo — sem consumo de créditos externos.
-${siteBlock}
-## Direção recomendada
-
-- **Objetivo visual:** ${direction.profile.name} — ${direction.profile.description}
-- **Prioridade:** clareza, hierarquia e conversão; usar motion apenas quando reforçar a experiência.
-
-## Componentes recomendados
-
-| Seção | Componente | Prioridade | Motivo |
-|---|---|---|---|
-${componentRows || "| Hero | catálogo indisponível | Alta | Não encontrei componentes locais para recomendar. |"}
-
-## Próximo passo
-
-Escolha uma seção para aprofundar ou peça um plano de implementação. O documento lateral mantém o briefing, a coleção e o plano; não é necessário repetir tudo a cada mensagem.
-
-> Limitação: a leitura de sites no modo local é simples e pode não capturar páginas que dependem fortemente de JavaScript. Se necessário, descreva o projeto manualmente.
-`;
+  // O chat responde apenas à intenção atual; detalhes completos ficam no painel lateral.
+  const isFirstTurn = userTurns.length <= 1;
+  const asksForComponents = /component|efeito|anima|biblioteca|cat[aá]logo|recomend|sugest|hero|navbar|scroll/i.test(latestText);
+  const asksForDetails = /detalh|explic|plano|passo a passo|lista completa|tabela|todos|aprofund/i.test(latestText);
+  const asksForSite = Boolean(findFirstUrl(latestText)) || /site|url|p[aá]gina|link/i.test(latestText);
+  const shortRecommendations = recommendations.slice(0, asksForDetails ? 5 : 2)
+    .map((item) => `- [${item.name}](/animmaster/${item.slug}) — ${item.section.toLowerCase()}`)
+    .join("\\n");
+  const text = asksForSite && siteSummary && !siteSummary.ok
+    ? `Não consegui analisar o site informado. ${siteSummary.error || "A página está indisponível."} Envie outra URL pública ou descreva o projeto brevemente.`
+    : asksForComponents
+      ? `Para ${direction.profile.name.toLowerCase()}, sugiro:\\n${shortRecommendations || "Ainda não encontrei componentes compatíveis."}${asksForDetails ? "\\nPosso detalhar a aplicação de cada um." : ""}`
+      : isFirstTurn
+        ? `Entendi a direção inicial: ${direction.profile.name.toLowerCase()}. Qual é o principal objetivo do projeto?`
+        : `Entendi. Vou considerar isso na direção do projeto e manter as decisões anteriores. Qual é o próximo ajuste que você quer fazer?`;
   return { text, siteSummary, recommendations, direction, pipeline, collection };
 }
 
