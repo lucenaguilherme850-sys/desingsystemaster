@@ -19,9 +19,11 @@ export const requireVerifiedUser = createMiddleware({ type: "function" })
     if (error || !data.user) throw new Error("Unauthorized: invalid session");
     if (!data.user.email_confirmed_at) throw new Error("email_not_confirmed");
 
-    const { data: blocked } = await supabase.rpc("is_account_blocked", {
+    const { data: blocked, error: blockedError } = await supabase.rpc("is_account_blocked", {
       _user_id: userId,
     });
+    // Falha fechada: não autorize operações quando o status de bloqueio não puder ser verificado.
+    if (blockedError || typeof blocked !== "boolean") throw new Error("account_status_unavailable");
     if (blocked) throw new Error("account_blocked");
 
     return next({ context: { user: data.user } });
