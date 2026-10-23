@@ -764,21 +764,47 @@ async function buildLocalDirectorReply({
       : `\n## ⚠️ Leitura do Site\n\n- **URL:** ${siteSummary.url}\n- **Status:** ${siteSummary.status ?? "indisponível"}\n- **Problema:** ${siteSummary.error || "não foi possível carregar a página."}\n- **Ação:** envie uma URL pública funcionando ou descreva o projeto em 3-5 linhas.\n`
     : "";
 
-  // O chat responde apenas à intenção atual; detalhes completos ficam no painel lateral.
-  const isFirstTurn = userTurns.length <= 1;
-  const asksForComponents = /component|efeito|anima|biblioteca|cat[aá]logo|recomend|sugest|hero|navbar|scroll/i.test(latestText);
-  const asksForDetails = /detalh|explic|plano|passo a passo|lista completa|tabela|todos|aprofund/i.test(latestText);
-  const asksForSite = Boolean(findFirstUrl(latestText)) || /site|url|p[aá]gina|link/i.test(latestText);
-  const shortRecommendations = recommendations.slice(0, asksForDetails ? 5 : 2)
-    .map((item) => `- [${item.name}](/animmaster/${item.slug}) — ${item.section.toLowerCase()}`)
-    .join("\\n");
-  const text = asksForSite && siteSummary && !siteSummary.ok
-    ? `Não consegui analisar o site informado. ${siteSummary.error || "A página está indisponível."} Envie outra URL pública ou descreva o projeto brevemente.`
-    : asksForComponents
-      ? `Para ${direction.profile.name.toLowerCase()}, sugiro:\\n${shortRecommendations || "Ainda não encontrei componentes compatíveis."}${asksForDetails ? "\\nPosso detalhar a aplicação de cada um." : ""}`
-      : isFirstTurn
-        ? `Entendi a direção inicial: ${direction.profile.name.toLowerCase()}. Qual é o principal objetivo do projeto?`
-        : `Entendi. Vou considerar isso na direção do projeto e manter as decisões anteriores. Qual é o próximo ajuste que você quer fazer?`;
+  // O modo local é determinístico: responder por intenção, sem fingir ser um LLM.
+  // Não reutilizar a mesma resposta genérica para mensagens diferentes.
+  const normalized = normalizeForSearch(latestText);
+  const firstTurn = userTurns.length === 1;
+  const wantsComponents = /component|efeito|anima|biblioteca|catalogo|recomend|sugest|hero|navbar|scroll/.test(normalized);
+  const wantsPlan = /plano|etapa|passo a passo|implement|por onde comec|prioridade/.test(normalized);
+  const wantsStyle = /cor|paleta|fonte|tipografia|visual|estilo|identidade|design|aparencia/.test(normalized);
+  const wantsSite = Boolean(findFirstUrl(latestText)) || /analis|avali|auditoria/.test(normalized);
+  const isGreeting = /^(oi|ola|opa|bom dia|boa tarde|boa noite|e ai)[!.? ]*$/.test(normalized.trim());
+  const asksQuestion = /[?]/.test(latestText) || /^(como|qual|quais|porque|por que|onde|quando|quanto|o que|voce consegue|pode)/.test(normalized);
+  const detailCount = /detalh|complet|todos|lista|tabela|aprofund/.test(normalized) ? 5 : 2;
+  const items = recommendations.slice(0, detailCount);
+  const shortRecommendations = items
+    .map((item) => `- [${item.name}](/animmaster/${item.slug}) para ${item.section.toLowerCase()}`)
+    .join("\n");
+  const currentSite = findFirstUrl(latestText);
+  const previousUserText = userTurns.length > 1 ? extractMessageText(userTurns[userTurns.length - 2]) : "";
+  const directionName = direction.profile.name.toLowerCase();
+  let text: string;
+  if (isGreeting) {
+    text = "Olá! Me conte o que você quer criar ou melhorar no projeto.";
+  } else if (currentSite && siteSummary && !siteSummary.ok) {
+    text = `Não consegui acessar ${siteSummary.url}. ${siteSummary.error || "O site está indisponível."} Envie um link público válido ou descreva a página.`;
+  } else if (wantsSite && siteSummary?.ok) {
+    text = `Analisei ${siteSummary.title || siteSummary.url}. ${siteSummary.description ? siteSummary.description.slice(0, 150) : "A página está acessível."} Quer sugestões de componentes ou uma direção visual?`;
+  } else if (wantsComponents) {
+    text = shortRecommendations
+      ? `Para a direção ${directionName}, estas opções combinam com o projeto:\n${shortRecommendations}`
+      : "Não encontrei componentes compatíveis com o pedido no catálogo atual.";
+  } else if (wantsPlan) {
+    text = `Comece definindo a proposta principal e a primeira seção. Depois escolha os componentes coerentes com ${directionName} e valide a experiência no celular. O plano detalhado fica no painel lateral.`;
+  } else if (wantsStyle) {
+    text = `A direção identificada é ${directionName}. ${direction.profile.description} Priorize contraste, legibilidade e consistência entre as seções.`;
+  } else if (firstTurn) {
+    text = `Entendi o projeto. A direção inicial parece ${directionName}. Qual resultado você quer alcançar com ele?`;
+  } else if (asksQuestion) {
+    text = `Sobre "${latestText.slice(0, 110)}": o modo local não consegue responder essa pergunta com segurança apenas com o catálogo. Posso ajudar com direção visual, componentes e plano de implementação.`;
+  } else {
+    const summary = latestText.replace(/\\s+/g, " ").slice(0, 110);
+    text = `Anotei para este projeto: "${summary}". ${previousUserText ? "Vou considerar também o que você definiu antes." : ""} Quer aplicar isso à direção visual ou aos componentes?`;
+  }
   return { text, siteSummary, recommendations, direction, pipeline, collection };
 }
 
