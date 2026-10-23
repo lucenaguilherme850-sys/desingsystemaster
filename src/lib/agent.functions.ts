@@ -2,6 +2,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireVerifiedUser } from "@/lib/verified-auth";
 
+/** Confirma a propriedade antes de ler recursos vinculados a uma conversa. */
+async function assertThreadOwner(context: { supabase: any; userId: string }, threadId: string) {
+  const { data, error } = await context.supabase
+    .from("agent_threads")
+    .select("id")
+    .eq("id", threadId)
+    .eq("user_id", context.userId)
+    .maybeSingle();
+  if (error || !data) throw new Error("thread_not_found");
+}
+
 export const listThreads = createServerFn({ method: "GET" })
   .middleware([requireVerifiedUser])
   .handler(async ({ context }) => {
@@ -60,6 +71,7 @@ export const getThreadMessages = createServerFn({ method: "POST" })
   .middleware([requireVerifiedUser])
   .inputValidator((data: unknown) => z.object({ threadId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
+    await assertThreadOwner(context, data.threadId);
     const { data: messages, error } = await context.supabase
       .from("agent_messages")
       .select("*")
@@ -73,6 +85,7 @@ export const getReport = createServerFn({ method: "POST" })
   .middleware([requireVerifiedUser])
   .inputValidator((data: unknown) => z.object({ threadId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
+    await assertThreadOwner(context, data.threadId);
     const { data: report, error } = await context.supabase
       .from("agent_reports")
       .select("*")
