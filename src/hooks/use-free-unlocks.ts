@@ -5,7 +5,7 @@ import { claimFreeUnlock } from "@/lib/free-unlocks.functions";
 import { getDeviceId } from "@/lib/device-id";
 import { useAuth } from "./use-auth";
 
-export const FREE_UNLOCK_QUOTA = 3;
+export const FREE_UNLOCK_QUOTA = 1;
 
 export type UnlockRow = { slug: string; expires_at: string };
 
@@ -15,7 +15,7 @@ export function unlockErrorMessage(err: unknown): string {
   if (raw.includes("device_limit"))
     return "Este dispositivo já usou as amostras grátis em outras contas.";
   if (raw.includes("quota_exceeded"))
-    return "Você já usou suas 3 amostras grátis.";
+    return "Você já usou sua amostra grátis.";
   if (raw.includes("not_authenticated") || raw.includes("Unauthorized"))
     return "Faça login para liberar uma amostra.";
   if (raw.includes("email_not_confirmed"))
@@ -26,7 +26,7 @@ export function unlockErrorMessage(err: unknown): string {
 }
 
 /**
- * Amostras grátis: todo usuário cadastrado pode liberar 3 componentes,
+ * Amostras grátis: todo usuário cadastrado pode liberar 1 componente,
  * cada um válido por 7 dias.
  */
 export function useFreeUnlocks() {
