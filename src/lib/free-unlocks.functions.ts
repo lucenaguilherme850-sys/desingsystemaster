@@ -53,7 +53,15 @@ export const claimFreeUnlock = createServerFn({ method: "POST" })
     if (countError) throw new Error("device_check_failed");
     if ((count ?? 0) > MAX_ACCOUNTS_PER_DEVICE) throw new Error("device_limit");
 
-    // 3. Cria a amostra (cota de 3 e validade de 7 dias garantidas no banco).
+    // 3. Aplica a cota de uma amostra no servidor antes de inserir.
+    const { count: usedCount, error: usedError } = await supabase
+      .from("component_unlocks")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if (usedError) throw new Error("quota_check_failed");
+    if ((usedCount ?? 0) >= 1) throw new Error("quota_exceeded");
+
+    // 4. Cria a única amostra grátis; validade de 7 dias continua sendo aplicada pelo banco.
     const { error } = await supabase
       .from("component_unlocks")
       .insert({ user_id: userId, slug: data.slug });
