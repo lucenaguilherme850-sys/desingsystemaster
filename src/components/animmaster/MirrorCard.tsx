@@ -175,7 +175,7 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
           <GoogleDriveImage
             src={poster}
             alt={item.type_name || item.name || item.slug}
-            className={`absolute inset-0 h-full w-full object-cover transition-transform duration-700 ${hovered ? 'scale-110 blur-sm opacity-50' : 'scale-100'}`}
+            className={`absolute inset-0 h-full w-full object-cover transition-[transform,opacity] duration-300 ${hovered ? 'scale-[1.03] opacity-60' : 'scale-100 opacity-100'}`}
             loading={item.position < 6 ? "eager" : "lazy"}
           />
         ) : null}
