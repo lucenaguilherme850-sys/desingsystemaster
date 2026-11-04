@@ -25,25 +25,30 @@ export type MirrorItem = {
 // with 280 parallel requests when the grid mounts.
 const MAX_CONCURRENT = 4;
 let active = 0;
-const queue: Array<() => void> = [];
+const queue: Array<{ priority: number; run: () => void }> = [];
 function runNext() {
   if (active >= MAX_CONCURRENT) return;
-  const task = queue.shift();
-  if (!task) return;
+  const next = queue.shift();
+  if (!next) return;
   active++;
-  task();
+  next.run();
 }
-function enqueue(task: () => Promise<unknown>) {
+function enqueue(task: () => Promise<unknown>, priority = 1) {
   return new Promise<void>((resolve) => {
-    queue.push(() => {
-      task()
-        .catch(() => undefined)
-        .finally(() => {
-          active--;
-          resolve();
-          runNext();
-        });
+    queue.push({
+      priority,
+      run: () => {
+        task()
+          .catch(() => undefined)
+          .finally(() => {
+            active--;
+            resolve();
+            runNext();
+          });
+      },
     });
+    // Hovered cards jump ahead of speculative viewport preloads.
+    queue.sort((a, b) => a.priority - b.priority);
     runNext();
   });
 }
@@ -60,15 +65,17 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
   const [hovered, setHovered] = useState(false);
   const triedRef = useRef(false);
 
-  const ensureMirrored = () => {
+  const ensureMirrored = (fromHover = false) => {
     if (videoUrl || !item.drive_video_id || triedRef.current) return;
     // Low quality: don't fetch the mp4 at all until user hovers.
     if (config.preload === "none" && !hovered) return;
     triedRef.current = true;
-    void enqueue(() =>
-      mirror({ data: { slug: item.slug } }).then((r) => {
-        if (r?.video) setVideoUrl(r.video);
-      }),
+    void enqueue(
+      () =>
+        mirror({ data: { slug: item.slug } }).then((r) => {
+          if (r?.video) setVideoUrl(r.video);
+        }),
+      fromHover ? 0 : 1,
     );
   };
 
@@ -162,7 +169,7 @@ export function MirrorCard({ item }: { item: MirrorItem }) {
       params={{ slug: item.slug }}
       onMouseEnter={() => {
         setHovered(true);
-        ensureMirrored();
+        ensureMirrored(true);
       }}
       onMouseLeave={() => setHovered(false)}
       className="group relative block overflow-hidden rounded-2xl border border-border bg-card/40 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-neon/40 hover:shadow-neon"
