@@ -132,7 +132,7 @@ export function LockedGate({
 
           {isAuthenticated && !canSample && (
             <p className="mt-4 text-xs text-muted-foreground">
-              Suas {quota} amostras grátis já foram usadas ou expiraram.
+              Sua amostra grátis já foi usada ou expirou.
             </p>
           )}
 
@@ -141,7 +141,7 @@ export function LockedGate({
               to="/auth"
               className="mt-5 inline-flex w-full items-center justify-center rounded-full border border-neon/40 px-6 py-2.5 text-sm font-semibold text-neon"
             >
-              Criar conta e ganhar 3 amostras grátis
+              Criar conta e ganhar 1 amostra grátis
             </Link>
           )}
 
