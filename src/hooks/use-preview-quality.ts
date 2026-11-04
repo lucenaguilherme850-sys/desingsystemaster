@@ -33,11 +33,11 @@ const PRESETS: Record<Exclude<PreviewQuality, "auto">, PreviewQualityConfig> = {
     label: "480p · hover",
   },
   high: {
-    autoplay: true,
-    preload: "auto",
-    maxConcurrent: 8,
-    hoverOnly: false,
-    label: "720p · auto",
+    autoplay: false,
+    preload: "metadata",
+    maxConcurrent: 2,
+    hoverOnly: true,
+    label: "720p · hover",
   },
 };
 
@@ -98,6 +98,6 @@ export function PreviewQualityOptions(): Array<{ value: PreviewQuality; label: s
     { value: "auto", label: "Auto (rede)" },
     { value: "low", label: "360p · pôster" },
     { value: "medium", label: "480p · hover" },
-    { value: "high", label: "720p · auto" },
+    { value: "high", label: "720p · hover" },
   ];
 }
